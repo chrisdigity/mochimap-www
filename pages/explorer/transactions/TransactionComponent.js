@@ -45,7 +45,7 @@ const TransComp = ({ transData }) => {
           <p>Send total</p>
         </li>
       </ul>
-      {transData.map((item, index) => {
+      {transData?.map((item, index) => {
         return (
           <ul className="et_list et_list_main" key={index}>
             <Link scroll href={`/explorer/transaction/${item.txid}`}>

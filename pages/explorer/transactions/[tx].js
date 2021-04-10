@@ -1,4 +1,4 @@
-import Transcomps from "./Transcomps";
+import Transcomps from "./TransactionComponent";
 import Pagination from "./Pagination";
 
 export async function getServerSideProps(context) {
