@@ -1,0 +1,44 @@
+@font-face {
+  src: url(../public/fonts/WorkSans-Light.ttf);
+  font-family: worksans;
+}
+@font-face {
+  src: url(../public/fonts/WorkSans-Regular.ttf);
+  font-family: worksans2;
+}
+@font-face {
+  src: url(../public/fonts/WorkSans-Medium.ttf);
+  font-family: worksans3;
+}
+@font-face {
+  src: url(../public/fonts/WorkSans-SemiBold.ttf);
+  font-family: worksans4;
+}
+@font-face {
+  src: url(../public/fonts/WorkSans-Bold.ttf);
+  font-family: worksans5;
+}
+@font-face {
+  src: url(../public/fonts/Larsseit-Light.ttf);
+  font-family: laser1;
+}
+@font-face {
+  src: url(../public/fonts/Lato/Lato-Light.ttf);
+  font-family: lato1;
+}
+@font-face {
+  src: url(../public/fonts/Lato/Lato-Regular.ttf);
+  font-family: lato2;
+}
+@font-face {
+  src: url(../public/fonts/Lato/Lato-Bold.ttf);
+  font-family: lato3;
+}
+@font-face {
+  src: url(../public/fonts/Albra-Sans-Light.ttf);
+  font-family: albra;
+}
+@font-face {
+  src: url(../public/fonts/AlbraBold.ttf);
+  font-family: albra2;
+}

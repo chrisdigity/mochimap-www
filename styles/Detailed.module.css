@@ -1,0 +1,336 @@
+.b_det {
+  flex: 1;
+  width: 100%;
+  color: #ddd;
+  display: flex;
+  font-family: worksans;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.b_det_inn {
+  overflow: hidden;
+  flex: 1;
+  width: 90%;
+  height: 100%;
+  padding: 50px 0px 10rem;
+}
+.bdet_head {
+  width: 100%;
+  display: flex;
+  color: #ddd;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 0rem 18px;
+}
+.bdet_head p {
+  font-size: 4.1vmin;
+  font-size: 1.7rem;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #2b0fff;
+}
+.bdet_main {
+  width: 100%;
+  height: auto;
+  display: flex;
+  padding: 1rem 0;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.bdet {
+  width: 50%;
+  height: auto;
+  margin-bottom: 2rem;
+}
+.bdet li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: hidden;
+  padding: 0.92rem 0rem;
+  border-bottom: 0.5px dashed rgb(61, 61, 61);
+  justify-content: space-between;
+}
+.bdet li p:nth-child(1) {
+  color: #ccc;
+  font-size: 0.93rem;
+  letter-spacing: -0.02rem;
+}
+.bdet li p:nth-child(2) {
+  width: 50%;
+  color: #999;
+  text-align: end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+  font-family: worksans2;
+  letter-spacing: -0.02rem;
+}
+
+.bdet_trans {
+  width: 43%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+.bdet_trans_head {
+  display: flex;
+  color: #ccc;
+  font-size: 1rem;
+  padding: 0.92rem 0rem;
+  letter-spacing: -0.02rem;
+}
+.bdet_trans_head p {
+  padding-bottom: 2px;
+  border-bottom: 0.5px dashed #2b0fff;
+}
+.bdet_trans li {
+  display: flex;
+  overflow: hidden;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.92rem 0rem;
+  justify-content: space-between;
+  border-bottom: 0.5px dashed rgb(61, 61, 61);
+}
+.bdet_trans li p:nth-child(1) {
+  width: 100%;
+  color: #ccc;
+  overflow: hidden;
+  font-size: 0.93rem;
+  text-overflow: ellipsis;
+  letter-spacing: -0.02rem;
+}
+.bdet_trans li:nth-child(2) p:nth-child(1) {
+  width: auto;
+}
+.bdet_trans li p:nth-child(1) span {
+  color: #ddd;
+  font-family: worksans3;
+}
+.bdet_trans li p:nth-child(1) {
+  color: #999;
+  text-align: start;
+  overflow: hidden;
+  color: #422fda;
+  text-overflow: ellipsis;
+  font-size: 0.93rem;
+  font-family: worksans3;
+  letter-spacing: -0.02rem;
+}
+.bdet_list_items li:last-child {
+  border-bottom: none;
+}
+.bdet_list_items li:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+.bdet_list_items li:hover {
+  cursor: pointer;
+}
+.bdet_trans .more_result {
+  margin-top: 5px;
+}
+.bdet_trans .more_result li {
+  border-bottom: none;
+}
+
+@media (max-width: 640px) {
+  .bdet_main {
+    flex-direction: column;
+    justify-content: center;
+  }
+  .bdet {
+    width: 100%;
+  }
+  .bdet_trans {
+    width: 100%;
+  }
+}
+/* ***************************** */
+.tr_det {
+  flex: 1;
+  width: 100%;
+  color: #ddd;
+  display: flex;
+  font-family: worksans;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.tr_det_inn {
+  overflow: hidden;
+  flex: 1;
+  width: 85%;
+  height: 100%;
+  padding: 50px 0px 10rem;
+}
+.trdet_head {
+  width: 100%;
+  display: flex;
+  color: #ddd;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0rem 18px;
+}
+.go_back {
+  width: 100%;
+  display: flex;
+  margin-top: 23vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.go_back h1 {
+  color: #fff;
+  font-family: worksans2;
+  font-weight: normal;
+  letter-spacing: -0.1rem;
+}
+.go_back p {
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+  background: #2b0fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  margin: 0px 20px 0px;
+  font-family: worksans2;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.trdet_head p {
+  font-size: 4.1vmin;
+  font-size: 1.7rem;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #2b0fff;
+}
+.trdet_main {
+  width: 100%;
+  height: auto;
+  display: flex;
+  padding: 1rem 0;
+  flex-direction: row;
+}
+.trdet {
+  width: 100%;
+  height: auto;
+  margin-bottom: 2rem;
+}
+.trdet li {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: hidden;
+  padding: 0.92rem 0rem;
+  border-bottom: 0.5px dashed rgb(61, 61, 61);
+  justify-content: space-between;
+}
+
+.trdet li p:nth-child(1) {
+  color: #ccc;
+  font-size: 0.93rem;
+  letter-spacing: -0.02rem;
+}
+.trdet li p:nth-child(2) {
+  width: 60%;
+  color: #999;
+  text-align: end;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+  font-family: worksans2;
+  letter-spacing: -0.02rem;
+}
+
+.trdet .tr_tag p:nth-child(2) {
+  color: #422fda;
+  font-family: worksans3;
+}
+.trdet .tr_tag p:nth-child(2):hover {
+  cursor: pointer;
+}
+
+/*===> Tag address 
+************************************************ */
+
+.tag_address {
+  flex: 1;
+  width: 100%;
+  color: #ddd;
+  display: flex;
+  font-family: worksans;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.tag_address_inn {
+  overflow: hidden;
+  flex: 1;
+  width: 90%;
+  height: 100%;
+  padding: 50px 0px 10rem;
+}
+.tag_addr_head {
+  width: 100%;
+  display: flex;
+  color: #ddd;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 10px 0rem 0px;
+}
+.tag_addr_head p {
+  font-size: 4.1vmin;
+  font-size: 1.7rem;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #2b0fff;
+}
+.tag_det {
+  display: flex;
+  font-family: worksans;
+  flex-direction: column;
+}
+.tag_det li {
+  display: flex;
+  flex-direction: row;
+  line-height: 2rem;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #555;
+}
+.tag_det li div:first-child {
+  width: 40%;
+}
+.tag_det li div:first-child span {
+  font-size: 1rem;
+}
+.tag_det li div:last-child {
+  width: 60%;
+}
+.tag_det li div:last-child p {
+  font-size: 0.9rem;
+  overflow: hidden;
+  color: #bbb;
+  text-overflow: ellipsis;
+}
+.tag_addr_tr_head {
+  width: 100%;
+  display: flex;
+  color: #ddd;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+.tag_addr_tr_head p {
+  font-size: 1rem;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed #2b0fff;
+}
+.tag_address .tag_tr_list {
+  color: #eee;
+  font-family: worksans;
+  border-bottom: 1px dashed #444;
+}

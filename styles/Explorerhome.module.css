@@ -1,0 +1,329 @@
+.home {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.search_sect {
+  width: 100%;
+  display: flex;
+  padding: 12rem 0 5rem;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+}
+.brief_list {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  margin-bottom: 7rem;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+.brief_list_inn {
+  flex: 1;
+  width: 85%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #444;
+}
+.brief_list_header {
+  width: 85%;
+  display: flex;
+  color: #aaa;
+  font-size: 2rem;
+  align-items: center;
+  font-family: albra;
+  text-transform: capitalize;
+  margin-bottom: 1rem;
+  padding: 1rem 0rem 2rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #444;
+}
+
+.present_height {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  text-transform: none;
+}
+.present_height p:last-child {
+  color: #ddd;
+  margin-left: 10px;
+  font-size: 0.9rem;
+  font-family: laser1;
+  margin-bottom: -2px;
+}
+.present_height img {
+  width: 0.93rem;
+  height: 0.93rem;
+  margin-top: -3px;
+  margin-right: 0.3em;
+}
+.blocks {
+  width: 50%;
+  display: flex;
+  padding-top: 1rem;
+  flex-direction: column;
+  box-sizing: border-box;
+  border-right: 1px solid #444;
+}
+.block_header {
+  width: 82%;
+  display: flex;
+  padding: 10px 0rem 12px;
+  margin-bottom: 20px;
+  flex-direction: row;
+  justify-content: space-between;
+  border-bottom: 1px dashed #2b0fff;
+}
+.view_all {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-family: laser1;
+  color: #ddd;
+  letter-spacing: 0.02rem;
+  justify-content: center;
+}
+.view_all img {
+  width: 14px;
+  height: 14px;
+  margin-left: 3px;
+}
+.view_all a {
+  display: flex;
+  padding: 12px 12px;
+  align-items: center;
+  border: 1px dashed #2b0fff;
+}
+.block_header p:nth-child(1) {
+  font-family: albra;
+  color: #ddd;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+}
+.block_header p:nth-child(2) {
+  color: #ddd;
+  font-size: 0.8rem;
+  font-family: laser1;
+}
+.blocks_list {
+  width: 82%;
+  color: #bbb;
+  display: flex;
+  flex-direction: row;
+  font-family: albra;
+  letter-spacing: 0.04rem;
+}
+.blocks_list:last-child,
+.trans_list:last-child {
+  padding-bottom: 20px;
+  /* border-bottom: 1px dashed #2b0fff; */
+}
+.blocks_list li {
+  font-size: 13px;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+}
+.blocks_list:nth-child(2) {
+  color: #ddd;
+  font-size: 0.85rem;
+  font-family: laser1;
+}
+.blocks_list:first-child li {
+  font-size: 13px;
+  /* color: #2b0fff !important; */
+  font-family: laser2;
+}
+.blocks_list li:first-child {
+  width: 21%;
+}
+.blocks_list li:nth-child(2) {
+  width: 32%;
+}
+.blocks_list li:nth-child(3) {
+  width: 20%;
+}
+.blocks_list li:last-child {
+  width: 27%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transactions {
+  width: 50%;
+  display: flex;
+  padding-top: 1rem;
+  align-items: flex-end;
+  flex-direction: column;
+}
+.trans_header {
+  width: 82%;
+  display: flex;
+  padding: 10px 0rem 12px;
+  margin-bottom: 20px;
+  flex-direction: row;
+  justify-content: space-between;
+  border-bottom: 1px dashed #2b0fff;
+}
+.trans_header p:nth-child(1) {
+  font-family: albra;
+  color: #ddd;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+}
+.trans_header p:nth-child(2) {
+  color: #ddd;
+  font-size: 0.8rem;
+  font-family: laser1;
+}
+.trans_list {
+  width: 82%;
+  color: #bbb;
+  display: flex;
+  flex-direction: row;
+  font-family: albra;
+  letter-spacing: 0.04rem;
+  justify-content: space-between;
+}
+.trans_list li {
+  font-size: 13px;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.trans_list li p {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trans_list:first-child li {
+  font-size: 13px;
+  font-family: laser2;
+}
+.trans_list:nth-child(2) {
+  color: #ddd;
+  font-size: 0.85rem;
+  font-family: laser1;
+}
+.trans_list li:first-child {
+  width: 50%;
+}
+.trans_list li:nth-child(2) {
+  width: 30%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 850px) {
+  .main {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .brief_list_header {
+    font-size: 1.5rem;
+  }
+  .present_height {
+    font-size: 0.9rem;
+  }
+  .brief_list_inn {
+    flex-direction: column;
+    align-items: center;
+  }
+  .blocks {
+    width: 90%;
+  }
+  .transactions {
+    width: 90%;
+  }
+  .brief_list_header {
+    width: 63%;
+  }
+  .blocks {
+    align-items: center;
+    border-right: none;
+    margin-bottom: 3rem;
+  }
+  .transactions {
+    align-items: center;
+    margin-bottom: 3rem;
+  }
+  .brief_list_inn {
+    border-bottom: none;
+  }
+}
+@media (max-width: 675px) {
+  .brief_list_inn {
+    width: 100%;
+  }
+  .blocks {
+    width: 100%;
+  }
+  .transactions {
+    width: 100%;
+  }
+  .brief_list_header {
+    width: 82%;
+  }
+  .trans_list li:first-child {
+    width: 70%;
+  }
+
+  .present_height p:last-child {
+    margin-left: 0.1em;
+  }
+}
+@media (max-width: 565px) {
+  .blocks_list {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 500px) {
+  .brief_list_header {
+    width: 90%;
+  }
+  .brief_list_header {
+    color: #ddd !important;
+    font-size: 6vw !important;
+  }
+  .brief_list_inn {
+    width: 100%;
+  }
+  .blocks .block_header,
+  .blocks .blocks_list,
+  .transactions .trans_header,
+  .transactions .trans_list {
+    width: 90%;
+  }
+  .view_all {
+    font-size: 3.5vw;
+  }
+  .search_sect {
+    padding: 14rem 0 5rem;
+  }
+  .trans_list li:first-child {
+    width: 65%;
+  }
+  .block_header p:nth-child(1),
+  .trans_header p:nth-child(1) {
+    font-size: 6vw;
+  }
+  .block_header p:nth-child(2),
+  .trans_header p:nth-child(2) {
+    font-size: 3.5vw;
+  }
+  .present_height img {
+    margin-right: 0.1em;
+  }
+}
