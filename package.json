@@ -5,13 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "server": "json-server --watch db.json --port 7000"
+    "start": "next start"
   },
   "dependencies": {
     "@react-hook/window-size": "^3.0.7",
-    "axios": "^0.21.1",
-    "json-server": "^0.16.3",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.33",
     "next": "10.0.9",
