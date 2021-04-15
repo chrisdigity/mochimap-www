@@ -1,5 +1,5 @@
 import RouteList from './MochiMapRoutes';
-import { Header, NavBar, Footer } from './MochiMapLayout';
+import { Header, Navbar, Footer } from './MochiMapLayout';
 import { HashRouter, Route } from 'react-router-dom';
 
 function MochiMap () {
@@ -7,7 +7,7 @@ function MochiMap () {
     <HashRouter basename='/'>
       <div className='container'>
         <Header />
-        <NavBar />
+        <Navbar />
         <main className='main'>
           <div id='display' />
           {RouteList.map((item, index) =>
