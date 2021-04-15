@@ -1,9 +1,9 @@
 import Home from './www/index';
 import Explorer from './www/explorer/index';
-import Block from './www/explorer/block';
-import SearchBlocks from './www/explorer/block/search';
+import Block from './www/explorer/block/index';
 import Transaction from './www/explorer/transaction';
-import SearchTransactions from './www/explorer/transaction/search';
+import SearchBlocks from './www/explorer/search/blocks/index';
+import SearchTransactions from './www/explorer/search/transactions/index';
 
 export default [
   { path: '/', route: Home },
