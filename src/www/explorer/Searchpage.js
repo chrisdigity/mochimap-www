@@ -59,7 +59,13 @@ export default function SearchPage () {
             )}
           </ul>
         </div>
-        <form action={'/explorer/' + search[searchIndex].name + '/search'}>
+        <form
+          action={'/explorer/' + search[searchIndex].name + '/search'}
+          onSubmit={function () {
+            const text = document.forms[0][search[searchIndex].property].value;
+            document.forms[0][search[searchIndex].property].value = text.trim();
+          }}
+        >
           <div className='explorer_search'>
             <input
               type='text'
