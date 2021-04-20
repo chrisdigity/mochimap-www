@@ -1,136 +1,154 @@
-import Link from "next/link";
-import Pagination from "./Pagination";
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `https://api.mochimap.com/block/${context.params.blck}`
-    );
-    const data = await res.json();
-    return {
-      props: { data },
-    };
-  } catch (error) {
-    return {
-      props: { data: {} },
-    };
-  }
-}
+import { useMochimapApi } from 'MochiMapHooks';
+import { capitalize, mcm, preBytes } from 'MochiMapUtils';
+import { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import Pagination from '../Pagination';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const BlockDetails = ({ data }) => {
-  const [blockData, setBlockData] = useState(null);
-  const [notFound, setNotFound] = useState(false);
-  const router = useRouter();
+export default function Block () {
+  const txPerPage = 8;
+  const { bnum } = useParams();
+  const [block] = useMochimapApi('/block/' + bnum);
+  const [txStart, setTxStart] = useState(0);
+  const [txEnd, setTxEnd] = useState(0);
+  const [page, setPage] = useState(1);
+  const paginate = (npage) => {
+    const end = npage * txPerPage;
+    setTxStart(end - txPerPage);
+    setTxEnd(end);
+    setPage(npage);
+  };
+  useEffect(() => paginate(1), [block.data]);
 
-  useEffect(() => {
-    if (data?._id) {
-      setBlockData(data);
-    } else {
-      setNotFound(true);
-    }
-  }, [router.query.blck]);
-
-  const [currentPg, setCurrentPg] = useState(1);
-
-  const transPerPage = 8;
-  const lastTrans = currentPg * transPerPage;
-  const firstTrans = lastTrans - transPerPage;
-  const currentTrans = !blockData?._id
-    ? []
-    : blockData.txids.slice(firstTrans, lastTrans);
-
-  const paginate = (num) => setCurrentPg(num);
-
-  return !router.query.blck ? null : (
-    <div className="b_det">
-      <div className="b_det_inn">
-        <div className="bdet_head">
-          {blockData?._id && <p>Block details </p>}
+  return (
+    <div className='b_det'>
+      <div className='b_det_inn'>
+        <div className='bdet_head'>
+          {block.error && (
+            <p>{block.data?.error || 'Error loading block ' + bnum}</p>
+          )}
+          {block.loading && (
+            <p>
+              <FontAwesomeIcon icon={faSpinner} pulse /> Loading Block Details
+            </p>
+          )}
+          {block.data?.type && (
+            <p>
+              {capitalize(block.data.type)}
+              {block.data.type === 'pseudo' ? 'block' : ' Block'} #
+              {block.data.bnum}&nbsp;
+              <sup>(0x{block.data.bnum.toString(16)})</sup>
+            </p>
+          )}
         </div>
-        {blockData?._id && (
-          <div className="bdet_main">
-            <ul className="bdet">
-              <li>
-                <p>Block number</p>
-                <p>{blockData?.bnum}</p>
-              </li>
-              <li>
-                <p>Hash</p>
-                <p>{blockData?.bhash}</p>
-              </li>
-              <li>
-                <p>Difficulty</p>
-                <p>{blockData?.difficulty}</p>
-              </li>
-              <li>
-                <p>Reward</p>
-                <p>{blockData?.mreward}</p>
-              </li>
-              <li>
-                <p>Size</p>
-                <p>{blockData?.size}</p>
-              </li>
-              <li>
-                <p>Amount</p>
-                <p>{blockData?.amount}</p>
-              </li>
+        <div className='bdet_main'>
+          <ul className='bdet'>
+            {block.data?.type === 'normal' && (
+              <>
+                <li>
+                  <p>Miner</p>
+                  <p>{block?.data?.maddr}</p>
+                </li>
+                <li>
+                  <p>Reward</p>
+                  <p>{block.data?.mreward && mcm(block.data.mreward, true)}</p>
+                </li>
+                <li>
+                  <p>Mining fee</p>
+                  <p>{block.data?.mfee && mcm(block.data.mfee)}</p>
+                </li>
+              </>
+            )}
+            <li>
+              <p>Difficulty</p>
+              <p>{block.data?.difficulty}</p>
+            </li>
+            {block.data?.type === 'normal' && (
               <li>
                 <p>Transactions</p>
-                <p>{blockData?.tcount}</p>
+                <p>{block.data?.tcount}</p>
               </li>
+            )}
+            {block.data?.type === 'neogenesis' && (
               <li>
-                <p>Mining fee</p>
-                <p>${blockData?.mfee}</p>
+                <p>Addresses</p>
+                <p>{block.data?.lcount}</p>
               </li>
+            )}
+            <li>
+              <p>Block Size</p>
+              {block.data?.size && <p>{preBytes(block.data.size)}</p>}
+            </li>
+            {block.data?.type === 'normal' && (
               <li>
-                <p>Nonce</p>
-                <p>{blockData?.nonce}</p>
+                <p>Sent Amount</p>
+                <p>
+                  {block.data?.amount !== undefined &&
+                    mcm(block.data.amount, true)}
+                </p>
               </li>
+            )}
+            {block.data?.type === 'neogenesis' && (
               <li>
-                <p>Markle root</p>
-                <p>{blockData?.mroot}</p>
+                <p>Ledger Amount</p>
+                <p>~{block.data?.amount && mcm(block.data.amount)}</p>
               </li>
-              <li>
-                <p>Miner's address</p>
-                <p>{blockData?.maddr}</p>
-              </li>
-            </ul>
-            <ul className="bdet_trans">
-              <div className="bdet_trans_head">
-                <p>Block transactions </p>
-              </div>
-              <ul className="bdet_list_items">
-                {currentTrans.map((item) => (
-                  <Link href={`/explorer/transaction/${item}`}>
+            )}
+            <li>
+              <p>Prev. Hash</p>
+              <p>{block?.data?.phash}</p>
+            </li>
+            <li>
+              <p>Hash</p>
+              <p>{block?.data?.bhash}</p>
+            </li>
+            {block.data?.type === 'normal' && (
+              <>
+                <li>
+                  <p>Merkle</p>
+                  <p>{block?.data?.mroot}</p>
+                </li>
+                <li>
+                  <p>Nonce</p>
+                  <p>{block?.data?.nonce}</p>
+                </li>
+              </>
+            )}
+          </ul>
+          <ul className='bdet_trans'>
+            <div className='bdet_trans_head'>
+              <p>Block transactions</p>
+            </div>
+            <ul className='bdet_list_items'>
+              {block.loading ? (
+                <span>
+                  <FontAwesomeIcon icon={faSpinner} pulse /> Loading...
+                </span>
+              ) : !block.data?.txids?.length && (
+                'ϟ No Transactions...'
+              )}
+              {block.data?.txids?.length &&
+                block.data.txids.slice(txStart, txEnd).map((item, index) => (
+                  <Link to={'/explorer/transaction/' + item} key={index}>
                     <li>
-                      <p>
-                        <span>ϟ</span>&nbsp;
-                        {item}
-                      </p>
+                      ϟ&nbsp;
+                      <p>{item}</p>
                     </li>
                   </Link>
                 ))}
-              </ul>
-              <Pagination
-                paginate={paginate}
-                currentPage={currentPg}
-                itemsPerPage={transPerPage}
-                itemTotal={blockData?.txids.length}
-              />
             </ul>
-          </div>
-        )}
-        {notFound && (
-          <div className="go_back">
-            <h1>Block not found</h1>
-            <p onClick={() => router.back()}>Go back</p>
-          </div>
-        )}
+            <Pagination
+              page={page}
+              pages={block.data?.txids?.length
+                ? Math.ceil(block.data.txids.length / txPerPage) : 1}
+              paginate={paginate}
+              range={2}
+            />
+          </ul>
+        </div>
       </div>
     </div>
   );
-};
-
-export default BlockDetails;
+}

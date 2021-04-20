@@ -1,51 +1,78 @@
-import { useState, useEffect } from "react";
-import { useWindowSize } from "@react-hook/window-size/throttled";
 
-const Explorer = () => {
-  const [width] = useWindowSize();
-  const [currentSect, setCurrentSect] = useState(0);
-  const placeHolders = [
-    "Type Block Number or Select Filter",
-    "Search Ledger",
-    "Search the network",
-    "Type transaction id",
+import { capitalize } from 'MochiMapUtils';
+import { useWindowSize } from 'MochiMapHooks';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+
+export default function SearchPage () {
+  const { width } = useWindowSize();
+  const [searchIndex, setSearchIndex] = useState(1);
+  const handleClick = (e, i) => { e.preventDefault(); setSearchIndex(i); };
+  const sorry = (i) => window.alert(capitalize(search[i].name) +
+    ' search is currently disabled, sorry for any inconvenience.');
+  const search = [
+    {
+      name: 'address',
+      property: 'addr',
+      placeholder: 'Type Hashed or Tagged Address',
+      handleClick: (e) => sorry(0) // handleClick(e, 0)
+    }, {
+      name: 'block',
+      property: 'bnum',
+      placeholder: 'Type Blockchain Block Number',
+      handleClick: (e) => handleClick(e, 1)
+    }, {
+      name: 'network',
+      property: 'ip',
+      placeholder: 'Type Network IPv4 Address',
+      handleClick: (e) => sorry(2) // handleClick(e, 2)
+    }, {
+      name: 'transaction',
+      property: 'txid',
+      placeholder: 'Type Transaction ID',
+      handleClick: (e) => handleClick(e, 3)
+    }
   ];
 
   return (
-    <div className="explorer">
-      <div className="explorer_inner">
-        <div className="explorer_header">
-          {width > 500 ? "Explore the Mochimo Blockchain" : "Mochimo Explorer"}
+    <div className='explorer'>
+      <div className='explorer_inner'>
+        <div className='explorer_header'>
+          {width > 500 ? 'Mochimo Blockchain Explorer' : 'Mochimo Explorer'}
         </div>
-        <div className="explorer_filter">
-          <ul className="explorer_options">
-            {["Block", "Ledger", "Network", "Transaction"].map((item, index) =>
-              index == currentSect ? (
-                <li
-                  style={{
-                    color: "#fff",
-                    letterSpacinr: "0.03rem",
-                    borderBottom: "3px solid #2b0fff",
-                  }}
-                >
-                  {item}
-                </li>
-              ) : (
-                <li onClick={() => setCurrentSect(index)}>{item}</li>
-              )
+        <div className='explorer_filter'>
+          <ul className='explorer_options'>
+            {search.map((item, index) =>
+              <Link
+                onClick={item.handleClick}
+                style={searchIndex === index ? {
+                  color: '#fff',
+                  letterSpacinr: '0.03rem',
+                  borderBottom: '3px solid #2b0fff'
+                } : {}}
+                to='#'
+                key={index}
+              >{item.name[0].toUpperCase() + item.name.substring(1)}
+              </Link>
             )}
           </ul>
         </div>
-        <div className="explorer_search">
-          <input type="text" placeholder={placeHolders[currentSect]} />
-          <div className="search_button">
-            Search
-            {width > 500 && <i class="fa fa-search"></i>}
+        <form action={'/explorer/' + search[searchIndex].name + '/search'}>
+          <div className='explorer_search'>
+            <input
+              type='text'
+              name={search[searchIndex].property}
+              placeholder={search[searchIndex].placeholder}
+            />
+            <input type='hidden' name='page' value='1' />
+            <button type='submit' className='search_button'>
+              Search {width > 500 && <FontAwesomeIcon icon={faSearch} />}
+            </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
-};
-
-export default Explorer;
+}

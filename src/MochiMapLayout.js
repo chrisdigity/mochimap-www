@@ -1,15 +1,23 @@
 
 import Moment from 'moment';
-import RouteList from './MochiMapRoutes';
+import { RouteList } from './MochiMapRoutes';
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCloudflare,
+  faDiscord,
+  faGithub
+} from '@fortawesome/free-brands-svg-icons';
 
-export function Header () {}
+export function Header () { return null; }
 
 export function Navbar () {
   return (
     <div className='navbar'>
-      <div className='logo'>Mochimap</div>
+      <div className='logo'>
+        MochiMap
+      </div>
       <div className='navbar_small no_small_nav'>
         <nav className='navlinks'>
           {RouteList.filter(route => route.text).map((item, index) =>
@@ -50,11 +58,11 @@ export class Footer extends Component {
   }
 
   tick () {
-    this.setState({
+    this.state = {
       timeHr: Moment().locale('fr').format('hh').toString(),
       timeMin: Moment().locale('fr').format('mm').toString(),
       timeA: Moment().locale('fr').format('a').toString()
-    });
+    };
   }
 
   componentDidMount () {
@@ -77,8 +85,8 @@ export class Footer extends Component {
             <div className='ft_det'>
               <p>Mochimap</p>
               <p>
-                Blockchain explorer for
-                <br /> Mochimo cryptocurrency
+                Mochimo network<br />
+                Open source explorer
               </p>
             </div>
             <div className='mo_link'>
@@ -95,16 +103,32 @@ export class Footer extends Component {
           </div>
           <div className='ft_2'>
             <div className='ft_det'>
-              <p>By chris digity</p>
+              <p><sup>by</sup> Chrisd̕ìͤ͞g̷ͭ̚i̧t҉̶̡̳y</p>
             </div>
             <div className='ft_link'>
-              <a target='_blank' href='#'>
-                <i class='fa fa-twitter' />
-                <p>twitter</p>
+              <a
+                target='_blank'
+                rel='noopener noreferrer'
+                href='https://www.cloudflare.com'
+              >
+                <i><FontAwesomeIcon icon={faCloudflare} size='lg' /></i>
+                <p>Protected by Cloudflare</p>
               </a>
-              <a target='_blank' href='#'>
-                <i class='fa fa-github' />
-                <p>github</p>
+              <a
+                target='_blank'
+                rel='noopener noreferrer'
+                href='https://github.com/chrisdigity/mochimap.com'
+              >
+                <i><FontAwesomeIcon icon={faGithub} size='lg' /></i>
+                <p>Contribute on Github</p>
+              </a>
+              <a
+                target='_blank'
+                rel='noopener noreferrer'
+                href='https://discord.gg/7ma6Bk2'
+              >
+                <i><FontAwesomeIcon icon={faDiscord} size='lg' /></i>
+                <p>Contact in Discord</p>
               </a>
             </div>
             <ul className='rights'>

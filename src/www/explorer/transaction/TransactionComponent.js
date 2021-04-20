@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { useWindowSize } from "@react-hook/window-size/throttled";
+import { Link } from 'react-router-dom';
+import { useWindowSize } from 'MochiMapHooks';
 
 const TransComp = ({ transData }) => {
   const [width] = useWindowSize();

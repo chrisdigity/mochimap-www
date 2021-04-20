@@ -99,14 +99,8 @@
 .eb_list li:nth-child(2) {
   width: 24%;
 }
-.eb_list li:nth-child(2) p {
-  width: 82%;
-}
 .eb_list li:nth-child(3) {
   width: 9%;
-}
-.eb_list li:nth-child(3) p {
-  padding-left: 10px;
 }
 .eb_list:nth-child(2) li:nth-child(3) p {
   padding-left: 0px;

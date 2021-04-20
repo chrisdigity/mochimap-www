@@ -57,7 +57,7 @@
   letter-spacing: -0.02rem;
 }
 .bdet li p:nth-child(2) {
-  width: 50%;
+  width: 65%;
   color: #999;
   text-align: end;
   overflow: hidden;
@@ -252,7 +252,7 @@
   cursor: pointer;
 }
 
-/*===> Tag address 
+/*===> Tag address
 ************************************************ */
 
 .tag_address {

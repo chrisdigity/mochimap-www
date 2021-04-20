@@ -1,26 +1,37 @@
 
-/* global fetch */// assumes compatible browser
-import { useState, useEffect } from 'react';
+/* eslint-env browser */
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function useMochimapApi (initialPath) {
-  const base = 'https://api.mochimap.com';
+  const api = 'https://api.mochimap.com';
   const [data, setData] = useState({});
-  const [path, setPath] = useState(initialPath);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [path, setPath] = useState(initialPath);
   useEffect(() => {
+    if (!path) return;
     setError(false);
     setLoading(true);
-    fetch(base + path)
+    fetch(api + path)
       .then(response => response.json())
-      .then(setData)
+      .then(json => { if (json?.error) setError(true); setData(json); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [path]);
-  return [{ data, loading, error }, setPath];
+  return [{ data, loading, error }, setPath, setData];
 }
 
-export function useWindowSize () { // https://usehooks.com/useWindowSize/
+export function useQuery (defaults = {}) {
+  const params = new URLSearchParams(useLocation().search);
+  for (const [key, value] of Object.entries(defaults)) {
+    if (!params.has(key)) params.set(key, value);
+  }
+  return params;
+}
+
+// reference: https://usehooks.com/useWindowSize/
+export function useWindowSize () {
   // Initialize state with undefined width/height so server and client renders match
   // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
   const [windowSize, setWindowSize] = useState({

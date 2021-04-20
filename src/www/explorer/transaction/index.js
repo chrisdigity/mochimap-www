@@ -1,113 +1,104 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `https://api.mochimap.com/transaction/${context.params.tx}`
-    );
-    const data = await res.json();
-    return {
-      props: { data },
-    };
-  } catch (error) {
-    return {
-      props: { data: {} },
-    };
-  }
-}
+import { useMochimapApi } from 'MochiMapHooks';
+import { defaultTag, mcm } from 'MochiMapUtils';
+import { Link, useParams } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const Transaction = ({ data }) => {
-  const router = useRouter();
-  const [notFound, setNotFound] = useState(false);
-  const [transData, setTransData] = useState(null);
+export default function Transaction () {
+  const { txid } = useParams();
+  const [tx] = useMochimapApi('/transaction/' + txid);
 
-  useEffect(() => {
-    if (data?._id) {
-      setTransData(data);
-    } else {
-      setNotFound(true);
-    }
-  }, [router.query.tx]);
-
-  return !router.query.tx ? null : (
-    <div className="tr_det">
-      <div className="tr_det_inn">
-        <div className="trdet_head">
-          {transData && <p>Transaction details </p>}
+  return (
+    <div className='tr_det'>
+      <div className='tr_det_inn'>
+        <div className='trdet_head'>
+          <p>
+            {tx.error && <p>{tx.data?.error || 'Error loading '}</p>}
+            {tx.loading && (
+              <span>
+                <FontAwesomeIcon icon={faSpinner} pulse /> Loading&nbsp;
+              </span>
+            )}
+            Transaction details
+          </p>
         </div>
-        {transData && (
-          <div className="trdet_main">
-            <ul className="trdet">
-              <li>
-                <p>Transaction id</p>
-                <p>{transData?.txid}</p>
-              </li>
-              <li>
-                <p>Send total</p>
-                <p>{transData?.sendtotal}</p>
-              </li>
-              <li>
-                <p>Transaction fee</p>
-                <p>${transData?.txfee}</p>
-              </li>
-              <li>
-                <p>Change total</p>
-                <p>{transData?.changetotal}</p>
-              </li>
-              <Link
-                href={`/explorer/transaction/tag/${transData?.srctag}?page=1`}
-              >
-                <li className="tr_tag">
-                  <p>Src tag</p>
-                  <p>{transData?.srctag}</p>
-                </li>
-              </Link>
-              <li>
-                <p>Src Address</p>
-                <p>{transData?.srcaddr}</p>
-              </li>
-              <Link
-                href={`/explorer/transaction/tag/${transData?.dsttag}?page=1`}
-              >
-                <li className="tr_tag">
-                  <p>Dst tag</p>
-                  <p>{transData?.dsttag}</p>
-                </li>
-              </Link>
-              <li>
-                <p>Dst Address</p>
-                <p>{transData?.dstaddr}</p>
-              </li>
-              <Link
-                href={`/explorer/transaction/tag/${transData?.chgtag}?page=1`}
-              >
-                <li className="tr_tag">
-                  <p>Chg tag</p>
-                  <p>{transData?.chgtag}</p>
-                </li>
-              </Link>
-              <li>
-                <p>Chg Address</p>
-                <p>{transData?.chgaddr}</p>
-              </li>
-              <li>
-                <p>Transaction Signature</p>
-                <p>{transData?.txsig}</p>
-              </li>
-            </ul>
-          </div>
-        )}
-        {notFound && (
-          <div className="go_back">
-            <h1>Transaction not found</h1>
-            <p onClick={() => router.back()}>Go back</p>
-          </div>
-        )}
+        <div className='trdet_main'>
+          <ul className='trdet'>
+            <li>
+              <p>Transaction id</p>
+              <p>{tx.data?.txid}</p>
+            </li>
+            <li>
+              <p>Transaction Signature</p>
+              <p>{tx.data?.txsig}</p>
+            </li>
+            <li>
+              <p>Source Address</p>
+              <p>{tx.data?.srcaddr && (
+                <Link to={`/explorer/address/hash/${tx.data?.srcaddr}?page=1`}>
+                  {tx.data?.srcaddr}
+                </Link>)}
+              </p>
+            </li>
+            <li className='tr_tag'>
+              <p>Source Tag</p>
+              <p>{tx.data?.srctag === defaultTag ? (tx.data?.srctag) : (
+                <Link to={`/explorer/address/tag/${tx.data?.srctag}?p=1`}>
+                  {tx.data?.srctag}
+                </Link>
+              )}
+              </p>
+            </li>
+            <li>
+              <p>Destination Address</p>
+              <p>{tx.data?.dstaddr && (
+                <Link to={`/explorer/address/hash/${tx.data?.dstaddr}?page=1`}>
+                  {tx.data?.dstaddr}
+                </Link>)}
+              </p>
+            </li>
+            <li className='tr_tag'>
+              <p>Destination Tag</p>
+              <p>{tx.data?.dsttag === defaultTag ? (tx.data?.dsttag) : (
+                <Link to={`/explorer/address/tag/${tx.data?.dsttag}?p=1`}>
+                  {tx.data?.dsttag}
+                </Link>
+              )}
+              </p>
+            </li>
+            <li>
+              <p>Change Address</p>
+              <p>{tx.data?.chgaddr && (
+                <Link to={`/explorer/address/hash/${tx.data?.chgaddr}?page=1`}>
+                  {tx.data?.chgaddr}
+                </Link>)}
+              </p>
+            </li>
+            <li className='tr_tag'>
+              <p>Change Tag</p>
+              <p>{tx.data?.chgtag === defaultTag ? (tx.data?.chgtag) : (
+                <Link to={`/explorer/address/tag/${tx.data?.chgtag}?p=1`}>
+                  {tx.data?.chgtag}
+                </Link>
+              )}
+              </p>
+            </li>
+            <li>
+              <p>Send total</p>
+              <p>{tx.data?.sendtotal && mcm(tx.data.sendtotal, true)}</p>
+            </li>
+            <li>
+              <p>Change total</p>
+              <p>{tx.data?.changetotal && mcm(tx.data.changetotal, true)}</p>
+            </li>
+            <li>
+              <p>Transaction fee</p>
+              <p>{tx.data?.txfee && mcm(tx.data.txfee)}</p>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Transaction;
+}

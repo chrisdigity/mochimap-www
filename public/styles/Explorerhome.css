@@ -24,7 +24,7 @@
 }
 .brief_list_inn {
   flex: 1;
-  width: 85%;
+  width: 90%;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -32,7 +32,7 @@
   border-bottom: 1px solid #444;
 }
 .brief_list_header {
-  width: 85%;
+  width: 90%;
   display: flex;
   color: #aaa;
   font-size: 2rem;
@@ -76,13 +76,13 @@
   border-right: 1px solid #444;
 }
 .block_header {
-  width: 82%;
+  width: 95%;
   display: flex;
   padding: 10px 0rem 12px;
   margin-bottom: 20px;
   flex-direction: row;
   justify-content: space-between;
-  border-bottom: 1px dashed #2b0fff;
+  border-bottom: 2px dashed #2b0fff;
 }
 .view_all {
   display: flex;
@@ -116,11 +116,11 @@
   font-family: laser1;
 }
 .blocks_list {
-  width: 82%;
+  width: 95%;
   color: #bbb;
   display: flex;
   flex-direction: row;
-  font-family: albra;
+  font-family: monospace;
   letter-spacing: 0.04rem;
 }
 .blocks_list:last-child,
@@ -145,16 +145,19 @@
   font-family: laser2;
 }
 .blocks_list li:first-child {
-  width: 21%;
-}
-.blocks_list li:nth-child(2) {
-  width: 32%;
-}
-.blocks_list li:nth-child(3) {
   width: 20%;
 }
+.blocks_list li:nth-child(2) {
+  width: 20%;
+}
+.blocks_list li:nth-child(3) {
+  width: 12%;
+}
+.blocks_list li:nth-child(4) {
+  width: 18%;
+}
 .blocks_list li:last-child {
-  width: 27%;
+  width: 30%;
   display: flex;
   justify-content: flex-end;
 }
@@ -167,13 +170,13 @@
   flex-direction: column;
 }
 .trans_header {
-  width: 82%;
+  width: 95%;
   display: flex;
   padding: 10px 0rem 12px;
   margin-bottom: 20px;
   flex-direction: row;
   justify-content: space-between;
-  border-bottom: 1px dashed #2b0fff;
+  border-bottom: 2px dashed #2b0fff;
 }
 .trans_header p:nth-child(1) {
   font-family: albra;
@@ -187,11 +190,11 @@
   font-family: laser1;
 }
 .trans_list {
-  width: 82%;
+  width: 95%;
   color: #bbb;
   display: flex;
   flex-direction: row;
-  font-family: albra;
+  font-family: monospace;
   letter-spacing: 0.04rem;
   justify-content: space-between;
 }
@@ -217,9 +220,12 @@
   font-family: laser1;
 }
 .trans_list li:first-child {
-  width: 50%;
+  width: 20%;
 }
 .trans_list li:nth-child(2) {
+  width: 50%;
+}
+.trans_list li:nth-child(3) {
   width: 30%;
   display: flex;
   justify-content: flex-end;
@@ -277,7 +283,7 @@
     width: 82%;
   }
   .trans_list li:first-child {
-    width: 70%;
+    width: 20%;
   }
 
   .present_height p:last-child {
@@ -313,7 +319,7 @@
     padding: 14rem 0 5rem;
   }
   .trans_list li:first-child {
-    width: 65%;
+    width: 20%;
   }
   .block_header p:nth-child(1),
   .trans_header p:nth-child(1) {
