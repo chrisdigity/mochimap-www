@@ -1,75 +1,49 @@
-import Transcomps from "./Transcomps";
-import Pagination from "./Pagination";
 
-export async function getServerSideProps(context) {
-  try {
-    const res = await fetch(
-      `https://api.mochimap.com/balance/tag/${context.params.tag}`
-    );
-    const res2 = await fetch(
-      `https://api.mochimap.com/transaction/search?tag=${context.params.tag}`
-    );
-    const data = await res.json();
-    const data2 = await res2.json();
-    const presentTag = context.params.tag;
-    const presentPage = context.query.page;
-    return {
-      props: { data, data2, presentPage, presentTag },
-    };
-  } catch (error) {
-    return {
-      props: { data: {} },
-    };
-  }
-}
+import { useMochimapApi } from 'MochiMapHooks';
+import { mcm } from 'MochiMapUtils';
+import { useParams } from 'react-router-dom';
+import TxList from '../TxList';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const Transactions = ({ data, data2, presentPage, presentTag }) => {
+export default function Address () {
+  const { type, address } = useParams();
+  const [ledger] = useMochimapApi(`/balance/${type}/${address}`);
+
   return (
-    <div className="tag_address">
-      <div className="tag_address_inn">
-        <div className="tag_addr_head">
-          <p>Tagged address</p>
+    <>
+      <div className='b_det'>
+        <div className='b_det_inn'>
+          <div className='bdet_head'>
+            <p>
+              {ledger.loading && (
+                <span><FontAwesomeIcon icon={faSpinner} pulse /> Loading </span>
+              )}
+              {type === 'tag' && <span>Tagged </span>}
+              Ledger Address{ledger.error && (
+                <span> Error: {ledger.data?.error || 'Unknown Error'}</span>
+              )}
+            </p>
+          </div>
+          <div className='bdet_main'>
+            <ul className='bdet'>
+              <li>
+                <p>Address</p>
+                <p>{ledger.data?.address}</p>
+              </li>
+              <li>
+                <p>Tag</p>
+                <p>{ledger.data?.tag}</p>
+              </li>
+              <li>
+                <p>Balance</p>
+                <p>{mcm(ledger.data?.balance, 9, 0)}</p>
+              </li>
+            </ul>
+            <TxList src={address} srcType={type} />
+          </div>
         </div>
-        <ul className="tag_det">
-          <li>
-            <div>
-              <span>Address</span>
-            </div>
-            <div>
-              <p>{data?.address}</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span>Tag</span>
-            </div>
-            <div>
-              <p>{data?.tag}</p>
-            </div>
-          </li>
-          <li>
-            <div>
-              <span>Balance</span>
-            </div>
-            <div>
-              <p>{data?.balance}</p>
-            </div>
-          </li>
-        </ul>
-
-        <div className="tag_addr_tr_head">
-          <p>Tagged address transactions</p>
-        </div>
-
-        <Transcomps transData={data2?.results} />
-        <Pagination
-          presentTag={presentTag}
-          currentPage={presentPage}
-          pages={data2?.pages}
-        />
       </div>
-    </div>
+    </>
   );
-};
-
-export default Transactions;
+}

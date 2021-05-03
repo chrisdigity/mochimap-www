@@ -36,7 +36,7 @@ export default function Transaction () {
             <li>
               <p>Source Address</p>
               <p>{tx.data?.srcaddr && (
-                <Link to={`/explorer/address/hash/${tx.data?.srcaddr}?page=1`}>
+                <Link to={`/explorer/address/address/${tx.data?.srcaddr}?page=1`}>
                   {tx.data?.srcaddr}
                 </Link>)}
               </p>
@@ -53,7 +53,7 @@ export default function Transaction () {
             <li>
               <p>Destination Address</p>
               <p>{tx.data?.dstaddr && (
-                <Link to={`/explorer/address/hash/${tx.data?.dstaddr}?page=1`}>
+                <Link to={`/explorer/address/address/${tx.data?.dstaddr}?page=1`}>
                   {tx.data?.dstaddr}
                 </Link>)}
               </p>
@@ -70,7 +70,7 @@ export default function Transaction () {
             <li>
               <p>Change Address</p>
               <p>{tx.data?.chgaddr && (
-                <Link to={`/explorer/address/hash/${tx.data?.chgaddr}?page=1`}>
+                <Link to={`/explorer/address/address/${tx.data?.chgaddr}?page=1`}>
                   {tx.data?.chgaddr}
                 </Link>)}
               </p>

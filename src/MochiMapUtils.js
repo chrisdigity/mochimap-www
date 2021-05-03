@@ -10,21 +10,36 @@ export function integerRange (start, end, arr = []) {
   return Array.from({ length: end - start + 1 }, (_, i) => i + parseInt(start));
 }
 
-export function mcm (bignum, nolocale, humanize) {
-  bignum = bignum || 0;
-  var unit = 'MCM';
-  var prefix = ' ';
-  if (bignum > 1e+15) {
+export function mcm (bignum, locale = true, prefixType = 1) {
+  if (typeof prefixType !== 'number') prefixType = 1;
+  if (typeof locale !== 'number') locale = Boolean(locale);
+  bignum = Number(bignum);
+  var unit = [
+    ['MCM', 'MCM', 'Mochimo'],
+    ['MCM', 'ηMCM', 'nano-Mochimo'],
+    ['MCM', 'κMCM', 'thousand-Mochimo'],
+    ['MCM', '𝕄MCM', 'million-Mochimo']
+  ];
+  if (bignum > 1e+15 && prefixType > 0) {
+    if (typeof locale !== 'number') locale = 1;
     bignum /= 1e+15;
-    bignum = Math.round(bignum * 10) / 10; // round to 1 decimal
-    prefix = humanize ? ' Million ' : /* 'Μ' */ ' Ω';
-  } else if (bignum > 1e+12) {
+    unit = unit[3];
+  } else if (bignum > 1e+12 && prefixType > 0) {
+    if (typeof locale !== 'number') locale = 2;
     bignum /= 1e+12; // thousand-MCM
-    bignum = Math.round(bignum * 100) / 100; // round to 2 decimals
-    prefix = humanize ? ' Thousand' : ' κ';
-  } else if (bignum < 1e+5) prefix = humanize ? ' nano' : ' η';
-  else bignum /= 1e+9;
-  return (nolocale ? bignum : Number(bignum).toLocaleString()) + prefix + unit;
+    unit = unit[2];
+  } else if (bignum < 1e+5) {
+    unit = unit[1];
+  } else {
+    bignum /= 1e+9;
+    unit = unit[0];
+  }
+  if (locale) {
+    bignum = typeof locale !== 'number'
+      ? bignum.toLocaleString()
+      : bignum.toLocaleString(undefined, { maximumFractionDigits: locale });
+  }
+  return `${bignum} ${unit[prefixType]}`;
 }
 
 export function preBytes (bytes, forceindex, nolocale) {

@@ -1,5 +1,6 @@
 import Home from './www/index';
 import Explorer from './www/explorer/index';
+import Address from './www/explorer/address/index';
 import Block from './www/explorer/block/index';
 import BlockSearch from './www/explorer/block/search';
 import Transaction from './www/explorer/transaction';
@@ -11,6 +12,7 @@ export const RouteList = [
   { path: '/explorer/transaction/:txid', route: Transaction },
   { path: '/explorer/block/search', route: BlockSearch },
   { path: '/explorer/block/:bnum', route: Block },
+  { path: '/explorer/address/:type/:address', route: Address },
   { path: '/explorer', route: Explorer, text: 'Explorer' },
   { path: '/about', text: 'What is Mochimo?' },
   { path: '/', route: Home }
