@@ -263,19 +263,21 @@
   justify-content: space-between;
 }
 
-.trdet li p:nth-child(1) {
+.trdet li p {
   color: #ccc;
   font-size: 0.93rem;
   letter-spacing: -0.02rem;
+  padding-right: 1em;
 }
-.trdet li p:nth-child(2) {
-  width: 60%;
-  color: #999;
+.trdet li p:nth-child(2),
+.trdet li p:nth-child(3) {
+  width: 10%;
+  flex-grow: 1;
   text-align: end;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.9rem;
-  font-family: worksans2;
+  font-family: "Roboto Mono";
   letter-spacing: -0.02rem;
 }
 

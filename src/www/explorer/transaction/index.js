@@ -34,55 +34,55 @@ export default function Transaction () {
               <p>{tx.data?.txsig}</p>
             </li>
             <li>
-              <p>Source Address</p>
-              <p>{tx.data?.srcaddr && (
-                <Link to={`/explorer/address/address/${tx.data?.srcaddr}?page=1`}>
-                  {tx.data?.srcaddr}
-                </Link>)}
-              </p>
-            </li>
-            <li className='tr_tag'>
-              <p>Source Tag</p>
-              <p>{tx.data?.srctag === defaultTag ? (tx.data?.srctag) : (
-                <Link to={`/explorer/address/tag/${tx.data?.srctag}?p=1`}>
-                  {tx.data?.srctag}
-                </Link>
+              <p>Source</p>
+              {tx.data?.srctag !== defaultTag && tx.data?.srctag && (
+                <p>
+                  <Link to={`/explorer/ledger/tag/${tx.data?.srctag}`}>
+                    τ-{tx.data?.srctag}
+                  </Link>
+                </p>
               )}
-              </p>
+              {tx.data?.srcaddr && (
+                <p>
+                  <Link to={`/explorer/ledger/address/${tx.data?.srcaddr}`}>
+                    ω+{tx.data?.srcaddr}
+                  </Link>
+                </p>
+              )}
             </li>
             <li>
-              <p>Destination Address</p>
-              <p>{tx.data?.dstaddr && (
-                <Link to={`/explorer/address/address/${tx.data?.dstaddr}?page=1`}>
-                  {tx.data?.dstaddr}
-                </Link>)}
-              </p>
-            </li>
-            <li className='tr_tag'>
-              <p>Destination Tag</p>
-              <p>{tx.data?.dsttag === defaultTag ? (tx.data?.dsttag) : (
-                <Link to={`/explorer/address/tag/${tx.data?.dsttag}?p=1`}>
-                  {tx.data?.dsttag}
-                </Link>
+              <p>Destination</p>
+              {tx.data?.dsttag !== defaultTag && tx.data?.dsttag && (
+                <p>
+                  <Link to={`/explorer/ledger/tag/${tx.data?.dsttag}`}>
+                    τ-{tx.data?.dsttag}
+                  </Link>
+                </p>
               )}
-              </p>
+              {tx.data?.dstaddr && (
+                <p>
+                  <Link to={`/explorer/ledger/address/${tx.data?.dstaddr}`}>
+                    ω+{tx.data?.dstaddr}
+                  </Link>
+                </p>
+              )}
             </li>
             <li>
-              <p>Change Address</p>
-              <p>{tx.data?.chgaddr && (
-                <Link to={`/explorer/address/address/${tx.data?.chgaddr}?page=1`}>
-                  {tx.data?.chgaddr}
-                </Link>)}
-              </p>
-            </li>
-            <li className='tr_tag'>
-              <p>Change Tag</p>
-              <p>{tx.data?.chgtag === defaultTag ? (tx.data?.chgtag) : (
-                <Link to={`/explorer/address/tag/${tx.data?.chgtag}?p=1`}>
-                  {tx.data?.chgtag}
-                </Link>
+              <p>Change</p>
+              {tx.data?.chgtag !== defaultTag && tx.data?.chgtag && (
+                <p>
+                  <Link to={`/explorer/ledger/tag/${tx.data?.chgtag}`}>
+                    τ-{tx.data?.chgtag}
+                  </Link>
+                </p>
               )}
-              </p>
+              {tx.data?.chgaddr && (
+                <p>
+                  <Link to={`/explorer/ledger/address/${tx.data?.chgaddr}`}>
+                    ω+{tx.data?.chgaddr}
+                  </Link>
+                </p>
+              )}
             </li>
             <li>
               <p>Send total</p>

@@ -10,25 +10,29 @@ export default function SearchPage () {
   const { width } = useWindowSize();
   const [searchIndex, setSearchIndex] = useState(1);
   const handleClick = (e, i) => { e.preventDefault(); setSearchIndex(i); };
-  const sorry = (i) => window.alert(capitalize(search[i].name) +
-    ' search is currently disabled, sorry for any inconvenience.');
+  /* const sorry = (i) => window.alert(capitalize(search[i].name) +
+    ' search is currently disabled, sorry for any inconvenience.'); */
   const search = [
     {
+      uri: 'ledger',
       name: 'address',
-      property: 'addr',
-      placeholder: 'Type Hashed or Tagged Address',
-      handleClick: (e) => sorry(0) // handleClick(e, 0)
+      property: 'address',
+      placeholder: 'Type Hashed Address',
+      handleClick: (e) => handleClick(e, 0)
     }, {
+      uri: 'block',
       name: 'block',
       property: 'bnum',
       placeholder: 'Type Blockchain Block Number',
       handleClick: (e) => handleClick(e, 1)
     }, {
-      name: 'network',
-      property: 'ip',
-      placeholder: 'Type Network IPv4 Address',
-      handleClick: (e) => sorry(2) // handleClick(e, 2)
+      uri: 'ledger',
+      name: 'tag',
+      property: 'tag',
+      placeholder: 'Type Tagged Address',
+      handleClick: (e) => handleClick(e, 2)
     }, {
+      uri: 'transaction',
       name: 'transaction',
       property: 'txid',
       placeholder: 'Type Transaction ID',
@@ -54,13 +58,13 @@ export default function SearchPage () {
                 } : {}}
                 to='#'
                 key={index}
-              >{item.name[0].toUpperCase() + item.name.substring(1)}
+              >{capitalize(item.name)}
               </Link>
             )}
           </ul>
         </div>
         <form
-          action={'/explorer/' + search[searchIndex].name + '/search'}
+          action={'/explorer/' + search[searchIndex].uri + '/search'}
           onSubmit={function () {
             const text = document.forms[0][search[searchIndex].property].value;
             document.forms[0][search[searchIndex].property].value = text.trim();
@@ -72,7 +76,9 @@ export default function SearchPage () {
               name={search[searchIndex].property}
               placeholder={search[searchIndex].placeholder}
             />
-            <input type='hidden' name='page' value='1' />
+            {search[searchIndex].uri !== 'ledger' && (
+              <input type='hidden' name='page' value='1' />
+            )}
             <button type='submit' className='search_button'>
               Search {width > 500 && <FontAwesomeIcon icon={faSearch} />}
             </button>
