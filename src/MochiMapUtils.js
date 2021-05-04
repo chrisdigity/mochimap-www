@@ -14,7 +14,7 @@ export function mcm (bignum, locale = true, prefixType = 1) {
   if (typeof prefixType !== 'number') prefixType = 1;
   if (typeof locale !== 'number') locale = Boolean(locale);
   bignum = Number(bignum);
-  var unit = [
+  let unit = [
     ['MCM', 'MCM', 'Mochimo'],
     ['MCM', 'ηMCM', 'nano-Mochimo'],
     ['MCM', 'κMCM', 'thousand-Mochimo'],
@@ -39,7 +39,7 @@ export function mcm (bignum, locale = true, prefixType = 1) {
       ? bignum.toLocaleString()
       : bignum.toLocaleString(undefined, { maximumFractionDigits: locale });
   }
-  return `${bignum} ${unit[prefixType]}`;
+  return `${bignum} ${unit[bignum === '0' ? 0 : prefixType]}`;
 }
 
 export function preBytes (bytes, forceindex, nolocale) {
