@@ -32,14 +32,14 @@ export default function TxList ({ src, srcType }) {
     <div className='bdet_trans'>
       <div className='bdet_list_items'>
         {srcType === '_id' && <p>Block Transactions</p>}
-        {txs.loading ? (
+        {(txs.loading && (
           <div>
             <FontAwesomeIcon icon={faSpinner} pulse />
             <span> Loading transactions...</span>
           </div>
-        ) : !txs.data?.results?.length && (
+        )) || (!txs.data?.results?.length && (
           <div>ϟ No transactions...</div>
-        )}
+        ))}
         {txs.data?.results?.map((item, index) => {
           const date = item.stime ? new Date(item.stime * 1000) : null;
           const dateString = date?.toLocaleDateString(undefined, DateOptions) ||
@@ -73,23 +73,22 @@ export default function TxList ({ src, srcType }) {
                 {showDate && <p>{dateString}</p>}
                 <Link to={'/explorer/transaction/' + item.txid} key={index}>
                   <ul className='bdet_list_txe'>
-                    {src === item.srcaddr ? (
+                    {(src === item.srcaddr && (
                       <>
                         <li className='time'>{timeString}</li>
                         <li className='src'>{item.dstaddr}</li>
                         <li className='amount'>-{mcm(item.sendtotal)}</li>
-                        <li className='arrow'>⭧</li>
+                        <li className='arrow out'>⭧OUT</li>
                       </>
-                    ) : (
+                    )) || (
                       <>
                         <li className='time'>{timeString}</li>
                         <li className='src'>{item.srcaddr}</li>
                         <li className='amount'>
-                          +{src === item.dstaddr
-                            ? mcm(item.sendtotal)
-                            : mcm(item.changetotal)}
+                          +{(src === item.dstaddr && mcm(item.sendtotal)) ||
+                            mcm(item.changetotal)}
                         </li>
-                        <li className='arrow'>⭹</li>
+                        <li className='arrow in'>⭹IN</li>
                       </>
                     )}
                   </ul>

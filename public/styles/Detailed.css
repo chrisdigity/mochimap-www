@@ -134,9 +134,15 @@
   width: 8rem;
   text-align:right;
 }
-.bdet_list_txe .arrow  {
-  width: 1.25rem;
+.bdet_list_txe .arrow {
+  width: 3rem;
   text-align:center;
+}
+.bdet_list_txe .in {
+  color: lightgreen;
+}
+.bdet_list_txe .out {
+  color: lightsalmon;
 }
 .bdet_trans li p:nth-child(1) {
   width: 100%;
