@@ -131,7 +131,7 @@
   flex-grow: 1;
 }
 .bdet_list_txe .amount {
-  max-width: 8rem;
+  max-width: 7rem;
   text-align:right;
 }
 .bdet_list_txe .arrow {
