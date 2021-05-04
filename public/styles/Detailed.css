@@ -111,7 +111,7 @@
   text-overflow: ellipsis;
 }
 .bdet_list_txe .time {
-  width: 3.75rem;
+  width: 3.5rem;
 }
 .bdet_list_txe .txid {
   width:100%;
@@ -131,12 +131,13 @@
   flex-grow: 1;
 }
 .bdet_list_txe .amount {
-  width: 8rem;
+  max-width: 8rem;
   text-align:right;
 }
 .bdet_list_txe .arrow {
-  width: 3rem;
-  text-align:center;
+  width: 5rem;
+  padding: 0 1rem;
+  text-align:left;
 }
 .bdet_list_txe .in {
   color: lightgreen;

@@ -73,22 +73,23 @@ export default function TxList ({ src, srcType }) {
                 {showDate && <p>{dateString}</p>}
                 <Link to={'/explorer/transaction/' + item.txid} key={index}>
                   <ul className='bdet_list_txe'>
+                    <li className='time'>{timeString}</li>
                     {(src === item.srcaddr && (
                       <>
-                        <li className='time'>{timeString}</li>
                         <li className='src'>{item.dstaddr}</li>
-                        <li className='amount'>-{mcm(item.sendtotal)}</li>
                         <li className='arrow out'>⭧OUT</li>
+                        <li className='amount'>
+                          {mcm(item.sendtotal)}
+                        </li>
                       </>
                     )) || (
                       <>
-                        <li className='time'>{timeString}</li>
                         <li className='src'>{item.srcaddr}</li>
+                        <li className='arrow in'>⭹IN</li>
                         <li className='amount'>
-                          +{(src === item.dstaddr && mcm(item.sendtotal)) ||
+                          {(src === item.dstaddr && mcm(item.sendtotal)) ||
                             mcm(item.changetotal)}
                         </li>
-                        <li className='arrow in'>⭹IN</li>
                       </>
                     )}
                   </ul>
