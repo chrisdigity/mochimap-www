@@ -86,15 +86,15 @@ export default function Transaction () {
             </li>
             <li>
               <p>Send total</p>
-              <p>{tx.data?.sendtotal && mcm(tx.data.sendtotal, true)}</p>
+              <p>{tx.data?.sendtotal && mcm(tx.data.sendtotal, 9)}</p>
             </li>
             <li>
               <p>Change total</p>
-              <p>{tx.data?.changetotal && mcm(tx.data.changetotal, true)}</p>
+              <p>{tx.data?.changetotal && mcm(tx.data.changetotal, 9)}</p>
             </li>
             <li>
               <p>Transaction fee</p>
-              <p>{tx.data?.txfee && mcm(tx.data.txfee)}</p>
+              <p>{tx.data?.txfee && mcm(tx.data.txfee, 9)}</p>
             </li>
           </ul>
         </div>
