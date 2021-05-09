@@ -38,15 +38,21 @@ export default function Ledger () {
             <ul className='bdet'>
               <li>
                 <p>Address</p>
-                <p>{ledger.data?.address}</p>
+                <p>
+                  {ledger.data?.address ||
+                    (type === 'address' ? address : 'unknown')}
+                </p>
               </li>
               <li>
                 <p>Tag</p>
-                <p>{ledger.data?.tag}</p>
+                <p>
+                  {ledger.data?.tag ||
+                    (type === 'tag' ? address : 'unknown')}
+                </p>
               </li>
               <li>
                 <p>Balance</p>
-                <p>{mcm(ledger.data?.balance, 9, 0)}</p>
+                <p>{mcm(ledger.data?.balance || 0, 9, 0)}</p>
               </li>
             </ul>
             <TxList src={address} srcType={type} />

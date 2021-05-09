@@ -1,7 +1,7 @@
 
 import { useMochimapApi } from 'MochiMapHooks';
 import { capitalize, mcm, preBytes } from 'MochiMapUtils';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import TxList from '../TxList';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
@@ -57,7 +57,15 @@ export default function Block () {
               <>
                 <li>
                   <p>Miner</p>
-                  <p>{block?.data?.maddr}</p>
+                  <p>
+                    {block?.data?.maddr && (
+                      <Link
+                        to={'/explorer/ledger/address/' + block.data.maddr}
+                      >
+                        {block.data.maddr}
+                      </Link>
+                    )}
+                  </p>
                 </li>
                 <li>
                   <p>Reward</p>

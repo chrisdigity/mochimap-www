@@ -25,7 +25,9 @@ export default function TxList ({ src, srcType }) {
   let lastDateString;
 
   useEffect(() => {
-    return reqTxs(`/transaction/search?${srcType}:begins=${src}&page=${page}`);
+    return srcType === '_id'
+      ? reqTxs(`/transaction/search?${srcType}:begins=${src}&page=${page}`)
+      : reqTxs(`/history/${src}?page=${page}`);
   }, [page, src, srcType, reqTxs]);
 
   return (
@@ -41,27 +43,33 @@ export default function TxList ({ src, srcType }) {
           <div>ϟ No transactions...</div>
         ))}
         {txs.data?.results?.map((item, index) => {
-          const date = item.stime ? new Date(item.stime * 1000) : null;
+          const date = item.timestamp ? new Date(item.timestamp * 1000) : null;
           const dateString = date?.toLocaleDateString(undefined, DateOptions) ||
             'Unknown Date';
           const timeString = date?.toLocaleTimeString(undefined, TimeOptions) ||
             '--:--';
           const showDate = Boolean(dateString !== lastDateString);
-          if (item.srctag !== defaultTag) item.srcaddr = item.srctag;
-          if (item.dsttag !== defaultTag) item.dstaddr = item.dsttag;
-          if (item.chgtag !== defaultTag) item.chgaddr = item.chgtag;
           if (showDate) lastDateString = dateString;
           if (srcType === '_id') {
+            if (item.srctag !== defaultTag) item.srcaddr = item.srctag;
+            if (item.dsttag !== defaultTag) item.dstaddr = item.dsttag;
+            if (item.chgtag !== defaultTag) item.chgaddr = item.chgtag;
             return (
               <>
                 <Link to={'/explorer/transaction/' + item.txid} key={index}>
                   <ul className='bdet_list_txe'>
                     <li className='txid'>ϟ {item.txid}</li>
-                    <li className='src'>{item.srcaddr}</li>
+                    <li className='src'>
+                      {item.srcaddr === item.srctag ? 'τ-' : 'ω+'}{item.srcaddr}
+                    </li>
                     <li className='arrow'>➟</li>
-                    <li className='chg'>{item.chgaddr}</li>
+                    <li className='chg'>
+                      {item.chgaddr === item.chgtag ? 'τ-' : 'ω+'}{item.chgaddr}
+                    </li>
                     <li className='amount'>{mcm(item.changetotal)}</li>
-                    <li className='dst'>&nbsp;⤷ {item.dstaddr}</li>
+                    <li className='dst'>&nbsp;⤷&nbsp;
+                      {item.dstaddr === item.dsttag ? 'τ-' : 'ω+'}{item.dstaddr}
+                    </li>
                     <li className='amount'>{mcm(item.sendtotal)}</li>
                   </ul>
                 </Link>
@@ -70,30 +78,45 @@ export default function TxList ({ src, srcType }) {
           } else {
             return (
               <>
-                {showDate && <p>{dateString}</p>}
-                <Link to={'/explorer/transaction/' + item.txid} key={index}>
-                  <ul className='bdet_list_txe'>
-                    <li className='time'>{timeString}</li>
-                    {(src === item.srcaddr && (
-                      <>
-                        <li className='src'>{item.dstaddr}</li>
-                        <li className='arrow out'>⭧OUT</li>
-                        <li className='amount'>
-                          {mcm(item.sendtotal)}
-                        </li>
-                      </>
-                    )) || (
-                      <>
-                        <li className='src'>{item.srcaddr}</li>
-                        <li className='arrow in'>⭹IN</li>
-                        <li className='amount'>
-                          {(src === item.dstaddr && mcm(item.sendtotal)) ||
-                            mcm(item.changetotal)}
-                        </li>
-                      </>
-                    )}
-                  </ul>
-                </Link>
+                {showDate && <p key={index + '~'}>{dateString}</p>}
+                {(item._id.endsWith('mreward') && (
+                  <Link to={'/explorer/block/' + item.bnum} key={index}>
+                    <ul className='bdet_list_txe'>
+                      <li className='time'>{timeString}</li>
+                      <li className='src'>
+                        {item._id
+                          .replace(/^0*/g, '0x')
+                          .replace(/-mreward$/i, '')
+                          .replace(/-/i, '.')}
+                      </li>
+                      <li className='arrow in'>⚒Mined</li>
+                      <li className='amount'>{mcm(item.amount)}</li>
+                    </ul>
+                  </Link>
+                )) || (
+                  <Link to={'/explorer/transaction/' + item.txid} key={index}>
+                    <ul className='bdet_list_txe'>
+                      <li className='time'>{timeString}</li>
+                      {(src === item.to && (
+                        <>
+                          <li className='src'>
+                            {item.from.length === 24 ? 'τ-' : 'ω+'}{item.from}
+                          </li>
+                          <li className='in'>⭹Recv</li>
+                          <li className='amount'>{mcm(item.amount)}</li>
+                        </>
+                      )) || (
+                        <>
+                          <li className='src'>
+                            {item.to.length === 24 ? 'τ-' : 'ω+'}{item.to}
+                          </li>
+                          <li className='out'>⭧Sent</li>
+                          <li className='amount'>{mcm(item.amount)}</li>
+                        </>
+                      )}
+                    </ul>
+                  </Link>
+                )}
               </>
             );
           }
