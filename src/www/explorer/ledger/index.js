@@ -116,14 +116,14 @@ function TransactionHistory ({ type, address, aeon, header }) {
 
   return (
     <>
-      {header && history.data.results && (
+      {header && history.data.results?.length ? (
         <div className={'history header' + (dim ? ' dim' : '')}>
           <div><span>Address</span></div>
           <div><span>Date-Time</span></div>
           <div><span>Height</span></div>
           <div><span>Amount</span></div>
         </div>
-      )}
+      ) : ''}
       {history.data.results?.map((txe, index) => {
         return <Transaction key={index} txe={txe} addr={address} dim={dim} />;
       })}
@@ -187,7 +187,7 @@ function BalanceHistory ({ type, data }) {
       // prepend current Aeon data if necessary
       if (response.page === 1) {
         const first = results[0];
-        const address = data.address.slice(0, 64);
+        const address = data.address?.slice(0, 64) || undefined;
         const addressHash = data.addressHash;
         const tag = data.tag;
         const balance = data.balance;
@@ -287,7 +287,7 @@ export default function Ledger () {
       </div>
       <div className='available v-sep'>
         <span className='dull'>A<span className='tiny'>vailable: </span></span>
-        {(ledger.error && <Error message={ledger.data.error} inline />) || (
+        {(ledger.error && <Error message={ledger.data.message} inline />) || (
           ledger.loading && <Loading inline />
         ) || mcm(ledger.data.balance || 0, 9, 0)}
       </div>
