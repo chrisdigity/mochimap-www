@@ -12,7 +12,7 @@ export function integerRange (start, end, arr = []) {
   return Array.from({ length: end - start + 1 }, (_, i) => i + parseInt(start));
 }
 
-export function mcm (bignum, locale = true, suffixType = 1, unitType = 1) {
+export function mcm (bignum, locale = true, suffixType, unitType) {
   const unit = ['', 'MCM', 'Mochimo'];
   const suffix = [
     ['', '', ''],
@@ -22,6 +22,7 @@ export function mcm (bignum, locale = true, suffixType = 1, unitType = 1) {
   ];
   let metric = 0;
   let negative = '';
+  if (typeof unitType !== 'number') unitType = 1;
   if (typeof suffixType !== 'number') suffixType = 1;
   if (typeof locale !== 'number') locale = Boolean(locale);
   bignum = Number(bignum);
@@ -37,7 +38,7 @@ export function mcm (bignum, locale = true, suffixType = 1, unitType = 1) {
     if (typeof locale !== 'number') locale = 2;
     bignum /= 1e+12; // thousand-MCM
     metric = 2;
-  } else if (bignum < 1e+6) metric = 1;
+  } else if (bignum < 1e+6 && suffixType > 0) metric = 1;
   else bignum /= 1e+9;
   if (locale) {
     bignum = typeof locale !== 'number' ? bignum.toLocaleString()
