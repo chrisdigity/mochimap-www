@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 export function useMochimapApi (initPath, initQuery, initPage, init) {
-  const api = 'https://de.mochimap.com';
+  const api = 'https://api.mochimap.com';
   const [data, setData] = useState({});
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
