@@ -1,0 +1,217 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Roboto&family=Ubuntu+Mono&display=swap');
+
+.ledger {
+  max-width: 95%;
+  margin: 1em auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: Roboto;
+  color: lightgray;
+}
+.ledger > .addresses {
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ledger > .balance {
+  font-size: 4em;
+  color: white;
+  text-shadow: 0 0 0.125em #0059ff, 0 0 0.25em #0059ff;
+}
+.ledger > .available {
+  margin: 0.25em 0;
+  padding: 0.25em;
+  border-top: 0.0625em dashed #0059ff;
+}
+.ledger > .history-selection {
+  padding: 1em 0 0.5em 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.125em;
+}
+.ledger > .history-selection div:hover:not(.selected) {
+  color: white;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.ledger > .history-selection .selected {
+  color: white;
+  font-weight: bold;
+  text-decoration: underline;
+  text-shadow: 0 0 0.125em #0059ff, 0 0 0.25em #0059ff, 0 0 0.5em #0059ff;
+}
+.history-container {
+  max-width: 95%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "Ubuntu Mono";
+}
+.history {
+  width: 100%;
+  margin: 0.125em 0;
+  padding: 0.25em;
+  display: grid;
+  gap: 0px 1em;
+  grid-template-columns: 1.5fr 2fr 1fr 1.625fr;
+  text-align: center;
+  color: white;
+}
+.history.header sup {
+  display:block;
+}
+.history.header span {
+  text-decoration: underline;
+  text-decoration-style: double;
+}
+.history.balance {
+  background: rgb(0,89,255);
+  background: linear-gradient(90deg, rgba(0,89,255,1) 0%, rgba(0,89,255,0) 100%);
+}
+.history.balance:hover {
+  background: rgb(50,122,255);
+  background: linear-gradient(90deg, rgba(50,122,255,1) 0%, rgba(50,122,255,0) 100%);
+  cursor: pointer;
+}
+.history.transaction:nth-of-type(even) {
+  background: rgb(89,89,89);
+  background: linear-gradient(270deg, rgba(89,89,89,1) 0%, rgba(89,89,89,0) 100%);
+}
+.history.transaction:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.history.transaction > div:first-child {
+  max-width: 12em;
+}
+.history > div:first-child, .history > div:last-child {
+  text-align: right;
+}
+
+.glow {
+  text-shadow: 0 0 0.125em #0059ff, 0 0 0.25em #0059ff;
+}
+.bright {
+  color: white;
+}
+.dim {
+  color: darkgray;
+}
+.dull {
+  color: gray;
+}
+.big {
+  font-size: 4em;
+}
+.large {
+  font-size: 2em;
+}
+.small {
+  font-size: 0.875em;
+}
+.tiny {
+  font-size: 0.75em;
+}
+
+.displayspace {
+  font-family: Roboto;
+}
+.monospace {
+  font-family: "Ubuntu Mono";
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+.double-underline {
+  text-decoration-line: underline;
+  text-decoration-style: double;
+}
+.bold {
+  font-weight: bold;
+}
+
+.blue-top-dashed {
+  border-top: 0.0625em dashed #0059ff;
+  padding: 0.25em;
+}
+
+.h-sep {
+  margin: 0 0.5em;
+}
+.h-sep:after {
+  content: '•';
+}
+.v-sep {
+  margin: 0.25em 0;
+  padding: 0.25em;
+  border-top: 0.0625em dashed #0059ff;
+}
+
+.text-ellipses {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+.loading, .error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5em 0 2em 0;
+  font-family: Roboto;
+}
+.pagination ul {
+  display: flex;
+  color: #ddd;
+  flex-direction: row;
+  border-radius: 5px;
+  border: 1px solid #666;
+}
+.pagination ul li {
+  display: flex;
+  cursor: pointer;
+  padding: 6px 8px;
+  user-select: none;
+  text-align: center;
+  align-items: center;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  justify-content: center;
+  -webkit-user-select: none;
+  border-right: 1px solid #666;
+}
+.pagination ul li:last-child {
+  border: none;
+}
+.pagination .pres_pg {
+  background: #0059ff;
+  font-weight: bold;
+  cursor: default;
+  color: #333;
+}
+.pagination .not_active {
+  cursor: default;
+  color: #666;
+}
+@media (max-width: 500px) {
+  .pagination ul li {
+    padding: 6px 7x;
+    font-size: 0.9rem;
+  }
+}
