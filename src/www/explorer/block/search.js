@@ -1,17 +1,17 @@
 
 import { useMochimapApi, useQuery, useWindowSize } from 'MochiMapHooks';
 import { mcm, preBytes } from 'MochiMapUtils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import Moment from 'moment';
 import Pagination from '../Pagination';
 
 export default function Blocks () {
-  const basePath = '/block/search?';
   const history = useHistory();
   const query = useQuery({ page: 1 });
-  const initialRequest = basePath + query.toString();
-  const [blocks, getBlocks, setBlocks] = useMochimapApi(initialRequest);
+  const [blocks, requestBlocks, setBlocks] =
+    useMochimapApi('/block/search', query.toString());
+  const [init, setInit] = useState(true);
   const { width } = useWindowSize();
   const paginate = (newpage) => {
     // update current state in history
@@ -19,14 +19,12 @@ export default function Blocks () {
       json: JSON.stringify(blocks.data),
       scroll: document.body.scrollTop
     });
-    // delete current results
-    if (blocks.data?.results?.length) blocks.data.results.length = 0;
     // update 'page' search parameter
     query.set('page', newpage);
     // push a new history path
     history.push({ search: '?' + query.toString() });
     // request new search results
-    getBlocks(basePath + query.toString());
+    requestBlocks(newpage, query.toString());
     // smooth scroll back to the top for new results
     document.body.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -42,6 +40,11 @@ export default function Blocks () {
         if (state?.scroll) document.body.scrollTo({ top: state.scroll });
       } catch (error) { console.error(error); }
     };
+    // request search
+    if (init) {
+      requestBlocks(1);
+      setInit(false);
+    }
   });
 
   return (

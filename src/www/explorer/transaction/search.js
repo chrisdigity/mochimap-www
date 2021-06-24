@@ -1,26 +1,22 @@
 
 import { useMochimapApi, useQuery, useWindowSize } from 'MochiMapHooks';
 import { mcm } from 'MochiMapUtils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import Pagination from '../Pagination';
 
-const modifyQuery = (query) => {
-  return query.replace(/txid=/, 'txid:begins=');
-};
-
 export default function Transactions () {
-  const basePath = '/transaction/search?';
   const history = useHistory();
   const query = useQuery({ page: 1 });
-  const initialRequest = basePath + modifyQuery(query.toString());
-  const [txs, getTxs, setTxs] = useMochimapApi(initialRequest);
+  const [txs, requestTxs, setTxs] =
+    useMochimapApi('/transaction/search', query.toString());
+  const [init, setInit] = useState(true);
   const { width } = useWindowSize();
   const paginate = (newpage) => {
     // update current state in history
     history.replace({ search: '?' + query.toString() }, {
       json: JSON.stringify(txs.data),
-      scroll: document.body.scrollTop
+      scroll: document.body.scrollTops
     });
     // delete current results
     if (txs.data?.results?.length) txs.data.results.length = 0;
@@ -29,7 +25,7 @@ export default function Transactions () {
     // push a new history path
     history.push({ search: '?' + query.toString() });
     // request new search results
-    getTxs(basePath + modifyQuery(query.toString()));
+    requestTxs(newpage, query.toString());
     // smooth scroll back to the top for new results
     document.body.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -45,6 +41,11 @@ export default function Transactions () {
         if (state?.scroll) document.body.scrollTo({ top: state.scroll });
       } catch (error) { console.error(error); }
     };
+    // request search
+    if (init) {
+      requestTxs(1);
+      setInit(false);
+    }
   });
 
   return (

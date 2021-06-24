@@ -1,15 +1,96 @@
 
 import { useMochimapApi } from 'MochiMapHooks';
-import { capitalize, mcm, preBytes } from 'MochiMapUtils';
+import { capitalize, isDefaultTag, mcm, preBytes } from 'MochiMapUtils';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import TxList from '../TxList';
+import Pagination from '../Pagination';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
+const DateOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+};
+
+function Transactions ({ src, srcType }) {
+  const [init, setInit] = useState(true);
+  const [txs, requestTxs] = useMochimapApi('/transaction/search');
+  let lastDateString;
+
+  useEffect(() => {
+    if (init) {
+      requestTxs(1, `${srcType}:begins=${src}`);
+      setInit(false);
+    }
+  }, [src, srcType, requestTxs]);
+
+  return (
+    <div className='bdet_trans'>
+      <div className='bdet_list_items'>
+        {srcType === '_id' && <p>Block Transactions</p>}
+        {(txs.loading && (
+          <div>
+            <FontAwesomeIcon icon={faSpinner} pulse />
+            <span> Loading transactions...</span>
+          </div>
+        )) || (!txs.data?.results?.length && (
+          <div>ϟ No transactions...</div>
+        ))}
+        {txs.data?.results?.map((item, index) => {
+          const date = item.timestamp ? new Date(item.timestamp * 1000) : null;
+          const dateString = date?.toLocaleDateString(undefined, DateOptions) ||
+            'Unknown Date';
+          const showDate = Boolean(dateString !== lastDateString);
+          if (showDate) lastDateString = dateString;
+          if (srcType === '_id') {
+            if (!isDefaultTag(item.srctag)) item.srcaddr = item.srctag;
+            if (!isDefaultTag(item.dsttag)) item.dstaddr = item.dsttag;
+            if (!isDefaultTag(item.chgtag)) item.chgaddr = item.chgtag;
+            return (
+              <Link to={'/explorer/transaction/' + item.txid} key={index}>
+                <ul className='bdet_list_txe'>
+                  <li className='txid'>ϟ {item.txid}</li>
+                  <li className='src'>
+                    {item.srcaddr === item.srctag ? 'τ-' : 'ω+'}{item.srcaddr}
+                  </li>
+                  <li className='arrow'>➟</li>
+                  <li className='chg'>
+                    {item.chgaddr === item.chgtag ? 'τ-' : 'ω+'}{item.chgaddr}
+                  </li>
+                  <li className='amount'>{mcm(item.changetotal)}</li>
+                  <li className='dst'>&nbsp;⤷&nbsp;
+                    {item.dstaddr === item.dsttag ? 'τ-' : 'ω+'}{item.dstaddr}
+                  </li>
+                  <li className='amount'>{mcm(item.sendtotal)}</li>
+                </ul>
+              </Link>
+            );
+          }
+        })}
+      </div>
+      <Pagination
+        page={txs.page || 1}
+        pages={txs.data.pages || 1}
+        paginate={requestTxs}
+        range={2}
+      />
+    </div>
+  );
+}
+
 export default function Block () {
   const { bnum } = useParams();
-  const [block] = useMochimapApi('/block/' + bnum);
+  const [init, setInit] = useState(true);
+  const [block, requestBlock] = useMochimapApi('/block/' + bnum);
 
+  useEffect(() => {
+    if (init) {
+      requestBlock();
+      setInit(false);
+    }
+  }, [init, setInit]);
   return (
     <div className='b_det'>
       <div className='b_det_inn'>
@@ -113,7 +194,9 @@ export default function Block () {
               </li>
             )}
           </ul>
-          <TxList src={block.data?._id} srcType='_id' />
+          {block.data?._id && (
+            <Transactions src={block.data?._id} srcType='_id' />
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,7 @@
 
-export const defaultTag = '420000000e00000001000000';
+export function isDefaultTag (tag) {
+  return tag === '420000000e00000001000000';
+}
 
 export function capitalize (str) {
   return str.length ? str[0].toUpperCase() + str.slice(1) : '';
@@ -10,36 +12,42 @@ export function integerRange (start, end, arr = []) {
   return Array.from({ length: end - start + 1 }, (_, i) => i + parseInt(start));
 }
 
-export function mcm (bignum, locale = true, prefixType = 1) {
-  if (typeof prefixType !== 'number') prefixType = 1;
+export function mcm (bignum, locale = true, suffixType = 1, unitType = 1) {
+  const unit = ['', 'MCM', 'Mochimo'];
+  const suffix = [
+    ['', '', ''],
+    ['', 'η', 'Nano'],
+    ['', 'κ', 'Thousand'],
+    ['', '𝕄', 'Million']
+  ];
+  let metric = 0;
+  let negative = '';
+  if (typeof suffixType !== 'number') suffixType = 1;
   if (typeof locale !== 'number') locale = Boolean(locale);
   bignum = Number(bignum);
-  let unit = [
-    ['MCM', 'MCM', 'Mochimo'],
-    ['MCM', 'ηMCM', 'nano-Mochimo'],
-    ['MCM', 'κMCM', 'thousand-Mochimo'],
-    ['MCM', '𝕄MCM', 'million-Mochimo']
-  ];
-  if (bignum > 1e+15 && prefixType > 0) {
+  if (bignum < 0) {
+    negative = '-';
+    bignum = Math.abs(bignum);
+  }
+  if (bignum > 1e+15 && suffixType > 0) {
     if (typeof locale !== 'number') locale = 1;
     bignum /= 1e+15;
-    unit = unit[3];
-  } else if (bignum > 1e+12 && prefixType > 0) {
+    metric = 3;
+  } else if (bignum > 1e+12 && suffixType > 0) {
     if (typeof locale !== 'number') locale = 2;
     bignum /= 1e+12; // thousand-MCM
-    unit = unit[2];
-  } else if (bignum < 1e+5) {
-    unit = unit[1];
-  } else {
-    bignum /= 1e+9;
-    unit = unit[0];
-  }
+    metric = 2;
+  } else if (bignum < 1e+6) metric = 1;
+  else bignum /= 1e+9;
   if (locale) {
-    bignum = typeof locale !== 'number'
-      ? bignum.toLocaleString()
-      : bignum.toLocaleString(undefined, { maximumFractionDigits: locale });
+    bignum = typeof locale !== 'number' ? bignum.toLocaleString()
+      : bignum.toLocaleString(undefined, {
+        minimumFractionDigits: locale,
+        maximumFractionDigits: locale
+      });
   }
-  return `${bignum} ${unit[bignum === '0' ? 0 : prefixType]}`;
+  if (bignum === '0') suffixType = 0;
+  return `${negative}${bignum}${suffix[metric][suffixType]} ${unit[unitType]}`;
 }
 
 export function preBytes (bytes, forceindex, nolocale) {

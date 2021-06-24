@@ -1,6 +1,6 @@
 
 import { useMochimapApi } from 'MochiMapHooks';
-import { defaultTag, mcm } from 'MochiMapUtils';
+import { isDefaultTag, mcm } from 'MochiMapUtils';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Pagination from './Pagination';
@@ -19,16 +19,31 @@ const TimeOptions = {
   minute: '2-digit'
 };
 
+/*
+// push simple transaction history to historyJSON~
+// when src === chg; 1 of 2 simple transactions take place...
+/// add from src to dst at sendtotal, if sendtotal or !changetotal
+/// add from src to chg at changetotal, if changetotal
+// when src !== chg; 1 OR 2 simple transactions take place...
+/// add from src to dst at sendtotal, if sendtotal
+/// add from src to chg at changetotal, if changetotal
+const { txid, srctag, dsttag, chgtag, sendtotal, changetotal } = txe;
+const src = srctag === Mochimo.DEFAULT_TAG ? txe.srcaddr : srctag;
+const dst = dsttag === Mochimo.DEFAULT_TAG ? txe.dstaddr : dsttag;
+const chg = chgtag === Mochimo.DEFAULT_TAG ? txe.chgaddr : chgtag;
+*/
+
 export default function TxList ({ src, srcType }) {
-  const [page, setPage] = useState(1);
-  const [txs, reqTxs] = useMochimapApi();
+  const [init, setInit] = useState(true);
+  const [txs, requestTxs] = useMochimapApi('/transaction/search');
   let lastDateString;
 
   useEffect(() => {
-    return srcType === '_id'
-      ? reqTxs(`/transaction/search?${srcType}:begins=${src}&page=${page}`)
-      : reqTxs(`/history/${src}?page=${page}`);
-  }, [page, src, srcType, reqTxs]);
+    if (init) {
+      requestTxs(1, `${srcType}:begins=${src}`);
+      setInit(false);
+    }
+  }, [src, srcType, requestTxs]);
 
   return (
     <div className='bdet_trans'>
@@ -51,9 +66,9 @@ export default function TxList ({ src, srcType }) {
           const showDate = Boolean(dateString !== lastDateString);
           if (showDate) lastDateString = dateString;
           if (srcType === '_id') {
-            if (item.srctag !== defaultTag) item.srcaddr = item.srctag;
-            if (item.dsttag !== defaultTag) item.dstaddr = item.dsttag;
-            if (item.chgtag !== defaultTag) item.chgaddr = item.chgtag;
+            if (!isDefaultTag(item.srctag)) item.srcaddr = item.srctag;
+            if (!isDefaultTag(item.dsttag)) item.dstaddr = item.dsttag;
+            if (!isDefaultTag(item.chgtag)) item.chgaddr = item.chgtag;
             return (
               <>
                 <Link to={'/explorer/transaction/' + item.txid} key={index}>
@@ -123,9 +138,9 @@ export default function TxList ({ src, srcType }) {
         })}
       </div>
       <Pagination
-        page={page || 1}
-        pages={txs.data?.pages || 1}
-        paginate={(p) => { setPage(p); delete txs.data.results; }}
+        page={txs.data.page || 1}
+        pages={txs.data.pages || 1}
+        paginate={requestTxs}
         range={2}
       />
     </div>

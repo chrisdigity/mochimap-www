@@ -1,5 +1,6 @@
 
 import { useWindowSize, useMochimapApi } from 'MochiMapHooks';
+import { useEffect, useState } from 'react';
 import { preBytes, mcm } from 'MochiMapUtils';
 import { Link } from 'react-router-dom';
 import Searchpage from './Searchpage';
@@ -27,8 +28,17 @@ Moment.updateLocale('en', {
 
 export default function Explorer () {
   const { width } = useWindowSize();
-  const [block] = useMochimapApi('/block/search');
-  const [tx] = useMochimapApi('/transaction/search');
+  const [init, setInit] = useState(true);
+  const [block, requestBlock] = useMochimapApi('/block/search');
+  const [tx, requestTx] = useMochimapApi('/transaction/search');
+
+  useEffect(() => {
+    if (init) {
+      requestBlock(1);
+      requestTx(1);
+      setInit(false);
+    }
+  }, [init, setInit, requestBlock, requestTx]);
 
   return (
     <div className='home'>

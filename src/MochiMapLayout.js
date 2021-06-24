@@ -2,7 +2,7 @@
 import Moment from 'moment';
 import { RouteList } from './MochiMapRoutes';
 import React, { Component } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCloudflare,
@@ -15,9 +15,11 @@ export function Header () { return null; }
 export function Navbar () {
   return (
     <div className='navbar'>
-      <div className='logo'>
-        MochiMap
-      </div>
+      <Link to='/explorer'>
+        <div className='logo'>
+          MochiMap
+        </div>
+      </Link>
       <div className='navbar_small no_small_nav'>
         <nav className='navlinks'>
           {RouteList.filter(route => route.text).map((item, index) =>

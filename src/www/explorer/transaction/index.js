@@ -1,13 +1,22 @@
 
 import { useMochimapApi } from 'MochiMapHooks';
-import { defaultTag, mcm } from 'MochiMapUtils';
+import { isDefaultTag, mcm } from 'MochiMapUtils';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 export default function Transaction () {
   const { txid } = useParams();
-  const [tx] = useMochimapApi('/transaction/' + txid);
+  const [init, setInit] = useState(true);
+  const [tx, requestTx] = useMochimapApi('/transaction/' + txid);
+
+  useEffect(() => {
+    if (init) {
+      requestTx();
+      setInit(false);
+    }
+  }, [init, setInit, requestTx]);
 
   return (
     <div className='tr_det'>
@@ -35,7 +44,7 @@ export default function Transaction () {
             </li>
             <li>
               <p>Source</p>
-              {tx.data?.srctag !== defaultTag && tx.data?.srctag && (
+              {!isDefaultTag(tx.data?.srctag) && tx.data?.srctag && (
                 <p>
                   <Link to={`/explorer/ledger/tag/${tx.data?.srctag}`}>
                     τ-{tx.data?.srctag}
@@ -52,7 +61,7 @@ export default function Transaction () {
             </li>
             <li>
               <p>Destination</p>
-              {tx.data?.dsttag !== defaultTag && tx.data?.dsttag && (
+              {!isDefaultTag(tx.data?.dsttag) && tx.data?.dsttag && (
                 <p>
                   <Link to={`/explorer/ledger/tag/${tx.data?.dsttag}`}>
                     τ-{tx.data?.dsttag}
@@ -69,7 +78,7 @@ export default function Transaction () {
             </li>
             <li>
               <p>Change</p>
-              {tx.data?.chgtag !== defaultTag && tx.data?.chgtag && (
+              {!isDefaultTag(tx.data?.chgtag) && tx.data?.chgtag && (
                 <p>
                   <Link to={`/explorer/ledger/tag/${tx.data?.chgtag}`}>
                     τ-{tx.data?.chgtag}

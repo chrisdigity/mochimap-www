@@ -3,23 +3,42 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-export function useMochimapApi (initialPath) {
-  const api = 'https://api.mochimap.com';
+export function useMochimapApi (initPath, initQuery, initPage, init) {
+  const api = 'https://de.mochimap.com';
   const [data, setData] = useState({});
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [path, setPath] = useState(initialPath);
+  const [execute, setExecute] = useState(init);
+  const [page, setPage] = useState(initPage);
+  const [path, setPath] = useState(initPath);
+  const [query, setQuery] = useState(initQuery);
+  const clear = (obj) => setData(obj || {});
+  const request = (newPage, newQuery, newPath) => {
+    if (newPage) setPage(newPage);
+    if (newQuery) setQuery(newQuery);
+    if (newPath) setPath(newPath);
+    setExecute(true);
+  };
+
   useEffect(() => {
-    if (!path) return;
-    setError(false);
-    setLoading(true);
-    fetch(api + path)
-      .then(response => response.json())
-      .then(json => { if (json?.error) setError(true); setData(json); })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [path]);
-  return [{ data, loading, error }, setPath, setData];
+    // ensure request has a path
+    if (execute && path) {
+      // set indicators
+      setExecute(false); setError(false); setLoading(true);
+      // build querystring
+      let search = new URLSearchParams(query);
+      if (page) search.set('page', page);
+      search = search.toString();
+      if (search) search = '?' + search;
+      console.log('request', api + path + search);
+      fetch(api + path + search)
+        .then(response => response.json())
+        .then(json => { if (json?.error) setError(true); setData(json); })
+        .catch(() => setError(true))
+        .finally(() => setLoading(false));
+    }
+  }, [execute]);
+  return [{ data, loading, error, clear, page }, request];
 }
 
 export function useQuery (defaults = {}) {

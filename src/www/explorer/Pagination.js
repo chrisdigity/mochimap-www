@@ -2,15 +2,17 @@
 import { useWindowSize } from 'MochiMapHooks';
 import { integerRange } from 'MochiMapUtils';
 
-export default function Pagination ({ page, pages, paginate, range = 4 }) {
+export default function Pagination
+({ title, page, pages, paginate, range = 4 }) {
   const { width } = useWindowSize();
   // interpret page variables as numbers and caculate page start/end
   const [currentPage, lastPage, firstPage] = [Number(page), Number(pages), 1];
   const pageStart = Math.max(currentPage - range, firstPage);
   const pageEnd = Math.min(pageStart + (range * 2), lastPage);
 
-  return (
-    <div className='more_result'>
+  return pages <= 1 ? null : (
+    <div className='pagination'>
+      <div className='dull'>{title}</div>
       <ul>
         {currentPage <= firstPage ? (<li className='not_active'>|⇠</li>) : (
           <li onClick={() => paginate(firstPage)}>|⇠</li>
@@ -23,7 +25,7 @@ export default function Pagination ({ page, pages, paginate, range = 4 }) {
         )}
         {integerRange(pageStart, pageEnd).map((page, i, array) =>
           currentPage === page ? (
-            <li className='pres_pg not_active' key={page}>{page}</li>
+            <li className='pres_pg' key={page}>{page}</li>
           ) : (
             <li key={page} onClick={() => paginate(page)}>
               {i === 0 && page > firstPage && '...'}
