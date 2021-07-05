@@ -1,10 +1,8 @@
 
 import { useMemo, useState } from 'react';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
-import { Paper } from '@material-ui/core';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { Paper, ScopedCssBaseline, useMediaQuery } from '@material-ui/core';
 // import app-components
 import Nopage from './app/component/Nopage';
 import Header from './app/component/Header';
