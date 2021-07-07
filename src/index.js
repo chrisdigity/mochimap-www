@@ -1,15 +1,15 @@
 
 import { StrictMode } from 'react';
+import { Provider } from 'react-redux';
 import { render } from 'react-dom';
-import { ApiProvider } from '@reduxjs/toolkit/query/react';
-import MochimapApi from './app/service/mochimap-api';
+import { Store } from './store';
 import App from './App';
 
 render(
-  <ApiProvider api={MochimapApi}>
+  <Provider store={Store}>
     <StrictMode>
       <App />
     </StrictMode>
-  </ApiProvider>,
+  </Provider>,
   document.getElementById('root')
 );
