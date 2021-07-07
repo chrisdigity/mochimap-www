@@ -1,160 +1,91 @@
 
-import Moment from 'moment';
-import { RouteList } from './MochiMapRoutes';
-import React, { Component } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCloudflare,
-  faDiscord,
-  faGithub
-} from '@fortawesome/free-brands-svg-icons';
+  AppBar,
+  IconButton,
+  Link,
+  Toolbar,
+  Typography,
+  useScrollTrigger
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import ThemeTypeButton from './ThemeTypeButton';
 
-export function Header () { return null; }
+const useStyles = makeStyles((theme) => ({
+  root: {
+    color: 'white',
+    background: '',
+    transition: 'min-height 250ms',
+    '& *': {
+      color: 'inherit'
+    }
+  },
+  grow: {
+    'flex-grow': 1
+  },
+  menuButton: {
+    margin: 0,
+    padding: 0,
+    [theme.breakpoints.up('sm')]: {
 
-export function Navbar () {
+    },
+    '&:hover': {
+      background: 'none'
+    },
+    '& .logo': {
+      display: 'inline-block',
+      width: theme.spacing(6),
+      height: theme.spacing(6),
+      verticalAlign: 'middle'
+    },
+    '& .title': {
+      position: 'relative',
+      top: -theme.spacing(0.5),
+      left: -theme.spacing(1.5),
+      'font-family': 'Nanum Brush Script',
+      'font-size': '1.75em',
+      'font-weight': 'bold'
+    }
+  },
+  navItem: {
+    marginLeft: theme.spacing(1)
+  }
+}));
+
+export default function Header ({ routelist, setThemeType }) {
+  const classes = useStyles();
+  const toolbarVariant = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 100
+  }) ? 'dense' : 'regular';
+
   return (
-    <div className='navbar'>
-      <Link to='/explorer'>
-        <div className='logo'>
-          MochiMap
-        </div>
-      </Link>
-      <div className='navbar_small no_small_nav'>
-        <nav className='navlinks'>
-          {RouteList.filter(route => route.text).map((item, index) =>
-            <NavLink
-              activeClassName='nav_selected'
-              to={item.path || '/'}
-              key={index}
-            >{item.text}
-            </NavLink>)}
-        </nav>
-      </div>
-      <div className='rgtSect'>
-        <nav className='navlinks'>
-          {RouteList.filter(route => route.text).map((item, index) =>
-            <NavLink
-              activeClassName='nav_selected'
-              to={item.path || '/'}
-              key={index}
-            >{item.text}
-            </NavLink>)}
-        </nav>
-        <div className='menu_butt'>
-          <div className='mbutt' />
-        </div>
-      </div>
-    </div>
+    <>
+      <AppBar position='fixed'>
+        <Toolbar className={classes.root} variant={toolbarVariant}>
+          <IconButton className={classes.menuButton} aria-label='MochiMap Menu'>
+            <img
+              className='logo'
+              alt='MochiMap Logo'
+              src='/img/logo-kanji-brushed.png'
+            />
+            <span className='title'>ochiMap</span>
+          </IconButton>
+          <Typography>
+            {routelist.filter(route => route.text).map((item, i) =>
+              <Link
+                className={classes.navItem}
+                href={item.path || '/'}
+                variant='h6'
+                key={i}
+              >{item.text}
+              </Link>
+            )}
+          </Typography>
+          <div className={classes.grow} />
+          <ThemeTypeButton setThemeType={setThemeType} />
+        </Toolbar>
+      </AppBar>
+      <Toolbar />
+    </>
   );
-}
-
-export class Footer extends Component {
-  constructor (props) {
-    super(props);
-    this.state = {
-      timeHr: Moment().locale('fr').format('hh').toString(),
-      timeMin: Moment().locale('fr').format('mm').toString(),
-      timeA: Moment().locale('fr').format('a').toString()
-    };
-  }
-
-  tick () {
-    this.state = {
-      timeHr: Moment().locale('fr').format('hh').toString(),
-      timeMin: Moment().locale('fr').format('mm').toString(),
-      timeA: Moment().locale('fr').format('a').toString()
-    };
-  }
-
-  componentDidMount () {
-    this.interval = setInterval(this.tick, 1000);
-  }
-
-  componentWillUnmount () {
-    clearInterval(this.interval);
-  }
-
-  render () {
-    const tmHr = this.state.timeHr;
-    const tmMn = this.state.timeMin;
-    const tmA = this.state.timeA;
-    const today = Moment().format('dddd, MMMM D, YYYY');
-    return (
-      <footer className='footer'>
-        <div className='ft_sect1'>
-          <div className='ft_1'>
-            <div className='ft_det'>
-              <p>Mochimap</p>
-              <p>
-                Mochimo network<br />
-                Open source explorer
-              </p>
-            </div>
-            <div className='mo_link'>
-              <a
-                target='_blank'
-                rel='noopener noreferrer'
-                href='https://mochimo.org'
-              >www.mochimo.org
-              </a>
-            </div>
-            <ul className='rights'>
-              <li>©2021 Mochimap</li>
-            </ul>
-          </div>
-          <div className='ft_2'>
-            <div className='ft_det'>
-              <p><sup>by</sup> Chrisd̕ìͤ͞g̷ͭ̚i̧t҉̶̡̳y</p>
-            </div>
-            <div className='ft_link'>
-              <a
-                target='_blank'
-                rel='noopener noreferrer'
-                href='https://www.cloudflare.com'
-              >
-                <i><FontAwesomeIcon icon={faCloudflare} size='lg' /></i>
-                <p>Protected by Cloudflare</p>
-              </a>
-              <a
-                target='_blank'
-                rel='noopener noreferrer'
-                href='https://github.com/chrisdigity/mochimap.com'
-              >
-                <i><FontAwesomeIcon icon={faGithub} size='lg' /></i>
-                <p>Contribute on Github</p>
-              </a>
-              <a
-                target='_blank'
-                rel='noopener noreferrer'
-                href='https://discord.gg/7ma6Bk2'
-              >
-                <i><FontAwesomeIcon icon={faDiscord} size='lg' /></i>
-                <p>Contact in Discord</p>
-              </a>
-            </div>
-            <ul className='rights'>
-              <li>Terms</li>
-              <li>Privacy</li>
-            </ul>
-          </div>
-        </div>
-        <div className='ft_3'>
-          <div className='ft_clock_cont'>
-            <ul className='ft_clock'>
-              <li>{tmHr}</li>
-              <li>:</li>
-              <li>
-                {tmMn} {tmA}
-              </li>
-            </ul>
-            <div className='ft_date'>{today}</div>
-          </div>
-          <div className='backUp'>
-            <div className='backUp_inn'>⇡</div>
-          </div>
-        </div>
-      </footer>
-    );
-  }
 }
