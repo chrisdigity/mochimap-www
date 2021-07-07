@@ -1,76 +1,135 @@
-$(document).ready(function () {
-  var container,
-    camera,
-    scene,
-    renderer,
-    particles,
-    particle,
-    SEPARATION = 40,
-    AMOUNTX = 200,
-    AMOUNTY = 35,
-    count = 0,
-    windowHalfX = window.innerWidth / 2,
-    windowHalfY = window.innerHeight / 2;
-  function init() {
-    (container = document.createElement("div")),
-      document.getElementById("display").appendChild(container),
-      container &&
-        (container.className += container.className ? " waves" : "waves"),
-      ((camera = new THREE.PerspectiveCamera(
-        120,
-        window.innerWidth / window.innerHeight,
-        1,
-        1e4
-      )).position.y = 300),
-      (camera.position.z = 300),
-      (camera.rotation.x = 0.35),
-      (scene = new THREE.Scene()),
-      (particles = new Array());
-    for (
-      var e = 2 * Math.PI,
-        n = new THREE.SpriteCanvasMaterial({
-          color: 9671571,
-          program: function (n) {
-            n.beginPath(), n.arc(0, 0, 0.1, 0, e, !0), n.fill();
-          },
-        }),
-        i = 0,
-        r = 0;
-      r < AMOUNTX;
-      r++
-    )
-      for (var a = 0; a < AMOUNTY; a++)
-        ((particle = particles[i++] = new THREE.Sprite(n)).position.x =
-          r * SEPARATION - (AMOUNTX * SEPARATION) / 2),
-          (particle.position.z = a * SEPARATION - (AMOUNTY * SEPARATION - 10)),
-          scene.add(particle);
-    (renderer = new THREE.CanvasRenderer()).setSize(
-      window.innerWidth,
-      window.innerHeight
-    ),
-      renderer.setClearColor(1118481, 1),
-      container.appendChild(renderer.domElement),
-      window.addEventListener("resize", onWindowResize, !1);
+
+import * as THREE from 'three';
+
+import { useEffect, useRef, useState } from 'react';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    '& > canvas': {
+      'z-index': -1,
+      position: 'relative'
+    }
   }
-  function onWindowResize() {
-    (windowHalfX = window.innerWidth / 2),
-      (windowHalfY = window.innerHeight / 2),
-      (camera.aspect = window.innerWidth / window.innerHeight),
-      camera.updateProjectionMatrix(),
-      renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-  function animate() {
-    requestAnimationFrame(animate), render();
-  }
-  function render() {
-    for (var e = 0, n = 0; n < AMOUNTX; n++)
-      for (var i = 0; i < AMOUNTY; i++)
-        ((particle = particles[e++]).position.y =
-          20 * Math.sin(0.5 * (n + count)) + 20 * Math.sin(0.5 * (i + count))),
-          (particle.scale.x = particle.scale.y =
-            4 * (Math.sin(0.3 * (n + count)) + 2) +
-            4 * (Math.sin(0.5 * (i + count)) + 1));
-    renderer.render(scene, camera), (count += 0.2);
-  }
-  init(), animate();
-});
+}));
+
+// initialize wave effect variables
+const NEAR = 1;
+const FAR = 2200;
+const AMOUNTX = 60;
+const AMOUNTZ = 20;
+const SEPARATION = 60;
+// initialize scene, camera, renderer and particle array
+const SCENE = new THREE.Scene();
+const CAMERA = new THREE.PerspectiveCamera(
+  75, window.innerWidth / window.innerHeight, NEAR, FAR);
+const RENDERER = new THREE.WebGLRenderer({ antialias: true });
+
+export default function BackgroundWave () {
+  const classes = useStyles();
+  const theme = useTheme();
+  const mount = useRef();
+
+  const [init, setInit] = useState(false);
+
+  useEffect(() => {
+    if (!init) {
+      setInit(true);
+      // initialize wave effect variables
+      let count = 0;
+      let windowHalfX, windowHalfY, windowAspect, mouseX, mouseY;
+      // initialize particle array
+      const POINTS = new Array(AMOUNTX * AMOUNTZ);
+      // initialize reusable geometry and mesh for points
+      const POINTGEOMETRY = new THREE.SphereGeometry(10, 32, 32);
+      const POINTMATERIAL = new THREE.MeshPhongMaterial({
+        color: 0xffffff,
+        specular: 0x929292,
+        shininess: 0
+      });
+      // initialize handlers
+      const handleResize = () => {
+        windowHalfX = window.innerWidth / 2;
+        windowHalfY = window.innerHeight / 2;
+        windowAspect = window.innerWidth / window.innerHeight;
+        CAMERA.aspect = windowAspect;
+        CAMERA.updateProjectionMatrix();
+        RENDERER.setSize(window.innerWidth, window.innerHeight);
+      };
+      const handlePointerMove = (event) => {
+        if (event.isPrimary === false) return;
+        mouseX = event.clientX - windowHalfX;
+        mouseY = event.clientY - windowHalfY;
+      };
+      const handleAnimation = () => {
+        window.requestAnimationFrame(handleAnimation);
+        // adjust camera based on latest mouse position
+        CAMERA.position.x = mouseX * 0.05;
+        CAMERA.position.y = mouseY * 0.1 + 200;
+        CAMERA.position.z = 1200;
+        CAMERA.lookAt(SCENE.position);
+        CAMERA.position.y += 600;
+        // adjust positions and scales of particles per trig
+        for (var ix = 0, i = 0; ix < AMOUNTX; ix++) {
+          for (var iz = 0; iz < AMOUNTZ; iz++, i++) {
+            POINTS[i].position.y =
+              (Math.sin(0.5 * (ix + count)) +
+               Math.sin(0.5 * (iz + count))) * 50;
+            POINTS[i].scale.setScalar(
+              (Math.sin((ix + count) * 0.3) +
+               Math.sin((iz + count) * 0.5) + 1) / 4
+            );
+          }
+        }
+        // render the scene from the view of camera
+        RENDERER.render(SCENE, CAMERA);
+        // increment the wave modifier
+        count += 0.025;
+      };
+      // add background and fog color to scene (as appropriate for theme)
+      const bgColor = theme?.palette?.background?.default || 'white';
+      SCENE.background = new THREE.Color(bgColor);
+      SCENE.fog = new THREE.Fog(SCENE.background.getHex(), NEAR, FAR);
+      // add lighting to the scene
+      const ambientLight = new THREE.AmbientLight(0x000000);
+      const pointLight = new THREE.PointLight(0x929292, 1);
+      pointLight.position.set(0, 1000, 0);
+      SCENE.add(ambientLight);
+      SCENE.add(pointLight);
+      // add and distribute points across the x-z plane, as spheres
+      var cx = (AMOUNTX * SEPARATION) / 2;
+      var cz = (AMOUNTZ * SEPARATION) / 2;
+      for (let ix = 0, i = 0; ix < AMOUNTX; ix++) {
+        for (let iz = 0; iz < AMOUNTZ; iz++, i++) {
+          POINTS[i] = new THREE.Mesh(POINTGEOMETRY, POINTMATERIAL);
+          POINTS[i].position.set(ix * SEPARATION - cx, 0, iz * SEPARATION - cz);
+          POINTS[i].scale.setScalar(1);
+          SCENE.add(POINTS[i]);
+        }
+      }
+      // set device pixel ratio and mount renderer to DOM
+      RENDERER.setPixelRatio(window.devicePixelRatio);
+      mount.current.appendChild(RENDERER.domElement);
+      // add event listeners
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('resize', handleResize);
+      // execute initial event handler derivative values
+      handleResize(); // initially, must execute before handlePointerMove()...
+      handlePointerMove({ clientX: windowHalfX, clientY: windowHalfY });
+      // start animation
+      window.requestAnimationFrame(handleAnimation);
+    } else {
+      // apply theme changes that may have ocurred
+      const bgColor = theme?.palette?.background?.default || '#303030';
+      SCENE.background = new THREE.Color(bgColor);
+      SCENE.fog = new THREE.Fog(SCENE.background.getHex(), NEAR, FAR);
+    }
+  }, [init, setInit, theme]);
+
+  return <div className={classes.root} ref={mount} />;
+}
