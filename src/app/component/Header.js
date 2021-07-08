@@ -64,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Header ({ routelist, setThemeType }) {
+export default function Header ({ routelist, switchTheme }) {
   const classes = useStyles();
   const toolbarVariant = useScrollTrigger({
     disableHysteresis: true,
