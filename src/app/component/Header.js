@@ -92,6 +92,7 @@ export default function Header ({ routelist, switchTheme }) {
           </Typography>
           <div className={classes.grow} />
           <ThemeButton switchTheme={switchTheme} />
+          <GitHubButton />
         </Toolbar>
       </AppBar>
       <Toolbar />
