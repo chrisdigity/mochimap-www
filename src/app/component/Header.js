@@ -8,7 +8,7 @@ import {
   useScrollTrigger
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import ThemeTypeButton from './ThemeTypeButton';
+import ThemeButton from './ThemeButton';
 import GitHubButton from './GitHubButton';
 
 const useStyles = makeStyles((theme) => ({
@@ -91,7 +91,7 @@ export default function Header ({ routelist, setThemeType }) {
             )}
           </Typography>
           <div className={classes.grow} />
-          <ThemeTypeButton setThemeType={setThemeType} />
+          <ThemeButton switchTheme={switchTheme} />
         </Toolbar>
       </AppBar>
       <Toolbar />
