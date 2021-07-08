@@ -8,9 +8,10 @@ import {
   useScrollTrigger
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import GitHubIcon from '@material-ui/icons/GitHub';
+import MochimoIcon from './MochimoIcon';
 import ThemeButton from './ThemeButton';
-import GitHubButton from './GitHubButton';
-import MochimoButton from './MochimoButton';
+import IconButtonLink from './IconButtonLink';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -93,8 +94,16 @@ export default function Header ({ routelist, switchTheme }) {
           </Typography>
           <div className={classes.grow} />
           <ThemeButton switchTheme={switchTheme} />
-          <GitHubButton />
-          <MochimoButton />
+          <IconButtonLink
+            Icon={GitHubIcon}
+            label='Contribute to MochiMap'
+            path='https://github.com/chrisdigity/mochimap-www'
+          />
+          <IconButtonLink
+            Icon={MochimoIcon}
+            label='What is Mochimo?'
+            path='https://mochimo.org'
+          />
         </Toolbar>
       </AppBar>
       <Toolbar />
