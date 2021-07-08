@@ -9,6 +9,7 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import ThemeTypeButton from './ThemeTypeButton';
+import GitHubButton from './GitHubButton';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -43,11 +44,23 @@ const useStyles = makeStyles((theme) => ({
       left: -theme.spacing(1.5),
       'font-family': 'Nanum Brush Script',
       'font-size': '1.75em',
-      'font-weight': 'bold'
+      'font-weight': 'bold',
+      'text-shadow':
+        '0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black'
     }
   },
-  navItem: {
-    marginLeft: theme.spacing(1)
+  navItems: {
+    'font-family': 'Nanum Gothic',
+    'font-weight': 'bold',
+    '& > a': {
+      marginLeft: theme.spacing(3),
+      '& > svg': {
+        marginRight: theme.spacing(0.5)
+      },
+      '& > *': {
+        verticalAlign: 'middle'
+      }
+    }
   }
 }));
 
@@ -70,14 +83,10 @@ export default function Header ({ routelist, setThemeType }) {
             />
             <span className='title'>ochiMap</span>
           </IconButton>
-          <Typography>
-            {routelist.filter(route => route.text).map((item, i) =>
-              <Link
-                className={classes.navItem}
-                href={item.path || '/'}
-                variant='h6'
-                key={i}
-              >{item.text}
+          <Typography className={classes.navItems} component='div'>
+            {routelist.filter(route => route.nav).map((item, i) =>
+              <Link href={item.path || '/'} key={i}>
+                {item.Icon ? <item.Icon /> : ''}{item.nav}
               </Link>
             )}
           </Typography>
