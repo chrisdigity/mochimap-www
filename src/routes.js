@@ -1,7 +1,6 @@
 
 import ExploreIcon from '@material-ui/icons/Explore';
 import StorefrontIcon from '@material-ui/icons/Storefront';
-import MochimoIcon from './app/component/MochimoIcon';
 // import app-pages
 import Homepage from './app/homepage';
 // import BlockSearch from './app/block-search';

@@ -10,6 +10,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import ThemeButton from './ThemeButton';
 import GitHubButton from './GitHubButton';
+import MochimoButton from './MochimoButton';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -93,6 +94,7 @@ export default function Header ({ routelist, switchTheme }) {
           <div className={classes.grow} />
           <ThemeButton switchTheme={switchTheme} />
           <GitHubButton />
+          <MochimoButton />
         </Toolbar>
       </AppBar>
       <Toolbar />
