@@ -13,7 +13,12 @@ import Header from './app/component/Header';
 import WebFont from 'webfontloader';
 WebFont.load({
   google: {
-    families: ['Nanum Brush Script:400,800', 'Nanum Gothic:400,800']
+    families: [
+      'Nanum Brush Script:400,800',
+      'Nanum Gothic:400,800',
+      'Roboto Mono:400,800',
+      'Roboto:400,800'
+    ]
   }
 });
 
