@@ -1,6 +1,5 @@
 
 import ExploreIcon from '@material-ui/icons/Explore';
-import StorefrontIcon from '@material-ui/icons/Storefront';
 // import app-pages
 import Homepage from './app/homepage';
 // import BlockSearch from './app/block-search';
@@ -24,17 +23,11 @@ export default [
     route: Explorer,
     path: '/explorer',
     Icon: ExploreIcon
-  }, //,
+  } //,
   // { path: '/ledger/richlist', route: LedgerRichlist, text: 'Richlist' },
   // { path: '/ledger/search', route: LedgerSearch },
   // { path: '/ledger/:type/:address', route: LedgerTypeAddress },
   // { path: '/transaction/mempool', route: TransactionMempool, text: 'Mempool' },
   // { path: '/transaction/search', route: TransactionSearch },
-  // { path: '/transaction/:txid', route: TransactionTXID },
-  {
-    path: 'https://merch.mochimap.com/',
-    nav: 'Mochimerch',
-    menu: 'Mochimo Merchandise',
-    Icon: StorefrontIcon
-  }
+  // { path: '/transaction/:txid', route: TransactionTXID }
 ];
