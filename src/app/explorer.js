@@ -17,7 +17,7 @@ import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles((theme) => ({
   formContainer: {
     position: 'relative',
-    height: '45vh',
+    'margin-top': '25vh',
     display: 'flex',
     'flex-direction': 'column',
     'justify-content': 'end',
@@ -25,10 +25,12 @@ const useStyles = makeStyles((theme) => ({
   },
   formTitle: {
     'font-family': 'Nanum Brush Script',
-    'font-weight': 'bold'
+    'font-weight': 'bold',
+    'white-space': 'nowrap'
   },
   form: {
-    'min-width': '450px',
+    'min-width': '400px',
+    width: '60vw',
     display: 'flex',
     padding: theme.spacing(4),
     'padding-bottom': theme.spacing(2),
@@ -41,8 +43,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Explorer () {
+  const [searchText, setSearchText] = useState();
   const [searchType, setSearchType] = useState();
   const [searchHint, setSearchHint] = useState('Type Search Query');
+  const handleSearchText = (event) => setSearchText(event.target.value);
   const handleSearchType = (event) => {
     const { value } = event.target;
     switch (value) {
@@ -69,7 +73,6 @@ export default function Explorer () {
             <Select
               native
               dir='rtl'
-              margin='normal'
               color='secondary'
               value={searchType}
               onChange={handleSearchType}
@@ -85,13 +88,14 @@ export default function Explorer () {
             </Select>
           </FormControl>
           <TextField
-            autfocus
-            margin='normal'
+            autoFocus
             className={classes.grow}
             color='secondary'
-            placeholder={`${searchHint}...`}
+            onChange={handleSearchText}
+            label={`${searchHint}...`}
             InputProps={{
-              name: 'for',
+              required: true,
+              name: searchText && 'for',
               endAdornment: (
                 <InputAdornment position='end'>
                   <IconButton type='submit' aria-label='search'>
