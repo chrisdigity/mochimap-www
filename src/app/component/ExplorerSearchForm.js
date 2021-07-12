@@ -1,90 +1,99 @@
 
-import { capitalize } from 'MochiMapUtils';
-import { useWindowSize } from 'MochiMapHooks';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import {
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  Paper,
+  Select,
+  TextField
+} from '@material-ui/core';
+import SearchIcon from '@material-ui/icons/Search';
+import { makeStyles } from '@material-ui/core/styles';
 
-export default function SearchPage () {
-  const { width } = useWindowSize();
-  const [searchIndex, setSearchIndex] = useState(1);
-  const handleClick = (e, i) => { e.preventDefault(); setSearchIndex(i); };
-  /* const sorry = (i) => window.alert(capitalize(search[i].name) +
-    ' search is currently disabled, sorry for any inconvenience.'); */
-  const search = [
-    {
-      uri: 'ledger',
-      name: 'address',
-      property: 'address',
-      placeholder: 'Type Hashed Address',
-      handleClick: (e) => handleClick(e, 0)
-    }, {
-      uri: 'block',
-      name: 'block',
-      property: 'bnum',
-      placeholder: 'Type Blockchain Block Number',
-      handleClick: (e) => handleClick(e, 1)
-    }, {
-      uri: 'ledger',
-      name: 'tag',
-      property: 'tag',
-      placeholder: 'Type Tagged Address',
-      handleClick: (e) => handleClick(e, 2)
-    }, {
-      uri: 'transaction',
-      name: 'transaction',
-      property: 'txid',
-      placeholder: 'Type Transaction ID',
-      handleClick: (e) => handleClick(e, 3)
+const useStyles = makeStyles((theme) => ({
+  root: {
+    display: 'flex',
+    position: 'relative',
+    'flex-direction': 'column',
+    'justify-content': 'end',
+    'align-items': 'center'
+  },
+  form: {
+    'min-width': '400px',
+    'padding-top': theme.spacing(1),
+    padding: theme.spacing(4),
+    width: '60vw',
+    display: 'flex',
+    background: theme.palette.divider
+  },
+  grow: {
+    'flex-grow': 1
+  }
+}));
+
+export default function ExplorerSearchForm () {
+  const [searchText, setSearchText] = useState();
+  const [searchType, setSearchType] = useState();
+  const [searchHint, setSearchHint] = useState('Type Search Query');
+  const handleSearchText = (event) => setSearchText(event.target.value);
+  const handleSearchType = (event) => {
+    const { value } = event.target;
+    switch (value) {
+      case 'block': setSearchHint('Type Block Number'); break;
+      case 'transaction': setSearchHint('Type Transaction ID'); break;
+      case 'address': setSearchHint('Type WOTS+ Address'); break;
+      case 'tag': setSearchHint('Type Tagged Address'); break;
+      case 'network': setSearchHint('Type IPv4 Address'); break;
+      default: setSearchHint('Type Search Query');
     }
-  ];
+    setSearchType(value);
+  };
+
+  const classes = useStyles();
 
   return (
-    <div className='explorer'>
-      <div className='explorer_inner'>
-        <div className='explorer_header'>
-          {width > 500 ? 'Mochimo Blockchain Explorer' : 'Mochimo Explorer'}
-        </div>
-        <div className='explorer_filter'>
-          <ul className='explorer_options'>
-            {search.map((item, index) =>
-              <Link
-                onClick={item.handleClick}
-                style={searchIndex === index ? {
-                  color: '#fff',
-                  letterSpacinr: '0.03rem',
-                  borderBottom: '3px solid #2b0fff'
-                } : {}}
-                to='#'
-                key={index}
-              >{capitalize(item.name)}
-              </Link>
-            )}
-          </ul>
-        </div>
-        <form
-          action={'/explorer/' + search[searchIndex].uri + '/search'}
-          onSubmit={function () {
-            const text = document.forms[0][search[searchIndex].property].value;
-            document.forms[0][search[searchIndex].property].value = text.trim();
+    <form className={classes.root}>
+      <Paper className={classes.form}>
+        <FormControl>
+          <InputLabel id='search-native-label'>Search for</InputLabel>
+          <Select
+            native
+            dir='rtl'
+            color='secondary'
+            value={searchType}
+            onChange={handleSearchType}
+            labelId='search-native-label'
+            inputProps={{ name: searchType && 'search' }}
+          >
+            <option aria-label='all' />
+            <option value='block'>Block</option>
+            <option value='transaction'>Transaction</option>
+            <option value='address'>Address</option>
+            <option value='tag'>Tag</option>
+            <option value='network'>Node</option>
+          </Select>
+        </FormControl>
+        <TextField
+          autoFocus
+          className={classes.grow}
+          color='secondary'
+          onChange={handleSearchText}
+          label={`${searchHint}...`}
+          InputProps={{
+            required: true,
+            name: searchText && 'for',
+            endAdornment: (
+              <InputAdornment position='end'>
+                <IconButton type='submit' aria-label='search'>
+                  <SearchIcon />
+                </IconButton>
+              </InputAdornment>
+            )
           }}
-        >
-          <div className='explorer_search'>
-            <input
-              type='text'
-              name={search[searchIndex].property}
-              placeholder={search[searchIndex].placeholder}
-            />
-            {search[searchIndex].uri !== 'ledger' && (
-              <input type='hidden' name='page' value='1' />
-            )}
-            <button type='submit' className='search_button'>
-              Search {width > 500 && <FontAwesomeIcon icon={faSearch} />}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        />
+      </Paper>
+    </form>
   );
 }
