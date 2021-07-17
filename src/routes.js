@@ -1,10 +1,12 @@
 
 import ExploreIcon from '@material-ui/icons/Explore';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
 // import app-pages
 import Homepage from './app/homepage';
 // import BlockSearch from './app/block-search';
 // import BlockBnumBhash from './app/block-#bnum-#bhash';
 import Explorer from './app/explorer';
+import Graphs from 'app/graphs';
 // import LedgerRichlist from './app/ledger-richlist';
 // import LedgerSearch from './app/ledger-search';
 // import LedgerTypeAddress from './app/ledger-#type-#address';
@@ -23,11 +25,18 @@ export default [
     route: Explorer,
     path: '/explorer',
     Icon: ExploreIcon
-  } //,
+  },
   // { path: '/ledger/richlist', route: LedgerRichlist, text: 'Richlist' },
   // { path: '/ledger/search', route: LedgerSearch },
   // { path: '/ledger/:type/:address', route: LedgerTypeAddress },
   // { path: '/transaction/mempool', route: TransactionMempool, text: 'Mempool' },
   // { path: '/transaction/search', route: TransactionSearch },
   // { path: '/transaction/:txid', route: TransactionTXID }
+  {
+    text: 'Graphs',
+    route: Graphs,
+    path: '/graphs',
+    Icon: ShowChartIcon
+  }
+
 ];
