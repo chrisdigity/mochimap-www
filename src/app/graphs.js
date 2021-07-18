@@ -75,7 +75,6 @@ const config = {
 
 
 
-
 function Graphs() {
   const [dataSource, setDataSource] = useState([]);
   const [graphName, setgraphName] = useState("hashrate");
