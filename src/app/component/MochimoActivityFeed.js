@@ -126,7 +126,6 @@ export default function MochimoActivityFeed () {
     const stringParams = searchParams.toString();
     const types = stringParams.replace(/=&/g, ' & ').replace(/=/g, '');
     const uri = EventStreamURI + '?' + stringParams;
-    console.log(stringParams, uri);
     // compare against current state, close stream as appropriate
     if (!stringParams && params) closeStream();
     else if (stringParams && params !== stringParams) {
