@@ -14,6 +14,9 @@ export const MochimapApi = createApi({
     getBlockByNumberHash: builder.query({
       query: (number, hash) => `block/${number}/${hash}`
     }),
+    getBlocksBySearch: builder.query({
+      query: (searchParams) => `block/search?${searchParams}`
+    }),
     getChainByLatest: builder.query({
       query: () => 'chain'
     }),
@@ -26,8 +29,17 @@ export const MochimapApi = createApi({
     getLedgerByTypeAddress: builder.query({
       query: (type, address) => `ledger/${type}/${address}`
     }),
-    getTransactonByTxid: builder.query({
+    getLedgerBalanceBySearch: builder.query({
+      query: (searchParams) => `ledger/search?${searchParams}`
+    }),
+    getNodeBySearch: builder.query({
+      query: (searchParams) => `network/search?${searchParams}`
+    }),
+    getTransactionByTxid: builder.query({
       query: (txid) => `transaction/${txid}`
+    }),
+    getTransactionsBySearch: builder.query({
+      query: (searchParams) => `transaction/search?${searchParams}`
     })
   })
 });
@@ -36,8 +48,12 @@ export const {
   useGetBlockByLatestQuery,
   useGetBlockByNumberQuery,
   useGetBlockByNumberHashQuery,
+  useGetBlocksBySearchQuery,
   useGetChainByLatestQuery,
   useGetChainByNumberQuery,
   useGetLedgerByTypeAddressQuery,
-  useGetTransactonByTxidQuery
+  useGetLedgerBalanceBySearchQuery,
+  useGetNodeBySearchQuery,
+  useGetTransactionByTxidQuery,
+  useGetTransactionsBySearchQuery
 } = MochimapApi;

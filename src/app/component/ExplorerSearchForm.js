@@ -41,11 +41,11 @@ export default function ExplorerSearchForm () {
   const handleSearchType = (event) => {
     const { value } = event.target;
     switch (value) {
-      case 'block': setSearchHint('Type Block Number'); break;
+      case 'node': setSearchHint('Type IPv4 Address'); break;
+      case 'blockchain': setSearchHint('Type Block Number/Hash'); break;
       case 'transaction': setSearchHint('Type Transaction ID'); break;
       case 'address': setSearchHint('Type WOTS+ Address'); break;
       case 'tag': setSearchHint('Type Tagged Address'); break;
-      case 'network': setSearchHint('Type IPv4 Address'); break;
       default: setSearchHint('Type Search Query');
     }
     setSearchType(value);
@@ -68,11 +68,11 @@ export default function ExplorerSearchForm () {
             inputProps={{ name: searchType && 'search' }}
           >
             <option aria-label='all' />
-            <option value='block'>Block</option>
+            <option value='node'>Node</option>
+            <option value='blockchain'>Blockchain</option>
             <option value='transaction'>Transaction</option>
             <option value='address'>Address</option>
             <option value='tag'>Tag</option>
-            <option value='network'>Node</option>
           </Select>
         </FormControl>
         <TextField
