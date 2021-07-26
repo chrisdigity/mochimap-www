@@ -19,10 +19,11 @@ export default [
   // { path: '/block/:bnum/:bhash', route: BlockBnumBhash },
   // { path: '/block/:bnum', route: BlockBnumBhash },
   {
-    text: 'Explorer',
     route: Explorer,
     path: '/explorer',
-    Icon: ExploreIcon
+    Icon: ExploreIcon,
+    header: 'Explorer',
+    desc: 'Mochimo Block Explorer'
   } //,
   // { path: '/ledger/richlist', route: LedgerRichlist, text: 'Richlist' },
   // { path: '/ledger/search', route: LedgerSearch },

@@ -1,11 +1,14 @@
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   AppBar,
   Avatar,
   Badge,
+  Drawer,
   IconButton,
+  List,
+  ListItem,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -17,6 +20,7 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import GitHubIcon from '@material-ui/icons/GitHub';
+import MenuIcon from '@material-ui/icons/Menu';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import MochimoIcon from './MochimoIcon';
 import DiscordIcon from './DiscordIcon';
@@ -35,12 +39,9 @@ const useStyles = makeStyles((theme) => ({
   grow: {
     'flex-grow': 1
   },
-  menuButton: {
-    margin: 0,
-    padding: 0,
-    'text-transform': 'none',
-    '&:hover': {
-      background: 'none'
+  menu: {
+    [theme.breakpoints.up('md')]: {
+      display: 'none'
     }
   },
   logo: {
@@ -69,13 +70,16 @@ const useStyles = makeStyles((theme) => ({
     'font-family': 'Nanum Gothic',
     'font-weight': 'bold',
     '& > a': {
-      marginLeft: theme.spacing(3),
+      marginLeft: theme.spacing(1),
       '& > svg': {
         marginRight: theme.spacing(0.5)
       },
       '& > *': {
         verticalAlign: 'middle'
       }
+    },
+    [theme.breakpoints.down('sm')]: {
+      display: 'none'
     }
   },
   badge: {
@@ -104,11 +108,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Header ({ routelist, switchTheme }) {
-  const headerRef = useRef();
-  const [moreAnchorEl, setMoreAnchorEl] = useState(null);
-  const handleMoreClose = (event) => setMoreAnchorEl(null);
-  const handleMoreClick = (event) => setMoreAnchorEl(event.currentTarget);
-  const moreOpen = Boolean(moreAnchorEl);
+  const [menuAnchor, setMenuAnchor] = useState('');
+  const [moreAnchor, setMoreAnchor] = useState(null);
+  const toggleMenu = (e) => setMenuAnchor(menuAnchor ? '' : 'left');
+  const toggleMore = (e) => setMoreAnchor(moreAnchor ? null : e.currentTarget);
   const baseLocation = useLocation().pathname.replace(/^\/([a-z]*).*$/i, '$1');
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -129,79 +132,99 @@ export default function Header ({ routelist, switchTheme }) {
   ];
 
   return (
-    <>
-      <AppBar ref={headerRef} position='fixed'>
-        <Toolbar className={classes.root} variant={toolbarVariant}>
-          <Badge
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            badgeContent={(
-              <Link to={`/${baseLocation}`}>{baseLocation}</Link>
-            )}
-            classes={{ badge: classes.badge }}
-            color='secondary'
-            overlap='circle'
-          >
-            <Link to='/'>
-              <Avatar
-                alt='MochiMap Logo'
-                src='/img/logo-kanji-brushed.png'
-                className={classes.logo}
-              />
+    <AppBar position='sticky'>
+      <Toolbar className={classes.root} variant={toolbarVariant}>
+        <IconButton className={classes.menu} edge='start' onClick={toggleMenu}>
+          <MenuIcon />
+        </IconButton>
+        <Badge
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          badgeContent={<Link to={`/${baseLocation}`}>{baseLocation}</Link>}
+          classes={{ badge: classes.badge }}
+          color='secondary'
+          overlap='circle'
+        >
+          <Link to='/'>
+            <Avatar
+              alt='MochiMap Logo'
+              src='/img/logo-kanji-brushed.png'
+              className={classes.logo}
+            />
+          </Link>
+        </Badge>
+        <Typography className={classes.title}>ochiMap</Typography>
+        <Typography className={classes.navItems} component='div'>
+          {routelist.filter(route => route.header).map((item, i) => (
+            <Link to={item.path || '/'} key={i}>
+              {item.Icon && <item.Icon />}{item.header}
             </Link>
-          </Badge>
-          <Typography className={classes.title}>ochiMap</Typography>
-          <Typography className={classes.navItems} component='div'>
-            {routelist.filter(route => route.nav).map((item, i) =>
-              <Link to={item.path || '/'} key={i}>
-                {item.Icon ? <item.Icon /> : ''}{item.nav}
-              </Link>
-            )}
-          </Typography>
-          <div className={classes.grow} />
-          <ThemeButton switchTheme={switchTheme} />
-          <IconButtonLink
-            Icon={StorefrontIcon}
-            label='Mochimo Merchandise'
-            path='https://merch.mochimap.com'
-          />
-          <IconButtonLink
-            Icon={MochimoIcon}
-            label='What is Mochimo?'
-            path='https://mochimo.org'
-          />
-          <IconButton
-            aria-label='more'
-            aria-controls='more-menu'
-            aria-haspopup='true'
-            edge='end'
-            onClick={handleMoreClick}
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            id='more-menu'
-            anchorEl={moreAnchorEl}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            disableScrollLock
-            elevated={0}
-            getContentAnchorEl={null}
-            keepMounted
-            open={moreOpen}
-            onClose={handleMoreClose}
-          >
-            {menuItems.map((item, index) =>
-              <MenuItem key={index} component='a' href={item.href} dense>
-                <ListItemIcon>
-                  <item.Icon />
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </MenuItem>
-            )}
-          </Menu>
-        </Toolbar>
-      </AppBar>
-      <Toolbar />
-    </>
+          ))}
+        </Typography>
+        <div className={classes.grow} />
+        <ThemeButton switchTheme={switchTheme} />
+        <IconButtonLink
+          Icon={StorefrontIcon}
+          label='Mochimo Merchandise'
+          path='https://merch.mochimap.com'
+        />
+        <IconButtonLink
+          Icon={MochimoIcon}
+          label='What is Mochimo?'
+          path='https://mochimo.org'
+        />
+        <IconButton
+          aria-label='more'
+          aria-controls='more-menu'
+          aria-haspopup='true'
+          edge='end'
+          onClick={toggleMore}
+        >
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          id='more-menu'
+          anchorEl={moreAnchor}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          disableScrollLock
+          elevated={0}
+          getContentAnchorEl={null}
+          keepMounted
+          open={Boolean(moreAnchor)}
+          onClose={toggleMore}
+        >
+          {menuItems.map((item, index) =>
+            <MenuItem key={index} component='a' href={item.href} dense>
+              <ListItemIcon>
+                <item.Icon />
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </MenuItem>
+          )}
+        </Menu>
+      </Toolbar>
+      <Drawer
+        anchor={menuAnchor || ''}
+        open={Boolean(menuAnchor)}
+        onClose={toggleMenu}
+      >
+        <List>
+          {routelist.filter(route => route.header).map((route, index) => (
+            <ListItem
+              button
+              key={index}
+              to={route.path}
+              component={Link}
+              onClick={toggleMenu}
+            >
+              <ListItemIcon>
+                {route.Icon && <route.Icon fontSize='large' />}
+              </ListItemIcon>
+              <ListItemText>{route.desc}</ListItemText>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+    </AppBar>
   );
 }
