@@ -10,7 +10,7 @@ export default function IconButtonLink ({ action, edge, Icon, label, path }) {
       <Tooltip title={label}>
         <IconButton aria-label={label} edge={edge}>
           {isComponent ? <Icon /> : (
-            <img src={Icon} width='24' height='24' />
+            <img alt={label} src={Icon} width='24' height='24' />
           )}
         </IconButton>
       </Tooltip>
