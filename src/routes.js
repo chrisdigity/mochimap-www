@@ -7,7 +7,7 @@ import Homepage from './app/homepage';
 import Explorer from './app/explorer';
 // import LedgerRichlist from './app/ledger-richlist';
 // import LedgerSearch from './app/ledger-search';
-// import LedgerTypeAddress from './app/ledger-#type-#address';
+import ExplorerLedgerTypeAddress from './app/explorer-ledger-#type-#address';
 // import TransactionMempool from './app/transaction-mempool';
 // import TransactionSearch from './app/transaction-search';
 // import TransactionTXID from './app/transaction-#txid';
@@ -24,10 +24,13 @@ export default [
     Icon: ExploreIcon,
     header: 'Explorer',
     desc: 'Mochimo Block Explorer'
-  } //,
+  },
   // { path: '/ledger/richlist', route: LedgerRichlist, text: 'Richlist' },
   // { path: '/ledger/search', route: LedgerSearch },
-  // { path: '/ledger/:type/:address', route: LedgerTypeAddress },
+  {
+    route: ExplorerLedgerTypeAddress,
+    path: '/explorer/ledger/:type/:address'
+  } //,
   // { path: '/transaction/mempool', route: TransactionMempool, text: 'Mempool' },
   // { path: '/transaction/search', route: TransactionSearch },
   // { path: '/transaction/:txid', route: TransactionTXID }
