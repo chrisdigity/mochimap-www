@@ -25,7 +25,6 @@ const useStyles = makeStyles((theme) => ({
     width: '60vw',
     display: 'flex',
     margin: theme.spacing(1),
-    padding: theme.spacing(0.25),
     background: 'transparent',
     'flex-wrap': 'wrap',
     'flex-direction': 'row',
@@ -154,10 +153,10 @@ export default function MochimoActivityFeed () {
     <Container className={classes.root}>
       <form id='stream-type-selection' className={classes.form}>
         <Typography className={classes.streamTitle}>
-          Mochimo Activity Stream:
+          Realtime Activity Feed:
         </Typography>
         <Typography className={classes.streamTitleShort}>
-          Activity:
+          Realtime:
         </Typography>
         <div className={classes.grow} />
         {EventStreamTypes.map((type, index) => (
