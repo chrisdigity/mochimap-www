@@ -108,7 +108,7 @@ function SubListItem ({ children, to }) {
 
 function NodeSearch ({ query }) {
   const search = `host.ip:contains=${query}`;
-  const request = useGetNodeBySearchQuery(search);
+  const request = useGetNodeBySearchQuery({ search });
   const classes = useSubStyles();
 
   return (
@@ -146,7 +146,7 @@ function NodeSearch ({ query }) {
 function BlockchainSearch ({ query }) {
   const searchType = isNaN(query) ? 'bhash:contains' : 'bnum';
   const search = `${searchType}=${query}`;
-  const request = useGetBlocksBySearchQuery(search);
+  const request = useGetBlocksBySearchQuery({ search });
   const classes = useSubStyles();
 
   return (
@@ -199,7 +199,7 @@ function BlockchainSearch ({ query }) {
 
 function TransactionSearch ({ query }) {
   const search = `txid:contains=${query}`;
-  const request = useGetTransactionsBySearchQuery(search);
+  const request = useGetTransactionsBySearchQuery({ search });
   const classes = useSubStyles();
 
   return (
@@ -245,7 +245,7 @@ function TransactionSearch ({ query }) {
 
 function LedgerBalanceSearch ({ type, query }) {
   const search = `${type}:contains=${query}`;
-  const request = useGetLedgerBalanceBySearchQuery(search);
+  const request = useGetLedgerBalanceBySearchQuery({ search });
   const classes = useSubStyles();
   const subheadingType =
     `Ledger Balance ${type === 'address' ? 'Addresses' : 'Tags'}`;
@@ -283,7 +283,7 @@ function LedgerBalanceSearch ({ type, query }) {
 export default function Explorer () {
   const classes = useStyles();
   const { search } = useLocation();
-  const searchParams = search && new URLSearchParams(search);
+  const searchParams = search && new URLSearchParams({ search });
   const searchType = search && searchParams.get('search');
   const searchQuery = search && searchParams.get('for');
 

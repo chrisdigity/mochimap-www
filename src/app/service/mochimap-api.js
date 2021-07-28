@@ -9,37 +9,37 @@ export const MochimapApi = createApi({
       query: () => 'block'
     }),
     getBlockByNumber: builder.query({
-      query: (number) => `block/${number}`
+      query: (params) => `block/${params?.number}`
     }),
     getBlockByNumberHash: builder.query({
-      query: (number, hash) => `block/${number}/${hash}`
+      query: (params) => `block/${params?.number}/${params?.hash}`
     }),
     getBlocksBySearch: builder.query({
-      query: (searchParams) => `block/search?${searchParams}`
+      query: (params) => `block/search?${params?.search}`
     }),
     getChainByLatest: builder.query({
       query: () => 'chain'
     }),
     getChainByNumber: builder.query({
-      query: (number) => `chain/${number}`
+      query: (params) => `chain/${params?.number}`
     }),
     getChainByNumberHash: builder.query({
-      query: (number, hash) => `chain/${number}/${hash}`
+      query: (params) => `chain/${params?.number}/${params?.hash}`
     }),
-    getLedgerByTypeAddress: builder.query({
-      query: (type, address) => `ledger/${type}/${address}`
+    getLedgerEntryByTypeAddress: builder.query({
+      query: (params) => `ledger/${params?.type}/${params?.address}`
     }),
     getLedgerBalanceBySearch: builder.query({
-      query: (searchParams) => `ledger/search?${searchParams}`
+      query: (params) => `ledger/search?${params?.search}`
     }),
     getNodeBySearch: builder.query({
-      query: (searchParams) => `network/search?${searchParams}`
+      query: (params) => `network/search?${params?.search}`
     }),
     getTransactionByTxid: builder.query({
-      query: (txid) => `transaction/${txid}`
+      query: (params) => `transaction/${params?.txid}`
     }),
     getTransactionsBySearch: builder.query({
-      query: (searchParams) => `transaction/search?${searchParams}`
+      query: (params) => `transaction/search?${params?.search}`
     })
   })
 });
@@ -51,7 +51,7 @@ export const {
   useGetBlocksBySearchQuery,
   useGetChainByLatestQuery,
   useGetChainByNumberQuery,
-  useGetLedgerByTypeAddressQuery,
+  useGetLedgerEntryByTypeAddressQuery,
   useGetLedgerBalanceBySearchQuery,
   useGetNodeBySearchQuery,
   useGetTransactionByTxidQuery,
