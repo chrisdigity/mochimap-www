@@ -1,12 +1,20 @@
 
-import { useMochimapApi } from 'MochiMapHooks';
-import { isDefaultTag, mcm } from 'MochiMapUtils';
+import {
+  CircularProgress,
+  Container,
+  Typography
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useCallback, useState } from 'react';
 import { Link, Redirect, useParams } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import Pagination from '../Pagination';
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: 'relative',
+    padding: theme.spacing(1)
+  }
+}));
+/*
 function Loading ({ message, inline }) {
   const content = (
     <span>
@@ -249,9 +257,29 @@ function BalanceHistory ({ type, data }) {
     ))
   ) || null;
 }
+*/
+export default function ExplorerLedgerTypeAddress () {
+  const classes = useStyles();
+  const { type } = useParams();
+  let { address } = useParams();
+  let wots = type === 'address' ? address : '----';
+  let tag = type === 'tag' ? address : '----';
 
-export default function Ledger () {
-  const { type, address } = useParams();
+  return (
+    <Container className={classes.root}>
+      <Typography align='center'>
+        <Typography color='textSecondary' display='inline'>τag: </Typography>
+        <Typography color='textPrimary' display='inline'>{tag}</Typography>
+        <span> • </span>
+        <Typography color='textSecondary' display='inline'>ωots: </Typography>
+        <Typography color='textPrimary' display='inline'>{wots}</Typography>
+      </Typography>
+    </Container>
+  );
+}
+
+/*
+
   const [info, setInfo] = useState('balance');
   const [init, setInit] = useState(true);
   const [ledger, requestLedger] = useMochimapApi(`/ledger/${type}/${address}`);
@@ -321,4 +349,4 @@ export default function Ledger () {
       </div>
     </div>
   );
-}
+  */
