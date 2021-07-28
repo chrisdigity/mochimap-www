@@ -83,11 +83,17 @@ function SearchListSubheader ({ type, query, req }) {
   );
 }
 
-function SearchListItem ({ children }) {
+function SearchListItem ({ children, to }) {
   // generic ListItem for code reduction
-  const c = Link;
   return (
-    <ListItem button divider disableGutters component={c} alignItems='center'>
+    <ListItem
+      button
+      divider
+      disableGutters
+      alignItems='center'
+      component={Link}
+      to={to}
+    >
       {children}
     </ListItem>
   );
@@ -292,8 +298,10 @@ export default function Explorer () {
               <BlockchainSearch query={searchQuery} />
             )}{(!searchType || searchType === 'transaction') && (
               <TransactionSearch query={searchQuery} />
-            )}{(!searchType || ['address', 'tag'].includes(searchType)) && (
-              <LedgerBalanceSearch type={searchType} query={searchQuery} />
+            )}{(!searchType || searchType === 'address') && (
+              <LedgerBalanceSearch type='address' query={searchQuery} />
+            )}{(!searchType || searchType === 'tag') && (
+              <LedgerBalanceSearch type='tag' query={searchQuery} />
             )}
           </List>
         </>
