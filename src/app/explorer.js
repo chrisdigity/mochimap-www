@@ -10,12 +10,14 @@ import {
   Avatar,
   CircularProgress,
   Container,
+  Divider,
   Grid,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Paper,
   Typography
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -52,14 +54,11 @@ const useStyles = makeStyles((theme) => ({
     }
   }
 }));
-const useSubheadingStyles = makeStyles((theme) => ({
+const useSubStyles = makeStyles((theme) => ({
   root: {
     'white-space': 'nowrap',
-    top: '3rem',
-    background: theme.palette.background.default
-  }
-}));
-const useSearchStyles = makeStyles((theme) => ({
+    top: '3rem'
+  },
   itemIcon: {
     'justify-content': 'center'
   },
@@ -67,23 +66,31 @@ const useSearchStyles = makeStyles((theme) => ({
     overflow: 'hidden',
     'text-overflow': 'ellipsis',
     'white-space': 'nowrap'
+  },
+  listSection: {
+    margin: theme.spacing(1),
+    background: theme.palette.background.default
   }
 }));
 
-function SearchListSubheader ({ type, query, req }) {
+function SubList ({ type, query, req, children }) {
   // generic ListSubheader for code reduction
-  const classes = useSubheadingStyles();
+  const classes = useSubStyles();
   return (
-    <ListSubheader className={classes.root}>
-      Searching <u><strong>{type}</strong></u> for {(
-        <u><strong>{query}</strong></u>
-      )} - {req.error ? req.error.data.error : req.isLoading
-        ? <CircularProgress size='1em' /> : `${req.data.found} results`}
-    </ListSubheader>
+    <Paper elevation={3} className={classes.listSection}>
+      <ListSubheader className={classes.root}>
+        Searching <u><strong>{type}</strong></u> for {(
+          <u><strong>{query}</strong></u>
+        )} - {req.error ? req.error.data.error : req.isLoading
+          ? <CircularProgress size='1em' /> : `${req.data.found} results`}
+        <Divider />
+      </ListSubheader>
+      {children}
+    </Paper>
   );
 }
 
-function SearchListItem ({ children, to }) {
+function SubListItem ({ children, to }) {
   // generic ListItem for code reduction
   return (
     <ListItem
@@ -102,13 +109,12 @@ function SearchListItem ({ children, to }) {
 function NodeSearch ({ query }) {
   const search = `host.ip:contains=${query}`;
   const request = useGetNodeBySearchQuery(search);
-  const classes = useSearchStyles();
+  const classes = useSubStyles();
 
   return (
-    <>
-      <SearchListSubheader type='Nodes' query={query} req={request} />
+    <SubList type='Nodes' query={query} req={request}>
       {request.data && request.data.results.map((item, index) => (
-        <SearchListItem key={index} to={`/explorer/network/${item.host.ip}`}>
+        <SubListItem key={index} to={`/explorer/network/${item.host.ip}`}>
           <ListItemIcon className={classes.itemIcon}>
             <AccountTreeIcon />
           </ListItemIcon>
@@ -131,9 +137,9 @@ function NodeSearch ({ query }) {
             )}
             secondary={(<span>{item.peers?.length || 0} recent peers</span>)}
           />
-        </SearchListItem>
+        </SubListItem>
       ))}
-    </>
+    </SubList>
   );
 }
 
@@ -141,13 +147,12 @@ function BlockchainSearch ({ query }) {
   const searchType = isNaN(query) ? 'bhash:contains' : 'bnum';
   const search = `${searchType}=${query}`;
   const request = useGetBlocksBySearchQuery(search);
-  const classes = useSearchStyles();
+  const classes = useSubStyles();
 
   return (
-    <>
-      <SearchListSubheader type='Blockchain' query={query} req={request} />
+    <SubList type='Blockchain' query={query} req={request}>
       {request.data && request.data.results.map((item, index) => (
-        <SearchListItem
+        <SubListItem
           key={index} to={`/explorer/block/${item.bnum}/${item.bhash}`}
         >
           <ListItemIcon className={classes.itemIcon}>
@@ -186,22 +191,21 @@ function BlockchainSearch ({ query }) {
               </span>
             )}
           />
-        </SearchListItem>
+        </SubListItem>
       ))}
-    </>
+    </SubList>
   );
 }
 
 function TransactionSearch ({ query }) {
   const search = `txid:contains=${query}`;
   const request = useGetTransactionsBySearchQuery(search);
-  const classes = useSearchStyles();
+  const classes = useSubStyles();
 
   return (
-    <>
-      <SearchListSubheader type='Transaction' query={query} req={request} />
+    <SubList type='Transaction' query={query} req={request}>
       {request.data && request.data.results.map((item, index) => (
-        <SearchListItem
+        <SubListItem
           key={index} to={`/explorer/transaction/${item.txid}/${item.bnum}`}
         >
           <ListItemIcon className={classes.itemIcon}>
@@ -233,24 +237,23 @@ function TransactionSearch ({ query }) {
               </span>
             )}
           />
-        </SearchListItem>
+        </SubListItem>
       ))}
-    </>
+    </SubList>
   );
 }
 
 function LedgerBalanceSearch ({ type, query }) {
   const search = `${type}:contains=${query}`;
   const request = useGetLedgerBalanceBySearchQuery(search);
-  const classes = useSearchStyles();
+  const classes = useSubStyles();
   const subheadingType =
     `Ledger Balance ${type === 'address' ? 'Addresses' : 'Tags'}`;
 
   return (
-    <>
-      <SearchListSubheader type={subheadingType} query={query} req={request} />
+    <SubList type={subheadingType} query={query} req={request}>
       {request.data && request.data.results.map((item, index) => (
-        <SearchListItem
+        <SubListItem
           key={index} to={`/explorer/ledger/${type}/${item[type]}`}
         >
           <ListItemIcon className={classes.itemIcon}>
@@ -271,9 +274,9 @@ function LedgerBalanceSearch ({ type, query }) {
               </span>
             )}
           />
-        </SearchListItem>
+        </SubListItem>
       ))}
-    </>
+    </SubList>
   );
 }
 
