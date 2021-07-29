@@ -1,6 +1,6 @@
 
-export default function MCMSuffix ({ value, forceDecimals, disableLocale }) {
-  if (typeof forceDecimals !== 'number') forceDecimals = Boolean(forceDecimals);
+export default function MCMSuffix (props) {
+  const { decimals, disableLocale, disableSuffix, disableUnits, value } = props;
   // determine sign and make value absolute
   const sign = Number(value) < 0 ? -1 : 1;
   let amount = Number(value) * sign;
@@ -10,13 +10,17 @@ export default function MCMSuffix ({ value, forceDecimals, disableLocale }) {
   else if (amount > 1e+12) options = { reduce: 1e+12, dec: 2, suffix: 'κ' };
   else if (amount < 1e+6) options = { suffix: 'η' };
   else options = { reduce: 1e+9 };
-  // (re)apply sign and options
-  amount *= sign;
-  if (options.reduce) amount /= options.reduce;
+  // force specific options
+  if (typeof decimals === 'number') options.dec = decimals;
+  // apply options (re-apply sign in amount calculation)
+  if (options.reduce) amount = sign * amount / options.reduce;
   if (!disableLocale) {
-    amount = amount.toLocaleString(undefined, options.dec
-      ? { minimumFractionDigits: options.dec, maximumFractionDigits: options.dec }
-      : undefined);
+    amount = amount.toLocaleString(undefined, options.dec ? {
+      minimumFractionDigits: options.dec, maximumFractionDigits: options.dec
+    } : undefined);
+  } else {
+    const powFactor = Math.pow(10, options.dec || 0);
+    amount = Math.floor(amount * powFactor) / powFactor;
   }
   // return MCMSuffix JSX in a span
   return (
