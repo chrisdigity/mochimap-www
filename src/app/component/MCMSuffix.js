@@ -15,13 +15,13 @@ export default function MCMSuffix (props) {
   if (disableSuffix) options.reduce = 1e+9;
   // apply options (re-apply sign in amount calculation)
   if (options.reduce) amount = sign * amount / options.reduce;
-  if (!disableLocale) {
-    amount = amount.toLocaleString(undefined, options.dec ? {
-      minimumFractionDigits: options.dec, maximumFractionDigits: options.dec
-    } : undefined);
-  } else {
+  if (options.dec) {
     const powFactor = Math.pow(10, options.dec || 0);
     amount = Math.floor(amount * powFactor) / powFactor;
+  }
+  if (!disableLocale) {
+    amount = amount.toLocaleString(undefined, options.dec
+      ? { minimumFractionDigits: options.dec } : undefined);
   }
   // return MCMSuffix JSX in a span
   return (
