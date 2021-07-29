@@ -283,7 +283,7 @@ function LedgerBalanceSearch ({ type, query }) {
 export default function Explorer () {
   const classes = useStyles();
   const { search } = useLocation();
-  const searchParams = search && new URLSearchParams({ search });
+  const searchParams = search && new URLSearchParams(search);
   const searchType = search && searchParams.get('search');
   const searchQuery = search && searchParams.get('for');
 
