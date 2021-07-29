@@ -1,352 +1,448 @@
 
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import {
+  useGetLedgerEntryByTypeAddressQuery,
+  useGetTransactionsBySearchQuery
+} from './service/mochimap-api';
+import {
+  Card,
   CircularProgress,
+  Collapse,
   Container,
+  Divider,
+  IconButton,
+  Paper,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { useEffect, useCallback, useState } from 'react';
-import { Link, Redirect, useParams } from 'react-router-dom';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import ErrorIcon from '@material-ui/icons/Error';
+import MCMSuffix from './component/MCMSuffix';
+import TimePrep from './component/TimePrep';
+import QRCode from 'qrcode.react';
+import clsx from 'clsx';
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  columnFlex: {
+    display: 'flex',
+    'flex-direction': 'column',
     position: 'relative',
-    padding: theme.spacing(1)
+    alignItems: 'center'
+  },
+  outerSpacing: {
+    margin: theme.spacing(1)
+  },
+  innerSpacing: {
+    padding: theme.spacing(2)
+  },
+  ellipsis: {
+    overflow: 'hidden',
+    'text-overflow': 'ellipsis',
+    'white-space': 'nowrap'
+  },
+  table: {
+    background: theme.palette.action.hover,
+    '& td, & th': {
+      'padding-top': theme.spacing(0.25),
+      'padding-bottom': theme.spacing(0.25),
+      'padding-left': theme.spacing(1),
+      'padding-right': theme.spacing(1)
+    }
+  },
+  tagwots: {
+    'max-width': '80vw'
+  },
+  transactionRow: {
+    '& > *': {
+      borderBottom: 'unset'
+    }
+  },
+  addressCell: {
+    'max-width': '40vw'
+  },
+  subTableHeader: {
+    'max-width': '80vw'
+  },
+  xsDownNone: {
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    }
+  },
+  smNone: {
+    [theme.breakpoints.only('sm')]: {
+      display: 'none'
+    }
   }
 }));
-/*
-function Loading ({ message, inline }) {
-  const content = (
-    <span>
-      <FontAwesomeIcon icon={faSpinner} pulse />
-      {message ? ` Loading ${message}...` : ''}
-    </span>
-  );
 
-  return inline ? content : (
-    <div className='loading'>{content}</div>
+const Blank = '----';
+const DEFAULT_TAG = '420000000e00000001000000';
+const isUntagged = (addr) => ['00', '42'].includes(addr.slice(0, 2));
+
+function TransactionSimpleRow ({ data, open, handleOpen }) {
+  const { ref, refType, amount, time, block } = data;
+  const classes = useStyles();
+
+  return (
+    <TableRow>
+      <TableCell padding='none'>
+        {typeof open !== 'undefined' && (
+          <IconButton size='small' aria-label='open tx' onClick={handleOpen}>
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        )}
+      </TableCell>
+      <TableCell className={clsx(classes.xsDownNone, classes.addressCell)}>
+        <Typography noWrap>
+          <Link to={`/explorer/ledger/${refType}/${ref}`}>
+            {refType === 'tag' ? 'τ-' : 'ω+'}{ref}
+          </Link>
+        </Typography>
+      </TableCell>
+      <TableCell>
+        <Typography noWrap>
+          <TimePrep epoch={time} />
+        </Typography>
+      </TableCell>
+      <TableCell className={classes.smNone}>
+        <Typography noWrap>
+          {block}
+        </Typography>
+      </TableCell>
+      <TableCell>
+        <Typography noWrap>
+          {amount < 0 ? 'OUT' : 'IN'}
+        </Typography>
+      </TableCell>
+      <TableCell align='right'>
+        <Typography noWrap>
+          <MCMSuffix value={amount} />
+        </Typography>
+      </TableCell>
+    </TableRow>
   );
 }
 
-function Error ({ message, inline }) {
-  const content = (
-    <span>
-      <FontAwesomeIcon icon={faExclamationTriangle} />
-      {message ? ` Error ${message}...` : ''}
-    </span>
+function TransactionPartRow ({ pre, addressType, address, amount, fee }) {
+  const classes = useStyles();
+
+  return (
+    <TableRow>
+      <TableCell className={classes.addressCell}>
+        <Typography variant='body2' noWrap>
+          {pre || ''}
+          <Link to={`/explorer/ledger/${addressType}/${address}`}>
+            {addressType === 'tag' ? 'τ-' : 'ω+'}{address}
+          </Link>
+        </Typography>
+      </TableCell>
+      <TableCell align='right'>
+        {fee ? <MCMSuffix value={fee} disableUnits /> : null}
+      </TableCell>
+      <TableCell align='right'><MCMSuffix value={amount} /></TableCell>
+    </TableRow>
   );
-
-  return inline ? content : (
-    <div className='error'>{content}</div>
-  );
 }
 
-function QRCode () {
-  return '...QR Code not enabled at this time...';
-}
-
-function Transaction ({ txe, addr, dim }) {
-  console.log(addr);
-  // transaction entry -> simple transaction, split logic
-  // when ref === src and src === chg; 1 of 2 simple transactions take place...
-  /// add from src to dst at sendtotal, if sendtotal or !changetotal
-  /// add from src to chg at changetotal, if changetotal
-  // when src !== chg; 1 OR 2 simple transactions take place...
-  /// add from src to dst at sendtotal, if sendtotal
-  /// add from src to chg at changetotal, if changetotal
-  const dateUTC = new Date(txe.stime * 1000);
-  const tzOffset = (new Date()).getTimezoneOffset() * 60 * 1000;
-  const date = new Date(dateUTC - tzOffset);
-  const dateString = !isNaN(date) && date.toISOString().replace(/:\d{2}\..*$/, '');
-  const srcType = isDefaultTag(txe.srctag) ? 'ω+' : 'τ-';
-  const dstType = isDefaultTag(txe.dsttag) ? 'ω+' : 'τ-';
-  const chgType = isDefaultTag(txe.chgtag) ? 'ω+' : 'τ-';
-  const src = isDefaultTag(txe.srctag) ? txe.srcaddr : txe.srctag;
-  const dst = isDefaultTag(txe.dsttag) ? txe.dstaddr : txe.dsttag;
-  const chg = isDefaultTag(txe.chgtag) ? txe.chgaddr : txe.chgtag;
-  const { txid, sendtotal, changetotal } = txe;
-  const transactions = [];
-  if (addr === src && src === chg) {
-    if (sendtotal || !changetotal) {
-      transactions.push({ addr: dstType + dst, amount: -(txe.sendtotal) });
-    } else {
-      transactions.push({ addr: chgType + chg, amount: -(txe.changetotal) });
-    }
-  } else {
-    if ((sendtotal && addr !== chg) || addr === dst) {
-      if (addr === src) {
-        transactions.push({ addr: dstType + dst, amount: -(txe.sendtotal) });
-      } else {
-        transactions.push({ addr: srcType + src, amount: txe.sendtotal });
-      }
-    }
-    if ((changetotal && addr !== dst) || addr === chg) {
-      if (addr === src) {
-        transactions.push({ addr: chgType + chg, amount: -(txe.changetotal) });
-      } else {
-        transactions.push({ addr: srcType + src, amount: txe.changetotal });
-      }
-    }
-  }
-  return transactions.map((item, index) => {
-    return (
-      <Link
-        key={index}
-        to={'/explorer/transaction/' + txid}
-        className={'history transaction' + (dim ? ' dull' : '')}
-      >
-        <div className='text-ellipses'>{item.addr}</div>
-        <div>{dateString}</div>
-        <div>{txe.bnum}</div>
-        <div>{mcm(item.amount)}</div>
-      </Link>
-    );
-  });
-}
-
-function TransactionHistory ({ type, address, aeon, header }) {
-  const [init, setInit] = useState(true);
-  const [history, requestHistory] = useMochimapApi('/transaction/search');
-  const dim = history.loading;
+function TransactionRow ({ tx, address }) {
+  const [simpleTransactions, setSimpleTransactions] = useState([]);
+  const [lastIndex, setLastIndex] = useState(0);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(!open);
+  const classes = useStyles();
 
   useEffect(() => {
-    if (init) {
-      let queryLimits;
-      if (aeon) {
-        const upper = aeon << 8;
-        const lower = upper - 256;
-        queryLimits = `bnum:lt=${upper}&bnum:gt=${lower}&`;
+    const { srcaddr, srctag, dstaddr, dsttag, chgaddr, chgtag, _id } = tx;
+    const change = tx.changetotal;
+    const send = tx.sendtotal;
+    const src = isUntagged(srctag) ? srcaddr : srctag;
+    const dst = isUntagged(dsttag) ? dstaddr : dsttag;
+    const chg = isUntagged(chgtag) ? chgaddr : chgtag;
+    const srcType = isUntagged(srctag) ? 'address' : 'tag';
+    const dstType = isUntagged(dsttag) ? 'address' : 'tag';
+    const chgType = isUntagged(chgtag) ? 'address' : 'tag';
+    const add = { _id, time: tx.stime, block: tx.bnum };
+    // when address === src and src === chg; 1 of 2 simple transactions take place...
+    /// add from src to dst at sendtotal, if sendtotal or !changetotal
+    /// add from src to chg at changetotal, if changetotal
+    // when src !== chg; 1 OR 2 simple transactions take place...
+    /// add from src to dst at sendtotal, if sendtotal
+    /// add from src to chg at changetotal, if changetotal
+    const stxs = [];
+    if (address === src && src === chg) {
+      if (send || !change) {
+        stxs.push({ refType: dstType, ref: dst, amount: -(send), ...add });
+      } else {
+        stxs.push({ refType: chgType, ref: chg, amount: -(change), ...add });
       }
-      if (type === 'address') address = address.slice(0, 64);
-      requestHistory(1, `${queryLimits || ''}${type}=${address}`);
-    }
-  }, [init, setInit]);
-
-  return (
-    <>
-      {header && history.data.results?.length ? (
-        <div className={'history header' + (dim ? ' dim' : '')}>
-          <div><span>Address</span></div>
-          <div><span>Date-Time</span></div>
-          <div><span>Height</span></div>
-          <div><span>Amount</span></div>
-        </div>
-      ) : ''}
-      {history.data.results?.map((txe, index) => {
-        return <Transaction key={index} txe={txe} addr={address} dim={dim} />;
-      })}
-      {(history.loading && <Loading message='transaction history' />) ||
-        (history.error && <Error message={history.data.error} />)}
-      {history.data.results && (
-        <Pagination
-          title='Transaction History'
-          page={history.page}
-          pages={history.data?.pages || 1}
-          paginate={(p) => { requestHistory(p); }}
-          range={3}
-        />
-      )}
-    </>
-  ) || null;
-}
-
-function Balance ({ type, data, count }) {
-  const [open, setOpen] = useState(false);
-  const toggle = useCallback(() => {
-    if (open) count(-1);
-    else count(1);
-    setOpen(!open);
-  }, [open, count]);
-  const aeon = data.bnum >> 8;
-  let dateString;
-  if (typeof data.timestamp === 'undefined') dateString = 'UnknownÆ';
-  else if (data.timestamp < 0) dateString = 'InProgressÆ';
-  else {
-    const dateUTC = new Date(data.timestamp * 1000);
-    const tzOffset = (new Date()).getTimezoneOffset() * 60 * 1000;
-    const date = new Date(dateUTC - tzOffset);
-    dateString = date.toISOString().replace(/T.*$/, 'Æ');
-  }
-  dateString += aeon;
-
-  return (
-    <>
-      <div className='history balance' onClick={toggle}>
-        <div>{mcm(data.balance)}</div>
-        <div>{dateString}</div>
-        <div>{data.timestamp > 0 ? data.bnum : '----'}</div>
-        <div>{data.delta > 0 && '+'}{mcm(data.delta, true, 1)}</div>
-      </div>
-      {(open && (
-        <TransactionHistory type={type} address={data[type]} aeon={aeon} />
-      ))}
-    </>
-  );
-}
-
-function BalanceHistory ({ type, data }) {
-  const [init, setInit] = useState(true);
-  const [nOpen, setNOpen] = useState(0);
-  const [history, requestHistory] = useMochimapApi('/ledger/search');
-  const count = useCallback((delta) => setNOpen(nOpen + delta), [nOpen]);
-  const addCurrentAeon = useCallback((response) => {
-    const results = response.data.results;
-    if (results) {
-      // prepend current Aeon data if necessary
-      if (response.page === 1) {
-        const first = results[0];
-        const address = data.address?.slice(0, 64) || undefined;
-        const addressHash = data.addressHash;
-        const tag = data.tag;
-        const balance = data.balance;
-        const delta = balance - (first?.balance || 0);
-        const timestamp = -1;
-        const bnum = (first?.bnum || 0) + 256;
-        if (delta) {
-          results.unshift(
-            { address, addressHash, tag, balance, delta, timestamp, bnum }
-          );
+    } else {
+      if ((send && address !== chg) || address === dst) {
+        if (address === src) {
+          stxs.push({ refType: dstType, ref: dst, amount: -(send), ...add });
+        } else {
+          stxs.push({ refType: srcType, ref: src, amount: send, ...add });
+        }
+      }
+      if ((change && address !== dst) || address === chg) {
+        if (address === src) {
+          stxs.push({ refType: chgType, ref: chg, amount: -(change), ...add });
+        } else {
+          stxs.push({ refType: srcType, ref: src, amount: change, ...add });
         }
       }
     }
-  }, [history, data]);
-
-  // response handlers
-  useEffect(() => addCurrentAeon(history), [history, addCurrentAeon]);
-  useEffect(() => { // initial balance history request, once ledger available
-    const historyType = type !== 'tag' ? 'addressHash' : 'tag';
-    if (init && data[historyType]) {
-      requestHistory(1, `${historyType}=${data[historyType]}`);
-      setInit(false);
+    // store simple transactions and "last index"
+    if (stxs.length) {
+      setLastIndex(stxs.length - 1);
+      setSimpleTransactions(stxs);
     }
-  }, [init, setInit, history, requestHistory]);
+  }, [tx, address]);
 
   return (
-    (history.loading && <Loading message='balance history' />) ||
-    (history.error && <Error message={history.data.error} />) ||
-    (history.data.results && (
-      <>
-        <div className='history header'>
-          <div>
-            <span>NG-Balance</span>
-            {nOpen > 0 && <sup>(address)</sup>}
-          </div>
-          <div>
-            <span>Date-Aeon(NG)</span>
-            {nOpen > 0 && <sup>(date-time)</sup>}
-          </div>
-          <div>
-            <span>Height</span>
-          </div>
-          <div>
-            <span>NG-Delta</span>
-            {nOpen > 0 && <sup>(amount)</sup>}
-          </div>
-        </div>
-        {(history.data.results.map((item, index) => {
-          return <Balance key={index} type={type} data={item} count={count} />;
-        }))}
-        <Pagination
-          title='Balance History'
-          page={history.page}
-          pages={history.data?.pages || 1}
-          paginate={(p) => { requestHistory(p); }}
-          range={3}
+    <>
+      {simpleTransactions.map((data, index) => (
+        <TransactionSimpleRow
+          key={`stx-${index}-${data._id}`}
+          handleOpen={index === lastIndex ? handleOpen : () => {}}
+          open={index === lastIndex ? open : undefined}
+          data={data}
         />
-      </>
-    ))
-  ) || null;
+      ))}
+      <TableRow>
+        <TableCell style={{ padding: 0 }} colSpan={6}>
+          <Collapse in={open} timeout='auto' unmountOnExit>
+            <Table
+              size='small'
+              className={classes.table}
+              aria-label='transaction destinations'
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={3} className={classes.subTableHeader}>
+                    <Typography align='left' variant='body2' noWrap>
+                      TxID:&nbsp;
+                      <Link to={`/explorer/transaction/${tx.txid}`}>
+                        {tx.txid}
+                      </Link>
+                      <br />
+                      <MCMSuffix value={tx.changetotal} />
+                      <span> • Change: </span>
+                      <Link to={`/explorer/ledger/tag/${tx.chgtag}`}>
+                        τ-{tx.chgtag}
+                      </Link>
+                      <br />
+                      <span>Source: </span>
+                      <Link to={`/explorer/ledger/tag/${tx.srctag}`}>
+                        τ-{tx.srctag}
+                      </Link>
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className={classes.addressCell}>
+                    Destinations
+                  </TableCell>
+                  <TableCell align='right'>Fee</TableCell>
+                  <TableCell align='right'>Amount</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {tx.dstarray ? tx.dstarray.map((dst, index) => (
+                  <TransactionPartRow
+                    key={`txpart-${index}-${tx._id}`}
+                    type='tag'
+                    address={dst.tag}
+                    amount={dst.amount}
+                    fee={tx.txfee}
+                  />
+                )) : (
+                  <TransactionPartRow
+                    addressType={isUntagged(tx.dsttag) ? 'address' : 'tag'}
+                    address={isUntagged(tx.dsttag) ? tx.dstaddr : tx.dsttag}
+                    amount={tx.sendtotal}
+                    fee={tx.txfee}
+                  />
+                )}
+                <TransactionPartRow
+                  pre='Change: '
+                  addressType={isUntagged(tx.chgtag) ? 'address' : 'tag'}
+                  address={isUntagged(tx.chgtag) ? tx.chgaddr : tx.chgtag}
+                  amount={tx.changetotal}
+                />
+              </TableBody>
+            </Table>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
 }
-*/
-export default function ExplorerLedgerTypeAddress () {
+
+function TransactionHistory ({ ledger, type, address }) {
+  const searchObject = { [type]: ledger.data?.[type].slice(0, 64) || address };
+  const search = new URLSearchParams(searchObject).toString() + '&perpage=32';
+  const history = useGetTransactionsBySearchQuery({ search });
   const classes = useStyles();
-  const { type } = useParams();
-  let { address } = useParams();
-  let wots = type === 'address' ? address : '----';
-  let tag = type === 'tag' ? address : '----';
 
   return (
-    <Container className={classes.root}>
-      <Typography align='center'>
+    <TableContainer component={Container} className={classes.innerSpacing}>
+      <Table
+        size='small'
+        className={classes.table}
+        aria-label='transaction history table'
+      >
+        <TableHead>
+          <TableRow>
+            <TableCell />
+            <TableCell className={classes.xsDownNone}>Reference</TableCell>
+            <TableCell>Time</TableCell>
+            <TableCell className={classes.smNone}>Block</TableCell>
+            <TableCell />
+            <TableCell align='right'>Amount</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {history.isLoading ? (
+            <TableRow>
+              <TableCell align='center' colSpan={6}>
+                <CircularProgress size='4rem' />
+              </TableCell>
+            </TableRow>
+          ) : history.data?.results.map((tx) => (
+            <TransactionRow
+              key={`txrow-${tx._id}`}
+              address={searchObject.tag || searchObject.address}
+              tx={tx}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+function BalanceHistory () {
+  return null;
+}
+
+function TabPanel (props) {
+  const { name, active, ledger, showError, check, reason, children } = props;
+
+  return active ? (
+    <>
+      {check || ledger.isFetching || (showError && ledger.isError) ? (
+        <>
+          <Typography variant='h6'>Cannot Display {name}</Typography>
+          <Typography variant='caption'>
+            Reason: {check ? reason : ledger.isFetching ? (
+              'waiting for validated ledger data...'
+            ) : 'an error occurred (╥﹏╥)'}
+          </Typography>
+        </>
+      ) : children}
+    </>
+  ) : null;
+}
+
+export default function ExplorerLedgerTypeAddress () {
+  const { type, address } = useParams();
+  const ledger = useGetLedgerEntryByTypeAddressQuery({ type, address});
+  const [wots, setWots] = useState(type === 'address' && address);
+  const [tag, setTag] = useState(type === 'tag' && address);
+  const [tab, setTab] = useState(1);
+  const classes = useStyles();
+
+  const { columnFlex, innerSpacing, outerSpacing, ellipsis, tagwots } = classes;
+  const handleTab = (e, selectedTab) => { setTab(selectedTab); };
+
+  useEffect(() => {
+    if (ledger.data) {
+      setWots(ledger.data.address);
+      setTag(ledger.data.tag);
+    }
+  }, [type, address, ledger.data]);
+
+  return (
+    <Container className={clsx(columnFlex, innerSpacing)}>
+      <Typography className={clsx(ellipsis, tagwots, outerSpacing)}>
         <Typography color='textSecondary' display='inline'>τag: </Typography>
-        <Typography color='textPrimary' display='inline'>{tag}</Typography>
+        <Typography color='textPrimary' display='inline'>
+          {tag || Blank}
+        </Typography>
         <span> • </span>
         <Typography color='textSecondary' display='inline'>ωots: </Typography>
-        <Typography color='textPrimary' display='inline'>{wots}</Typography>
+        <Typography color='textPrimary' display='inline'>
+          {wots || Blank}
+        </Typography>
       </Typography>
+      <Card className={clsx(columnFlex, innerSpacing, outerSpacing)}>
+        <Typography variant='h6'>Balance</Typography>
+        {ledger.isFetching ? (
+          <CircularProgress size='6rem' color='secondary' />
+        ) : (
+          <Typography variant='h1'>
+            {ledger.isError ? <ErrorIcon /> : (
+              <MCMSuffix value={ledger.data.balance} disableUnits />
+            )}
+          </Typography>
+        )}
+        <Divider />
+        <Typography>
+          <Typography variant='subtitle2' color='textSecondary' display='inline'>
+            Available:&nbsp;
+          </Typography>
+          {ledger.isFetching || ledger.isError ? Blank : (
+            <Typography variant='subtitle1' color='textPrimary' display='inline'>
+              <MCMSuffix
+                decimals={9}
+                disableSuffix
+                value={ledger.data.balance}
+              />
+            </Typography>
+          )}
+        </Typography>
+      </Card>
+      <Paper className={clsx(classes.columnFlex, classes.outerSpacing)}>
+        <Tabs
+          value={tab}
+          onChange={handleTab}
+          textColor='primary'
+          indicatorColor='secondary'
+          aria-label='ledger details tabs'
+        >
+          <Tab label='QR Code' />
+          <Tab label='Transaction History' />
+          <Tab label='Balance History' />
+        </Tabs>
+        <TabPanel
+          showError
+          active={tab === 0}
+          name='QR Code'
+          ledger={ledger}
+          check={ledger.data?.tag === DEFAULT_TAG}
+          reason={(
+            <span>MochiMap only supports a QR code for tagged addresses</span>
+          )}
+        >
+          <QRCode includeMargin value={ledger.data?.tag || ''} />
+        </TabPanel>
+        <TabPanel name='Transaction History' active={tab === 1} ledger={ledger}>
+          <TransactionHistory ledger={ledger} type={type} address={address} />
+        </TabPanel>
+        <TabPanel name='Balance History' active={tab === 2} ledger={ledger}>
+          <BalanceHistory ledger={ledger} type={type} address={address} />
+        </TabPanel>
+      </Paper>
     </Container>
   );
 }
-
-/*
-
-  const [info, setInfo] = useState('balance');
-  const [init, setInit] = useState(true);
-  const [ledger, requestLedger] = useMochimapApi(`/ledger/${type}/${address}`);
-  const cleanAddress = () => (ledger.data[type] || address).slice(0, 64);
-
-  useEffect(() => {
-    if (init) {
-      requestLedger();
-      setInit(false);
-    } else if (ledger.error) ledger.data[type] = address;
-  }, [init, setInit, ledger, requestLedger]);
-
-  return (
-    <div className='ledger'>
-      {type === 'address' && address.length < 64 && ledger.data.address && (
-        <Redirect to={`/explorer/ledger/${type}/${cleanAddress()}`} />
-      )}
-      {type === 'tag' && address.length < 24 && ledger.data.tag &&
-      !isDefaultTag(ledger.data.tag) && (
-        <Redirect to={`/explorer/ledger/${type}/${ledger.data.tag}`} />
-      )}
-      <div className='addresses'>
-        <span className='dull'>τ<span className='tiny'>ag: </span></span>
-        {(!isDefaultTag(ledger.data?.tag) && ledger.data?.tag) || '----'}
-        <span className='h-sep' />
-        <span className='dull'>ω<span className='tiny'>ots: </span></span>
-        {((ledger.error || ledger.loading) && '----') || ledger.data?.address}
-      </div>
-      <div className='balance'>
-        {(ledger.loading && <Loading />) || (
-          mcm(ledger.data.balance || 0, true, 1, 0)
-        )}
-      </div>
-      <div className='available v-sep'>
-        <span className='dull'>A<span className='tiny'>vailable: </span></span>
-        {(ledger.error && <Error message={ledger.data.message} inline />) || (
-          ledger.loading && <Loading inline />
-        ) || mcm(ledger.data.balance || 0, 9, 0)}
-      </div>
-      <div className='history-selection'>
-        <div
-          onClick={() => setInfo('qrcode')}
-          className={info === 'qrcode' ? 'selected' : ''}
-        >QR code
-        </div>
-        <div className='h-sep' />
-        <div
-          onClick={() => setInfo('balance')}
-          className={(info === 'balance' ? 'selected' : '')}
-        >Ledger History
-        </div>
-        <div className='h-sep' />
-        <div
-          onClick={() => setInfo('transaction')}
-          className={info === 'transaction' ? 'selected' : ''}
-        >Transaction History
-        </div>
-      </div>
-      <div className='history-container v-sep'>
-        {(info === 'qrcode' && (
-          <QRCode />
-        )) || (info === 'balance' && (
-          <BalanceHistory type={type} data={ledger.data} />
-        )) || (info === 'transaction' && (
-          <TransactionHistory type={type} address={cleanAddress()} header />
-        ))}
-      </div>
-    </div>
-  );
-  */
