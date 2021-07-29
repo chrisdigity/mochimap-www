@@ -12,6 +12,7 @@ export default function MCMSuffix (props) {
   else options = { reduce: 1e+9 };
   // force specific options
   if (typeof decimals === 'number') options.dec = decimals;
+  if (disableSuffix) options.reduce = 1e+9;
   // apply options (re-apply sign in amount calculation)
   if (options.reduce) amount = sign * amount / options.reduce;
   if (!disableLocale) {
@@ -25,7 +26,8 @@ export default function MCMSuffix (props) {
   // return MCMSuffix JSX in a span
   return (
     <span title={`${value?.toLocaleString()} nanoMochimo`}>
-      {amount}{value && options.suffix ? options.suffix : ''} MCM
+      {amount}{!disableSuffix && value && options.suffix ? options.suffix : ''}
+      {disableUnits ? '' : ' MCM'}
     </span>
   );
 }
