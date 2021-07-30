@@ -204,7 +204,7 @@ export default function Header ({ routelist, switchTheme }) {
         </Menu>
       </Toolbar>
       <Drawer
-        anchor={menuAnchor || ''}
+        anchor='left'
         open={Boolean(menuAnchor)}
         onClose={toggleMenu}
       >
