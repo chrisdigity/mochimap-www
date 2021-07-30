@@ -375,13 +375,17 @@ export default function ExplorerLedgerTypeAddress () {
   return (
     <Container className={clsx(columnFlex, innerSpacing)}>
       <Typography className={clsx(ellipsis, tagwots, outerSpacing)}>
-        <Typography color='textSecondary' display='inline'>τag: </Typography>
-        <Typography color='textPrimary' display='inline'>
+        <Typography component='span' display='inline' color='textSecondary'>
+          τag:&nbsp;
+        </Typography>
+        <Typography component='span' display='inline' color='textPrimary'>
           {tag || Blank}
         </Typography>
         <span> • </span>
-        <Typography color='textSecondary' display='inline'>ωots: </Typography>
-        <Typography color='textPrimary' display='inline'>
+        <Typography component='span' display='inline' color='textSecondary'>
+          ωots:&nbsp;
+        </Typography>
+        <Typography component='span' display='inline' color='textPrimary'>
           {wots || Blank}
         </Typography>
       </Typography>
@@ -398,11 +402,17 @@ export default function ExplorerLedgerTypeAddress () {
         )}
         <Divider />
         <Typography>
-          <Typography variant='subtitle2' color='textSecondary' display='inline'>
+          <Typography
+            component='span' variant='subtitle2' display='inline'
+            color='textSecondary'
+          >
             Available:&nbsp;
           </Typography>
           {ledger.isFetching || ledger.isError ? Blank : (
-            <Typography variant='subtitle1' color='textPrimary' display='inline'>
+            <Typography
+              component='span' variant='subtitle1' display='inline'
+              color='textPrimary'
+            >
               <MCMSuffix
                 decimals={9}
                 disableSuffix
