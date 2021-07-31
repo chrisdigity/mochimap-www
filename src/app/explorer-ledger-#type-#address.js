@@ -146,22 +146,22 @@ const splitTransaction = (tx, address) => {
   return stxs;
 };
 
-function TableRowCells ({ key, cells }) {
+function TableRowCells ({ id, cells }) {
   return (
     <TableRow>
       {(Array.isArray(cells) ? cells : [cells]).map((cell, index) => (
-        <TableCell key={`${key}-cell${index}`} {...cell} />
+        <TableCell key={`${id}-cell${index}`} {...cell} />
       ))}
     </TableRow>
   );
 }
 
-function TransactionRow ({ key, tx, address }) {
+function TransactionRow ({ id, tx, address }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
   const classes = useStyles();
 
-  const _cid = `${key}-details`;
+  const _cid = `${id}-details`;
   const _label = _cid.replace('-', ' ');
 
   const stxs = splitTransaction(tx, address);
@@ -277,17 +277,26 @@ function TransactionRow ({ key, tx, address }) {
             align: 'right'
           }
         ];
-        return (<TableRowCells key={`${key}-stx-${index}`} cells={stxCells} />);
+        return (<TableRowCells key={`${id}-stx-${index}`} cells={stxCells} />);
       })}
       <TableRow>
         <TableCell style={{ padding: 0 }} colSpan={6}>
           <Collapse in={open} timeout='auto' unmountOnExit>
-            <Table size='small' className={classes.detailsTable} aria-label={_label}>
-              <TableRowCells key={`${_cid}`} cells={txDetailsPreHeadCells} />
-              <TableRowCells key={`${_cid}-head`} cells={txDetailsHeadCells} />
-              {txDetailsCells.map((cells, index) => (
-                <TableRowCells key={`${_cid}-details-${index}`} cells={cells} />
-              ))}
+            <Table
+              size='small'
+              className={classes.detailsTable}
+              aria-label={_label}
+            >
+              <TableHead>
+                <TableRowCells id={`${_cid}`} cells={txDetailsPreHeadCells} />
+                <TableRowCells id={`${_cid}-head`} cells={txDetailsHeadCells} />
+              </TableHead>
+              <TableBody>
+                {txDetailsCells.map((cells, index) => {
+                  const sid = `${_cid}-body-${index}`;
+                  return (<TableRowCells key={sid} id={sid} cells={cells} />);
+                })}
+              </TableBody>
             </Table>
           </Collapse>
         </TableCell>
@@ -296,9 +305,10 @@ function TransactionRow ({ key, tx, address }) {
   );
 }
 
-function NeogenesisRow ({ key, data }) {
+function NeogenesisRow ({ id, data }) {
   const classes = useStyles();
 
+  const sid = `${id}-balance`;
   const cells = [
     {
       children: (
@@ -328,7 +338,7 @@ function NeogenesisRow ({ key, data }) {
     }
   ];
 
-  return (<TableRowCells key={`${key}-balance`} cells={cells} />);
+  return (<TableRowCells key={sid} id={sid} cells={cells} />);
 }
 
 function TransactionHistory ({ ledger, type, address }) {
@@ -341,6 +351,7 @@ function TransactionHistory ({ ledger, type, address }) {
   const _cid = 'transation-history-table';
   const _label = _cid.replace('-', ' ');
 
+  const sidHead = `${_cid}-head`;
   const tableHeadCells = [
     { variant: 'head' },
     { variant: 'head', children: 'Reference' },
@@ -356,12 +367,19 @@ function TransactionHistory ({ ledger, type, address }) {
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
       <Table size='small' className={classes.table} aria-label={_label}>
-        <TableRowCells key={`${_cid}-head`} cells={tableHeadCells} />
-        {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
-          history.data.results?.map((tx, ii) => (
-            <TransactionRow key={`${_cid}-${ii}`} address={address} tx={tx} />
-          ))
-        )}
+        <TableHead>
+          <TableRowCells key={sidHead} id={sidHead} cells={tableHeadCells} />
+        </TableHead>
+        <TableBody>
+          {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
+            history.data.results?.map((tx, ii) => {
+              const sid = `${_cid}-${ii}`;
+              return (
+                <TransactionRow key={sid} id={sid} address={address} tx={tx} />
+              );
+            })
+          )}
+        </TableBody>
       </Table>
     </TableContainer>
   );
@@ -376,6 +394,7 @@ function NeogenesisHistory ({ ledger, type, address }) {
   const _cid = 'balance-history-table';
   const _label = _cid.replace('-', ' ');
 
+  const sidHead = `${_cid}-head`;
   const tableHeadCells = [
     { variant: 'head', children: 'NG-Balance' },
     { variant: 'head', children: 'Time' },
@@ -390,12 +409,19 @@ function NeogenesisHistory ({ ledger, type, address }) {
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
       <Table size='small' className={classes.table} aria-label={_label}>
-        <TableRowCells key={`${_cid}-head`} cells={tableHeadCells} />
-        {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
-          history.data.results?.map((data, ii) => (
-            <NeogenesisRow key={`${_cid}-${ii}`} data={data} />
-          ))
-        )}
+        <TableHead>
+          <TableRowCells key={sidHead} id={sidHead} cells={tableHeadCells} />
+        </TableHead>
+        <TableBody>
+          {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
+            history.data.results?.map((data, ii) => {
+              const sid = `${_cid}-${ii}`;
+              return (
+                <NeogenesisRow key={sid} id={sid} data={data} />
+              );
+            })
+          )}
+        </TableBody>
       </Table>
     </TableContainer>
   );
