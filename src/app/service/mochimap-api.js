@@ -29,7 +29,7 @@ export const MochimapApi = createApi({
     getLedgerEntryByTypeAddress: builder.query({
       query: (params) => `ledger/${params?.type}/${params?.address}`
     }),
-    getLedgerBalanceBySearch: builder.query({
+    getLedgerBalancesBySearch: builder.query({
       query: (params) => `ledger/search?${params?.search}`
     }),
     getNodeBySearch: builder.query({
@@ -52,7 +52,7 @@ export const {
   useGetChainByLatestQuery,
   useGetChainByNumberQuery,
   useGetLedgerEntryByTypeAddressQuery,
-  useGetLedgerBalanceBySearchQuery,
+  useGetLedgerBalancesBySearchQuery,
   useGetNodeBySearchQuery,
   useGetTransactionByTxidQuery,
   useGetTransactionsBySearchQuery

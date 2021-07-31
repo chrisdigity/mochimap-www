@@ -2,7 +2,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   useGetBlocksBySearchQuery,
-  useGetLedgerBalanceBySearchQuery,
+  useGetLedgerBalancesBySearchQuery,
   useGetNodeBySearchQuery,
   useGetTransactionsBySearchQuery
 } from './service/mochimap-api';
@@ -245,7 +245,7 @@ function TransactionSearch ({ query }) {
 
 function LedgerBalanceSearch ({ type, query }) {
   const search = `${type}:contains=${query}`;
-  const request = useGetLedgerBalanceBySearchQuery({ search });
+  const request = useGetLedgerBalancesBySearchQuery({ search });
   const classes = useSubStyles();
   const subheadingType =
     `Ledger Balance ${type === 'address' ? 'Addresses' : 'Tags'}`;

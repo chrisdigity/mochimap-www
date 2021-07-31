@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
+  useGetLedgerBalancesBySearchQuery,
   useGetLedgerEntryByTypeAddressQuery,
   useGetTransactionsBySearchQuery
 } from './service/mochimap-api';
@@ -337,6 +338,7 @@ function TransactionHistory ({ ledger, type, address }) {
 function BalanceHistory ({ ledger, type, address }) {
   const searchObject = { [type]: ledger.data?.[type].slice(0, 64) || address };
   const search = new URLSearchParams(searchObject).toString() + '&perpage=32';
+  const history = useGetLedgerBalancesBySearchQuery({ search });
   const classes = useStyles();
 
   return (
