@@ -27,6 +27,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import ErrorIcon from '@material-ui/icons/Error';
+import MochimoAddress from './component/MochimoAddress';
 import MCMSuffix from './component/MCMSuffix';
 import TimePrep from './component/TimePrep';
 import QRCode from 'qrcode.react';
@@ -45,13 +46,11 @@ const useStyles = makeStyles((theme) => ({
   innerSpacing: {
     padding: theme.spacing(2)
   },
-  ellipsis: {
-    overflow: 'hidden',
-    'text-overflow': 'ellipsis',
-    'white-space': 'nowrap'
-  },
   table: {
+    display: 'block',
+    margin: '0 auto',
     background: theme.palette.action.hover,
+    'max-width': '95vw',
     '& td, & th': {
       'padding-top': theme.spacing(0.25),
       'padding-bottom': theme.spacing(0.25),
@@ -62,23 +61,44 @@ const useStyles = makeStyles((theme) => ({
   tagwots: {
     'max-width': '80vw'
   },
-  transactionRow: {
-    '& > *': {
-      borderBottom: 'unset'
-    }
+  detailsTable: {
+    margin: '0 auto',
+    background: theme.palette.action.hover
   },
-  addressCell: {
-    'max-width': '40vw'
-  },
-  subTableHeader: {
+  txidCell: {
     'max-width': '80vw'
   },
-  xsDownNone: {
+  addressCell: {
+    [theme.breakpoints.down('lg')]: {
+      'max-width': '55vw'
+    },
+    [theme.breakpoints.down('md')]: {
+      'max-width': '45vw'
+    },
+    [theme.breakpoints.down('sm')]: {
+      'max-width': '20vw'
+    },
+    [theme.breakpoints.down('xs')]: {
+      'max-width': '22vw'
+    }
+  },
+  detailsAddressCell: {
+    [theme.breakpoints.down('md')]: {
+      'max-width': '70vw'
+    },
+    [theme.breakpoints.down('sm')]: {
+      'max-width': '55vw'
+    },
+    [theme.breakpoints.down('xs')]: {
+      'max-width': '40vw'
+    }
+  },
+  xsDownHide: {
     [theme.breakpoints.down('xs')]: {
       display: 'none'
     }
   },
-  smNone: {
+  smOnlyHide: {
     [theme.breakpoints.only('sm')]: {
       display: 'none'
     }
@@ -88,198 +108,185 @@ const useStyles = makeStyles((theme) => ({
 const Blank = '----';
 const DEFAULT_TAG = '420000000e00000001000000';
 const isUntagged = (addr) => ['00', '42'].includes(addr.slice(0, 2));
+const splitTransaction = (tx, address) => {
+  const stxs = [];
+  // deconstruct transaction elements
+  const { srcaddr, srctag, dstaddr, dsttag, chgaddr, chgtag } = tx;
+  // deconstruct transaction
+  const sT = tx.sendtotal;
+  const cT = tx.changetotal;
+  const src = isUntagged(srctag) ? srcaddr : srctag;
+  // const dst = isUntagged(dsttag) ? dstaddr : dsttag;
+  const chg = isUntagged(chgtag) ? chgaddr : chgtag;
+  // derive reference address position
+  if ((srctag + srcaddr).includes(address)) address = 'src';
+  if ((dsttag + dstaddr).includes(address)) address = 'dst';
+  if ((chgtag + chgaddr).includes(address)) address = 'chg';
+  // build simple transactions' base object
+  const add = { _id: tx._id, time: tx.stime, block: tx.bnum };
+  // determine simple transactions by conditional transaction element comparison
+  if (address === 'src' && src === chg) { // 1 of 2 simple transactions take place
+    if (sT || !cT) { // dst @ -(sT), else chg @ -(cT)
+      stxs.push({ ...add, tag: dsttag, address: dstaddr, amount: -(sT) });
+    } else stxs.push({ ...add, tag: chgtag, address: chgaddr, amount: -(cT) });
+  } else { // 1 OR 2 simple transactions take place
+    if ((sT && address !== 'chg') || address === 'dst') {
+      if (address === src) { // dst @ -(sT), else src @ sT
+        stxs.push({ ...add, tag: dsttag, address: dstaddr, amount: -(sT) });
+      } else stxs.push({ ...add, tag: srctag, address: srcaddr, amount: sT });
+    } // and/or
+    if ((cT && address !== 'dst') || address === 'chg') {
+      if (address === src) { // chg @ -(cT), else src @ cT
+        stxs.push({ ...add, tag: chgtag, address: chgaddr, amount: -(cT) });
+      } else stxs.push({ ...add, tag: srctag, address: srcaddr, amount: cT });
+    }
+  }
+  // return simple transactions
+  return stxs;
+};
 
-function TransactionSimpleRow ({ data, open, handleOpen }) {
-  const { ref, refType, amount, time, block } = data;
-  const classes = useStyles();
-
+function TableRowCells ({ key, cells }) {
   return (
     <TableRow>
-      <TableCell padding='none'>
-        {typeof open !== 'undefined' && (
-          <IconButton size='small' aria-label='open tx' onClick={handleOpen}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        )}
-      </TableCell>
-      <TableCell className={clsx(classes.xsDownNone, classes.addressCell)}>
-        <Typography noWrap>
-          <Link to={`/explorer/ledger/${refType}/${ref}`}>
-            {refType === 'tag' ? 'τ-' : 'ω+'}{ref}
-          </Link>
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography noWrap>
-          <TimePrep epoch={time} />
-        </Typography>
-      </TableCell>
-      <TableCell className={classes.smNone}>
-        <Typography noWrap>
-          {block}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography noWrap>
-          {amount < 0 ? 'OUT' : 'IN'}
-        </Typography>
-      </TableCell>
-      <TableCell align='right'>
-        <Typography noWrap>
-          <MCMSuffix value={amount} />
-        </Typography>
-      </TableCell>
+      {(Array.isArray(cells) ? cells : [cells]).map((cell, index) => (
+        <TableCell key={`${key}-cell${index}`} {...cell} />
+      ))}
     </TableRow>
   );
 }
 
-function TransactionPartRow ({ pre, addressType, address, amount, fee }) {
-  const classes = useStyles();
-
-  return (
-    <TableRow>
-      <TableCell className={classes.addressCell}>
-        <Typography variant='body2' noWrap>
-          {pre || ''}
-          <Link to={`/explorer/ledger/${addressType}/${address}`}>
-            {addressType === 'tag' ? 'τ-' : 'ω+'}{address}
-          </Link>
-        </Typography>
-      </TableCell>
-      <TableCell align='right'>
-        {fee ? <MCMSuffix value={fee} disableUnits /> : null}
-      </TableCell>
-      <TableCell align='right'><MCMSuffix value={amount} /></TableCell>
-    </TableRow>
-  );
-}
-
-function TransactionRow ({ tx, address }) {
-  const [simpleTransactions, setSimpleTransactions] = useState([]);
-  const [lastIndex, setLastIndex] = useState(0);
+function TransactionRow ({ key, tx, address }) {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
   const classes = useStyles();
 
-  useEffect(() => {
-    const { srcaddr, srctag, dstaddr, dsttag, chgaddr, chgtag, _id } = tx;
-    const change = tx.changetotal;
-    const send = tx.sendtotal;
-    const src = isUntagged(srctag) ? srcaddr : srctag;
-    const dst = isUntagged(dsttag) ? dstaddr : dsttag;
-    const chg = isUntagged(chgtag) ? chgaddr : chgtag;
-    const srcType = isUntagged(srctag) ? 'address' : 'tag';
-    const dstType = isUntagged(dsttag) ? 'address' : 'tag';
-    const chgType = isUntagged(chgtag) ? 'address' : 'tag';
-    const add = { _id, time: tx.stime, block: tx.bnum };
-    // when address === src and src === chg; 1 of 2 simple transactions take place...
-    /// add from src to dst at sendtotal, if sendtotal or !changetotal
-    /// add from src to chg at changetotal, if changetotal
-    // when src !== chg; 1 OR 2 simple transactions take place...
-    /// add from src to dst at sendtotal, if sendtotal
-    /// add from src to chg at changetotal, if changetotal
-    const stxs = [];
-    if (address === src && src === chg) {
-      if (send || !change) {
-        stxs.push({ refType: dstType, ref: dst, amount: -(send), ...add });
-      } else {
-        stxs.push({ refType: chgType, ref: chg, amount: -(change), ...add });
+  const _cid = `${key}-details`;
+  const _label = _cid.replace('-', ' ');
+
+  const stxs = splitTransaction(tx, address);
+  const txDetailsPreHeadCells = {
+    variant: 'head',
+    colSpan: 4,
+    className: classes.txidCell,
+    children: (
+      <Typography align='left' variant='body2' noWrap>
+        TxID: <Link to={`/explorer/transaction/${tx.txid}`}>{tx.txid}</Link>
+        <br />
+        <MochimoAddress pre='Source: ' tag={tx.srctag} addr={tx.srcaddr} />
+      </Typography>
+    )
+  };
+  const txDetailsHeadCells = [{}, {
+    variant: 'head',
+    className: classes.detailsAddressCell,
+    children: 'Destinations'
+  }, {
+    variant: 'head', children: 'Fee', align: 'right'
+  }, {
+    variant: 'head', children: 'Amount', align: 'right'
+  }];
+  const txDetailsCells = [
+    ...(tx.dstarray ? tx.dstarray.map((dst) => [{},
+      { // mdtx destination entries
+        className: classes.detailsAddressCell,
+        children: (
+          <Typography variant='body2' noWrap>
+            <MochimoAddress tag={dst.tag} />
+          </Typography>
+        )
+      }, {
+        children: (<MCMSuffix value={dst.fee} disableUnits />), align: 'right'
+      }, {
+        children: (<MCMSuffix value={dst.amount} />), align: 'right'
       }
-    } else {
-      if ((send && address !== chg) || address === dst) {
-        if (address === src) {
-          stxs.push({ refType: dstType, ref: dst, amount: -(send), ...add });
-        } else {
-          stxs.push({ refType: srcType, ref: src, amount: send, ...add });
-        }
+    ]) : [[{},
+      { // non-mdtx transaction destination entry
+        className: classes.detailsAddressCell,
+        children: (
+          <Typography variant='body2' noWrap>
+            <MochimoAddress tag={tx.dsttag} addr={tx.dstaddr} />
+          </Typography>
+        )
+      }, {
+        children: (<MCMSuffix value={tx.txfee} disableUnits />), align: 'right'
+      }, {
+        children: (<MCMSuffix value={tx.sendtotal} />), align: 'right'
       }
-      if ((change && address !== dst) || address === chg) {
-        if (address === src) {
-          stxs.push({ refType: chgType, ref: chg, amount: -(change), ...add });
-        } else {
-          stxs.push({ refType: srcType, ref: src, amount: change, ...add });
-        }
+    ]]), [{},
+      { // change entry
+        className: classes.detailsAddressCell,
+        children: (
+          <Typography variant='body2' noWrap>
+            <MochimoAddress pre='Change: ' tag={tx.chgtag} addr={tx.chgaddr} />
+          </Typography>
+        )
+      }, {
+        children: null, align: 'right'
+      }, {
+        children: (<MCMSuffix value={tx.changetotal} />), align: 'right'
       }
-    }
-    // store simple transactions and "last index"
-    if (stxs.length) {
-      setLastIndex(stxs.length - 1);
-      setSimpleTransactions(stxs);
-    }
-  }, [tx, address]);
+    ]
+  ];
 
   return (
     <>
-      {simpleTransactions.map((data, index) => (
-        <TransactionSimpleRow
-          key={`stx-${index}-${data._id}`}
-          handleOpen={index === lastIndex ? handleOpen : () => {}}
-          open={index === lastIndex ? open : undefined}
-          data={data}
-        />
-      ))}
+      {stxs.map((stx, index) => {
+        const isLast = Boolean(index + 1 === stxs.length);
+        const stxCells = [
+          {
+            children: !isLast ? null : (
+              <IconButton size='small' onClick={handleOpen}>
+                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              </IconButton>
+            )
+          }, {
+            className: classes.addressCell,
+            children: (
+              <Typography noWrap>
+                <MochimoAddress tag={stx.tag} addr={stx.address} />
+              </Typography>
+            )
+          }, {
+            children: (
+              <Typography noWrap>
+                <TimePrep epoch={stx.time} />
+              </Typography>
+            )
+          }, {
+            className: classes.xsDownHide,
+            children: (
+              <Typography noWrap>
+                {stx.block}
+              </Typography>
+            )
+          }, {
+            className: classes.xsDownHide,
+            children: (
+              <Typography noWrap>
+                {stx.amount < 0 ? 'OUT' : 'IN'}
+              </Typography>
+            ),
+            align: 'right'
+          }, {
+            children: (
+              <Typography noWrap>
+                <MCMSuffix value={stx.amount} />
+              </Typography>
+            ),
+            align: 'right'
+          }
+        ];
+        return (<TableRowCells key={`${key}-stx-${index}`} cells={stxCells} />);
+      })}
       <TableRow>
         <TableCell style={{ padding: 0 }} colSpan={6}>
           <Collapse in={open} timeout='auto' unmountOnExit>
-            <Table
-              size='small'
-              className={classes.table}
-              aria-label='transaction destinations'
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell colSpan={3} className={classes.subTableHeader}>
-                    <Typography align='left' variant='body2' noWrap>
-                      TxID:&nbsp;
-                      <Link to={`/explorer/transaction/${tx.txid}`}>
-                        {tx.txid}
-                      </Link>
-                      <br />
-                      <MCMSuffix value={tx.changetotal} />
-                      <span> • Change: </span>
-                      <Link to={`/explorer/ledger/tag/${tx.chgtag}`}>
-                        τ-{tx.chgtag}
-                      </Link>
-                      <br />
-                      <span>Source: </span>
-                      <Link to={`/explorer/ledger/tag/${tx.srctag}`}>
-                        τ-{tx.srctag}
-                      </Link>
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell className={classes.addressCell}>
-                    Destinations
-                  </TableCell>
-                  <TableCell align='right'>Fee</TableCell>
-                  <TableCell align='right'>Amount</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {tx.dstarray ? tx.dstarray.map((dst, index) => (
-                  <TransactionPartRow
-                    key={`txpart-${index}-${tx._id}`}
-                    type='tag'
-                    address={dst.tag}
-                    amount={dst.amount}
-                    fee={tx.txfee}
-                  />
-                )) : (
-                  <TransactionPartRow
-                    addressType={isUntagged(tx.dsttag) ? 'address' : 'tag'}
-                    address={isUntagged(tx.dsttag) ? tx.dstaddr : tx.dsttag}
-                    amount={tx.sendtotal}
-                    fee={tx.txfee}
-                  />
-                )}
-                <TransactionPartRow
-                  pre='Change: '
-                  addressType={isUntagged(tx.chgtag) ? 'address' : 'tag'}
-                  address={isUntagged(tx.chgtag) ? tx.chgaddr : tx.chgtag}
-                  amount={tx.changetotal}
-                />
-              </TableBody>
+            <Table size='small' className={classes.detailsTable} aria-label={_label}>
+              <TableRowCells key={`${_cid}`} cells={txDetailsPreHeadCells} />
+              <TableRowCells key={`${_cid}-head`} cells={txDetailsHeadCells} />
+              {txDetailsCells.map((cells, index) => (
+                <TableRowCells key={`${_cid}-details-${index}`} cells={cells} />
+              ))}
             </Table>
           </Collapse>
         </TableCell>
@@ -294,45 +301,79 @@ function TransactionHistory ({ ledger, type, address }) {
   const history = useGetTransactionsBySearchQuery({ search });
   const classes = useStyles();
 
+  const _cid = 'transation-history-table';
+  const _label = _cid.replace('-', ' ');
+
+  const tableHeadCells = [
+    { variant: 'head' },
+    { variant: 'head', children: 'Reference' },
+    { variant: 'head', children: 'Time' },
+    { variant: 'head', className: classes.xsDownHide, children: 'Block' },
+    { variant: 'head', className: classes.xsDownHide },
+    { variant: 'head', children: 'Amount', align: 'right' }
+  ];
+  const loadingCells = {
+    align: 'center', colSpan: 6, children: (<CircularProgress size='4rem' />)
+  };
+
+  return (
+    <TableContainer component={Container} className={classes.innerSpacing}>
+      <Table size='small' className={classes.table} aria-label={_label}>
+        <TableRowCells key={`${_cid}-head`} cells={tableHeadCells} />
+        {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
+          history.data.results?.map((tx, index) => (
+            <TransactionRow
+              key={`${_cid}-row-${index}`}
+              address={searchObject.tag || searchObject.address}
+              tx={tx}
+            />
+          ))
+        )}
+      </Table>
+    </TableContainer>
+  );
+}
+
+function BalanceHistory ({ ledger, type, address }) {
+  const searchObject = { [type]: ledger.data?.[type].slice(0, 64) || address };
+  const search = new URLSearchParams(searchObject).toString() + '&perpage=32';
+  const classes = useStyles();
+
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
       <Table
         size='small'
         className={classes.table}
-        aria-label='transaction history table'
+        aria-label='balance history table'
       >
         <TableHead>
           <TableRow>
             <TableCell />
-            <TableCell className={classes.xsDownNone}>Reference</TableCell>
+            <TableCell className={classes.xsDownHide}>Balance</TableCell>
             <TableCell>Time</TableCell>
-            <TableCell className={classes.smNone}>Block</TableCell>
+            <TableCell className={classes.smOnlyHide}>Aeon</TableCell>
             <TableCell />
-            <TableCell align='right'>Amount</TableCell>
+            <TableCell align='right'>Delta</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {history.isLoading ? (
+          {history.isFetching ? (
             <TableRow>
               <TableCell align='center' colSpan={6}>
                 <CircularProgress size='4rem' />
               </TableCell>
             </TableRow>
-          ) : history.data?.results.map((tx) => (
+          ) : history.data?.results.map((ngd) => (
             <TransactionRow
-              key={`txrow-${tx._id}`}
+              key={`balrow-${ngd._id}`}
               address={searchObject.tag || searchObject.address}
-              tx={tx}
+              ngd={ngd}
             />
           ))}
         </TableBody>
       </Table>
     </TableContainer>
   );
-}
-
-function BalanceHistory () {
-  return null;
 }
 
 function TabPanel (props) {
@@ -356,13 +397,13 @@ function TabPanel (props) {
 
 export default function ExplorerLedgerTypeAddress () {
   const { type, address } = useParams();
-  const ledger = useGetLedgerEntryByTypeAddressQuery({ type, address});
+  const ledger = useGetLedgerEntryByTypeAddressQuery({ type, address });
   const [wots, setWots] = useState(type === 'address' && address);
   const [tag, setTag] = useState(type === 'tag' && address);
   const [tab, setTab] = useState(1);
   const classes = useStyles();
 
-  const { columnFlex, innerSpacing, outerSpacing, ellipsis, tagwots } = classes;
+  const { columnFlex, innerSpacing, outerSpacing, tagwots } = classes;
   const handleTab = (e, selectedTab) => { setTab(selectedTab); };
 
   useEffect(() => {
@@ -374,7 +415,7 @@ export default function ExplorerLedgerTypeAddress () {
 
   return (
     <Container className={clsx(columnFlex, innerSpacing)}>
-      <Typography className={clsx(ellipsis, tagwots, outerSpacing)}>
+      <Typography noWrap className={clsx(tagwots, outerSpacing)}>
         <Typography component='span' display='inline' color='textSecondary'>
           τag:&nbsp;
         </Typography>
@@ -431,8 +472,8 @@ export default function ExplorerLedgerTypeAddress () {
           aria-label='ledger details tabs'
         >
           <Tab label='QR Code' />
-          <Tab label='Transaction History' />
-          <Tab label='Balance History' />
+          <Tab label='History' />
+          <Tab label='Neogenesis History' />
         </Tabs>
         <TabPanel
           showError
@@ -446,7 +487,7 @@ export default function ExplorerLedgerTypeAddress () {
         >
           <QRCode includeMargin value={ledger.data?.tag || ''} />
         </TabPanel>
-        <TabPanel name='Transaction History' active={tab === 1} ledger={ledger}>
+        <TabPanel name='History' active={tab === 1} ledger={ledger}>
           <TransactionHistory ledger={ledger} type={type} address={address} />
         </TabPanel>
         <TabPanel name='Balance History' active={tab === 2} ledger={ledger}>
