@@ -14,18 +14,20 @@ import {
   Menu,
   MenuItem,
   Toolbar,
+  Tooltip,
   Typography,
-  useScrollTrigger
+  useScrollTrigger,
+  Link as MuiLink
 } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import MenuIcon from '@material-ui/icons/Menu';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import MochimoIcon from './MochimoIcon';
 import DiscordIcon from './DiscordIcon';
-import ThemeButton from './ThemeButton';
-import IconButtonLink from './IconButtonLink';
+import NightsStayIcon from '@material-ui/icons/NightsStay';
+import BrightnessHighIcon from '@material-ui/icons/BrightnessHigh';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -104,6 +106,16 @@ const useStyles = makeStyles((theme) => ({
     '& a': {
       'text-decoration': 'none'
     }
+  },
+  moreButton: {
+    [theme.breakpoints.up('sm')]: {
+      display: 'none'
+    }
+  },
+  moreItems: {
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    }
   }
 }));
 
@@ -119,15 +131,45 @@ export default function Header ({ routelist, switchTheme }) {
   });
   const classes = useStyles({ dense: trigger });
   const toolbarVariant = trigger ? 'dense' : 'regular';
-  const menuItems = [
+  const moreItems = [
     {
-      href: 'https://github.com/chrisdigity/mochimap-www',
+      text: 'Switch Theme',
+      Icon: useTheme()?.palette?.type === 'dark'
+        ? BrightnessHighIcon : NightsStayIcon,
+      itemProps: {
+        onClick: switchTheme
+      }
+    },
+    {
+      text: 'Mochimo Merchandise',
+      Icon: StorefrontIcon,
+      itemProps: {
+        href: 'https://merch.mochimap.com',
+        component: MuiLink
+      }
+    },
+    {
+      text: 'What is Mochimo?',
+      Icon: MochimoIcon,
+      itemProps: {
+        href: 'https://mochimo.org',
+        component: MuiLink
+      }
+    },
+    {
       text: 'Contribute to MochiMap',
-      Icon: GitHubIcon
+      Icon: GitHubIcon,
+      itemProps: {
+        href: 'https://github.com/chrisdigity/mochimap-www',
+        component: MuiLink
+      }
     }, {
-      href: 'https://discord.mochimap.com',
       text: 'Come Chat on Discord',
-      Icon: DiscordIcon
+      Icon: DiscordIcon,
+      itemProps: {
+        href: 'https://discord.mochimap.com',
+        component: MuiLink
+      }
     }
   ];
 
@@ -161,28 +203,27 @@ export default function Header ({ routelist, switchTheme }) {
           ))}
         </Typography>
         <div className={classes.grow} />
-        <ThemeButton switchTheme={switchTheme} />
-        <IconButtonLink
-          Icon={StorefrontIcon}
-          label='Mochimo Merchandise'
-          path='https://merch.mochimap.com'
-        />
-        <IconButtonLink
-          Icon={MochimoIcon}
-          label='What is Mochimo?'
-          path='https://mochimo.org'
-        />
+        <div className={classes.moreItems}>
+          {moreItems.map((item, ii) => (
+            <Tooltip key={`more-items-${ii}`} title={item.text}>
+              <IconButton {...item.itemProps}>
+                <item.Icon />
+              </IconButton>
+            </Tooltip>
+          ))}
+        </div>
         <IconButton
-          aria-label='more'
-          aria-controls='more-menu'
+          onClick={toggleMore}
+          className={classes.moreButton}
+          aria-label='more menu items'
+          aria-controls='moremenu-items'
           aria-haspopup='true'
           edge='end'
-          onClick={toggleMore}
         >
           <MoreVertIcon />
         </IconButton>
         <Menu
-          id='more-menu'
+          id='moremenu-items'
           anchorEl={moreAnchor}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -193,12 +234,12 @@ export default function Header ({ routelist, switchTheme }) {
           open={Boolean(moreAnchor)}
           onClose={toggleMore}
         >
-          {menuItems.map((item, index) =>
-            <MenuItem key={index} component='a' href={item.href} dense>
+          {moreItems.map((item, ii) =>
+            <MenuItem key={`moremenu-items-${ii}`} {...item.itemProps} dense>
               <ListItemIcon>
                 <item.Icon />
               </ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemText secondary={item.text} />
             </MenuItem>
           )}
         </Menu>
