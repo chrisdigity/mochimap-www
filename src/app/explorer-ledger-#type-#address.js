@@ -296,8 +296,44 @@ function TransactionRow ({ key, tx, address }) {
   );
 }
 
+function NeogenesisRow ({ key, data }) {
+  const classes = useStyles();
+
+  const cells = [
+    {
+      children: (
+        <Typography noWrap><MCMSuffix value={data.balance} /></Typography>
+      )
+    }, {
+      children: (
+        <Typography noWrap>
+          <TimePrep epoch={data.timestamp} />
+        </Typography>
+      )
+    }, {
+      className: classes.xsDownHide,
+      children: (
+        <Typography noWrap>{data.bnum}</Typography>
+      )
+    }, {
+      className: classes.xsDownHide,
+      children: (
+        <Typography noWrap>{`Æ${data.bnum >> 8}`}</Typography>
+      )
+    }, {
+      children: (
+        <Typography noWrap><MCMSuffix value={data.delta} /></Typography>
+      ),
+      align: 'right'
+    }
+  ];
+
+  return (<TableRowCells key={`${key}-balance`} cells={cells} />);
+}
+
 function TransactionHistory ({ ledger, type, address }) {
-  const searchObject = { [type]: ledger.data?.[type].slice(0, 64) || address };
+  const searchAddress = ledger.data?.[type].slice(0, 64) || address;
+  const searchObject = { [type]: searchAddress };
   const search = new URLSearchParams(searchObject).toString() + '&perpage=32';
   const history = useGetTransactionsBySearchQuery({ search });
   const classes = useStyles();
@@ -322,12 +358,8 @@ function TransactionHistory ({ ledger, type, address }) {
       <Table size='small' className={classes.table} aria-label={_label}>
         <TableRowCells key={`${_cid}-head`} cells={tableHeadCells} />
         {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
-          history.data.results?.map((tx, index) => (
-            <TransactionRow
-              key={`${_cid}-row-${index}`}
-              address={searchObject.tag || searchObject.address}
-              tx={tx}
-            />
+          history.data.results?.map((tx, ii) => (
+            <TransactionRow key={`${_cid}-${ii}`} address={address} tx={tx} />
           ))
         )}
       </Table>
@@ -335,44 +367,35 @@ function TransactionHistory ({ ledger, type, address }) {
   );
 }
 
-function BalanceHistory ({ ledger, type, address }) {
+function NeogenesisHistory ({ ledger, type, address }) {
   const searchObject = { [type]: ledger.data?.[type].slice(0, 64) || address };
   const search = new URLSearchParams(searchObject).toString() + '&perpage=32';
   const history = useGetLedgerBalancesBySearchQuery({ search });
   const classes = useStyles();
 
+  const _cid = 'balance-history-table';
+  const _label = _cid.replace('-', ' ');
+
+  const tableHeadCells = [
+    { variant: 'head', children: 'NG-Balance' },
+    { variant: 'head', children: 'Time' },
+    { variant: 'head', className: classes.xsDownHide, children: 'Block' },
+    { variant: 'head', className: classes.xsDownHide, children: 'Aeon' },
+    { variant: 'head', children: 'NG-Delta', align: 'right' }
+  ];
+  const loadingCells = {
+    align: 'center', colSpan: 5, children: (<CircularProgress size='4rem' />)
+  };
+
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
-      <Table
-        size='small'
-        className={classes.table}
-        aria-label='balance history table'
-      >
-        <TableHead>
-          <TableRow>
-            <TableCell />
-            <TableCell className={classes.xsDownHide}>Balance</TableCell>
-            <TableCell>Time</TableCell>
-            <TableCell className={classes.smOnlyHide}>Aeon</TableCell>
-            <TableCell />
-            <TableCell align='right'>Delta</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {history.isFetching ? (
-            <TableRow>
-              <TableCell align='center' colSpan={6}>
-                <CircularProgress size='4rem' />
-              </TableCell>
-            </TableRow>
-          ) : history.data?.results.map((ngd) => (
-            <TransactionRow
-              key={`balrow-${ngd._id}`}
-              address={searchObject.tag || searchObject.address}
-              ngd={ngd}
-            />
-          ))}
-        </TableBody>
+      <Table size='small' className={classes.table} aria-label={_label}>
+        <TableRowCells key={`${_cid}-head`} cells={tableHeadCells} />
+        {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
+          history.data.results?.map((data, ii) => (
+            <NeogenesisRow key={`${_cid}-${ii}`} data={data} />
+          ))
+        )}
       </Table>
     </TableContainer>
   );
@@ -493,7 +516,7 @@ export default function ExplorerLedgerTypeAddress () {
           <TransactionHistory ledger={ledger} type={type} address={address} />
         </TabPanel>
         <TabPanel name='Balance History' active={tab === 2} ledger={ledger}>
-          <BalanceHistory ledger={ledger} type={type} address={address} />
+          <NeogenesisHistory ledger={ledger} type={type} address={address} />
         </TabPanel>
       </Paper>
     </Container>
