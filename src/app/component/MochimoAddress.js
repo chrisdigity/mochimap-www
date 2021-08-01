@@ -10,7 +10,7 @@ export default function MochimoAddress ({ pre, tag, addr, disableLinks }) {
       {!tag || isUntagged(tag) ? null : disableLinks ? `τ-${tag}` : (
         <Link to={`/explorer/ledger/tag/${tag}`}>τ-{tag}</Link>
       )}
-      {tag && addr ? <span> • </span> : null}
+      {tag && !isUntagged(tag) && addr ? <span> • </span> : null}
       {!addr ? null : disableLinks ? `ω+${addr}` : (
         <Link to={`/explorer/ledger/address/${addr}`}>ω+{addr}</Link>
       )}
