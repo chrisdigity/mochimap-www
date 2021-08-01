@@ -35,6 +35,9 @@ export const MochimapApi = createApi({
     getNodeBySearch: builder.query({
       query: (params) => `network/search?${params?.search}`
     }),
+    getRichlistBySearch: builder.query({
+      query: (params) => `richlist/search?${params?.search}`
+    }),
     getTransactionByTxid: builder.query({
       query: (params) => `transaction/${params?.txid}`
     }),
@@ -54,6 +57,7 @@ export const {
   useGetLedgerEntryByTypeAddressQuery,
   useGetLedgerBalancesBySearchQuery,
   useGetNodeBySearchQuery,
+  useGetRichlistBySearchQuery,
   useGetTransactionByTxidQuery,
   useGetTransactionsBySearchQuery
 } = MochimapApi;
