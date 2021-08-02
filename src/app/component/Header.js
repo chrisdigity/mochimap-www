@@ -5,12 +5,14 @@ import {
   AppBar,
   Avatar,
   Badge,
+  Divider,
   Drawer,
   IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  ListSubheader,
   Menu,
   MenuItem,
   Toolbar,
@@ -24,10 +26,11 @@ import StorefrontIcon from '@material-ui/icons/Storefront';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import MenuIcon from '@material-ui/icons/Menu';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-import MochimoIcon from './MochimoIcon';
-import DiscordIcon from './DiscordIcon';
 import NightsStayIcon from '@material-ui/icons/NightsStay';
 import BrightnessHighIcon from '@material-ui/icons/BrightnessHigh';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import MochimoIcon from './MochimoIcon';
+import DiscordIcon from './DiscordIcon';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -116,6 +119,22 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down('xs')]: {
       display: 'none'
     }
+  },
+  drawerHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: 'flex-end'
+  },
+  drawerSubheader: {
+    display: 'flex',
+    'flex-direction': 'column',
+    background: theme.palette.background.default,
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+    justifyContent: 'flex-end'
   }
 }));
 
@@ -196,9 +215,9 @@ export default function Header ({ routelist, switchTheme }) {
         </Badge>
         <Typography className={classes.title}>ochiMap</Typography>
         <Typography className={classes.navItems} component='div'>
-          {routelist.filter(route => route.header).map((item, i) => (
-            <Link to={item.path || '/'} key={i}>
-              {item.Icon && <item.Icon />}{item.header}
+          {routelist.filter(route => route.nav).map((item, ii) => (
+            <Link to={item.path || '/'} key={`navmenu-item-${ii}`}>
+              {item.Icon && <item.Icon />}{item.nav}
             </Link>
           ))}
         </Typography>
@@ -244,25 +263,44 @@ export default function Header ({ routelist, switchTheme }) {
           )}
         </Menu>
       </Toolbar>
-      <Drawer
-        anchor='left'
-        open={Boolean(menuAnchor)}
-        onClose={toggleMenu}
-      >
-        <List>
-          {routelist.filter(route => route.header).map((route, index) => (
-            <ListItem
-              button
-              key={index}
-              to={route.path}
-              component={Link}
-              onClick={toggleMenu}
-            >
-              <ListItemIcon>
-                {route.Icon && <route.Icon fontSize='large' />}
-              </ListItemIcon>
-              <ListItemText>{route.desc}</ListItemText>
-            </ListItem>
+      <Drawer anchor='left' open={Boolean(menuAnchor)} onClose={toggleMenu}>
+        <div className={classes.drawerHeader}>
+          <IconButton onClick={toggleMenu}><ChevronLeftIcon /></IconButton>
+        </div>
+        <Divider />
+        <List dense>
+          {routelist.filter(route => route.nav).map((item, ii) => (
+            <>
+              <ListSubheader className={classes.drawerSubheader}>
+                {item.nav}
+                <Divider />
+              </ListSubheader>
+              {item.subnav ? item.subnav.map((subitem, jj) => (
+                <ListItem
+                  key={`menu-item-${ii}-${jj}`}
+                  button component={Link} to={subitem.path}
+                  onClick={toggleMenu}
+                >
+                  <ListItemIcon>
+                    {subitem.Icon && <subitem.Icon fontSize='large' />}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={subitem.primary} secondary={subitem.secondary}
+                  />
+                </ListItem>
+              )) : (
+                <ListItem
+                  key={`menu-item-${ii}`}
+                  button component={Link} to={item.path}
+                  onClick={toggleMenu}
+                >
+                  <ListItemIcon>
+                    {item.Icon && <item.Icon fontSize='large' />}
+                  </ListItemIcon>
+                  <ListItemText>{item.primary}</ListItemText>
+                </ListItem>
+              )}
+            </>
           ))}
         </List>
       </Drawer>
