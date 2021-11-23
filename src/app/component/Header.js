@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -43,11 +43,6 @@ const useStyles = makeStyles((theme) => ({
   },
   grow: {
     'flex-grow': 1
-  },
-  menu: {
-    [theme.breakpoints.up('md')]: {
-      display: 'none'
-    }
   },
   logo: {
     width: props => props.dense ? theme.spacing(6) : theme.spacing(8),
@@ -101,7 +96,8 @@ const useStyles = makeStyles((theme) => ({
     padding: props => props.dense ? '0 6px 2px 6px' : '0 8px 2px 8px',
     border: `2px solid ${theme.palette.background.default}`,
     transform: props => props.dense
-      ? 'scale(1) translate(100%, 75%)' : 'scale(1) translate(100%, 75%)',
+      ? 'scale(1) translate(100%, 75%)'
+      : 'scale(1) translate(100%, 75%)',
     transition: 'all 250ms ease',
     '&:hover': {
       background: theme.palette.secondary[theme.palette.type]
@@ -154,7 +150,8 @@ export default function Header ({ routelist, switchTheme }) {
     {
       text: 'Switch Theme',
       Icon: useTheme()?.palette?.type === 'dark'
-        ? BrightnessHighIcon : NightsStayIcon,
+        ? BrightnessHighIcon
+        : NightsStayIcon,
       itemProps: {
         onClick: switchTheme
       }
@@ -195,7 +192,7 @@ export default function Header ({ routelist, switchTheme }) {
   return (
     <AppBar position='sticky'>
       <Toolbar className={classes.root} variant={toolbarVariant}>
-        <IconButton className={classes.menu} edge='start' onClick={toggleMenu}>
+        <IconButton edge='start' onClick={toggleMenu}>
           <MenuIcon />
         </IconButton>
         <Badge
@@ -270,37 +267,37 @@ export default function Header ({ routelist, switchTheme }) {
         <Divider />
         <List dense>
           {routelist.filter(route => route.nav).map((item, ii) => (
-            <>
+            <React.Fragment key={`menu-header-${ii}`}>
               <ListSubheader className={classes.drawerSubheader}>
                 {item.nav}
                 <Divider />
               </ListSubheader>
-              {item.subnav ? item.subnav.map((subitem, jj) => (
-                <ListItem
-                  key={`menu-item-${ii}-${jj}`}
-                  button component={Link} to={subitem.path}
-                  onClick={toggleMenu}
-                >
-                  <ListItemIcon>
-                    {subitem.Icon && <subitem.Icon fontSize='large' />}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={subitem.primary} secondary={subitem.secondary}
-                  />
-                </ListItem>
-              )) : (
-                <ListItem
-                  key={`menu-item-${ii}`}
-                  button component={Link} to={item.path}
-                  onClick={toggleMenu}
-                >
-                  <ListItemIcon>
-                    {item.Icon && <item.Icon fontSize='large' />}
-                  </ListItemIcon>
-                  <ListItemText>{item.primary}</ListItemText>
-                </ListItem>
-              )}
-            </>
+              {item.subnav
+                ? item.subnav.map((subitem, jj) => (
+                  <ListItem
+                    key={`menu-item-${ii}-${jj}`}
+                    button component={Link} to={subitem.path}
+                    onClick={toggleMenu}
+                  >
+                    <ListItemIcon>
+                      {subitem.Icon && <subitem.Icon fontSize='large' />}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={subitem.primary} secondary={subitem.secondary}
+                    />
+                  </ListItem>))
+                : (
+                  <ListItem
+                    key={`menu-item-${ii}`}
+                    button component={Link} to={item.path}
+                    onClick={toggleMenu}
+                  >
+                    <ListItemIcon>
+                      {item.Icon && <item.Icon fontSize='large' />}
+                    </ListItemIcon>
+                    <ListItemText>{item.primary}</ListItemText>
+                  </ListItem>)}
+            </React.Fragment>
           ))}
         </List>
       </Drawer>
