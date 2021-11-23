@@ -10,6 +10,8 @@ import {
   Zoom
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import MochimoAddress from './MochimoAddress';
+import MochimoBalance from './MochimoBalance';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,7 +78,7 @@ const EventStreamTypes = ['transaction', 'network', 'block'];
 const EventStreamDefaults = { transaction: true, block: true };
 const EventStreamInterpreter = (message) => {
   const json = JSON.parse(message);
-  const { _id, bnum, bhash, event, srctag, srcaddr, sendtotal } = json;
+  const { _id, bnum, bhash, event, dsttag, dstaddr, sendtotal } = json;
   switch (event) {
     case 'block':
       return `New Network Block#${bnum}.${bhash.slice(0, 8)}...`;
@@ -86,9 +88,14 @@ const EventStreamInterpreter = (message) => {
       return `Node ${_id.replace(/-/g, '.')} updated their ` +
         Object.keys(json).filter(key => !key.includes('connect')).join(', ');
     case 'transaction':
-      return `Transaction of ${sendtotal} from ` +
-        (srctag === '420000000e00000001000000'
-          ? `ω+${srcaddr.slice(0, 24)}...` : `τ-${srctag}`);
+      return (
+        <>
+          <span>New Tx: </span>
+          <MochimoBalance value={sendtotal} />
+          <span> to </span>
+          <MochimoAddress short addr={dstaddr} tag={dsttag} />
+        </>
+      );
     default: return message;
   }
 };
