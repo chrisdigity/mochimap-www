@@ -1,6 +1,6 @@
 
-export function isDefaultTag (tag) {
-  return tag === '420000000e00000001000000';
+export function isUntagged (tag) {
+  return Boolean(['00', '42'].includes(tag.slice(0, 2)));
 }
 
 export function capitalize (str) {
