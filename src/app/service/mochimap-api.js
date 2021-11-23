@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const MochimapApi = createApi({
   reducerPath: 'MochimapApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://sg.mochimap.com' }),
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://api.mochimap.com' }),
   endpoints: (builder) => ({
     getBlockByLatest: builder.query({
       query: () => 'block'
@@ -15,7 +15,7 @@ export const MochimapApi = createApi({
       query: (params) => `block/${params?.number}/${params?.hash}`
     }),
     getBlocksBySearch: builder.query({
-      query: (params) => `block/search?${params?.search}`
+      query: (params) => `block/search?${params.search || ''}`
     }),
     getChainByLatest: builder.query({
       query: () => 'chain'
@@ -42,7 +42,8 @@ export const MochimapApi = createApi({
       query: (params) => `transaction/${params?.txid}`
     }),
     getTransactionsBySearch: builder.query({
-      query: (params) => `transaction/search?${params?.search}`
+      query: (params) =>
+        `transaction/search${params.search ? `?${params.search}` : ''}`
     })
   })
 });
