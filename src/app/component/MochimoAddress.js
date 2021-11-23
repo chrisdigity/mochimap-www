@@ -1,19 +1,43 @@
 
+import { Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
+import { isUntagged } from 'utils';
 
-const isUntagged = (addr) => ['00', '42'].includes(addr.slice(0, 2));
+const preTag = (
+  <Typography component='span' display='inline' color='textSecondary'>
+    τag:&nbsp;
+  </Typography>
+);
+const preAddress = (
+  <Typography component='span' display='inline' color='textSecondary'>
+    ωots:&nbsp;
+  </Typography>
+);
 
-export default function MochimoAddress ({ pre, tag, addr, disableLinks }) {
+export default function MochimoAddress (props) {
+  const { pre, tag, addr, short, disableLinks } = props;
+  let displayAddress = `${addr}`;
+  let displayTag = null;
+
+  if (tag && !isUntagged(tag)) {
+    if (short) displayAddress = null;
+    if (disableLinks) displayTag = tag;
+    else displayTag = (<Link to={`/explorer/ledger/tag/${tag}`}>{tag}</Link>);
+  } else {
+    if (short) displayAddress = `${addr.slice(0, 24)}...`;
+    if (!disableLinks) {
+      displayAddress = (
+        <Link to={`/explorer/ledger/address/${addr}`}>{displayAddress}</Link>
+      );
+    }
+  }
+
   return (
     <>
       {pre || ''}
-      {!tag || isUntagged(tag) ? null : disableLinks ? `τ-${tag}` : (
-        <Link to={`/explorer/ledger/tag/${tag}`}>τ-{tag}</Link>
-      )}
-      {tag && !isUntagged(tag) && addr ? <span> • </span> : null}
-      {!addr ? null : disableLinks ? `ω+${addr}` : (
-        <Link to={`/explorer/ledger/address/${addr}`}>ω+{addr}</Link>
-      )}
+      {displayTag ? preTag : ''}{displayTag || ''}
+      {displayTag && displayAddress ? (<span> • </span>) : ''}
+      {displayAddress ? preAddress : ''}{displayAddress || ''}
     </>
   );
 }
