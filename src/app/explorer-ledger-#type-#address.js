@@ -29,6 +29,9 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import ErrorIcon from '@material-ui/icons/Error';
 import MochimoAddress from './component/MochimoAddress';
+import MochimoTransactions from './component/MochimoTransactions';
+import TableRowCells from './component/TableRowCells';
+import TabPanel from './component/TabPanel';
 import MCMSuffix from './component/MCMSuffix';
 import TimePrep from './component/TimePrep';
 import QRCode from 'qrcode.react';
@@ -108,7 +111,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Blank = '----';
 const DEFAULT_TAG = '420000000e00000001000000';
-const isUntagged = (addr) => ['00', '42'].includes(addr.slice(0, 2));
+const isUntagged = (tag) => ['00', '42'].includes(tag.slice(0, 2));
 const splitTransaction = (tx, address) => {
   const stxs = [];
   // deconstruct transaction elements
@@ -145,16 +148,6 @@ const splitTransaction = (tx, address) => {
   // return simple transactions
   return stxs;
 };
-
-function TableRowCells ({ id, cells }) {
-  return (
-    <TableRow>
-      {(Array.isArray(cells) ? cells : [cells]).map((cell, index) => (
-        <TableCell key={`${id}-cell${index}`} {...cell} />
-      ))}
-    </TableRow>
-  );
-}
 
 function TransactionRow ({ id, tx, address }) {
   const [open, setOpen] = useState(false);
@@ -232,15 +225,16 @@ function TransactionRow ({ id, tx, address }) {
   return (
     <>
       {stxs.map((stx, index) => {
-        const isLast = Boolean(index + 1 === stxs.length);
+        let children = null;
+        if (index < stxs.length) { // not last
+          children = (
+            <IconButton size='small' onClick={handleOpen}>
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          );
+        }
         const stxCells = [
-          {
-            children: !isLast ? null : (
-              <IconButton size='small' onClick={handleOpen}>
-                {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-              </IconButton>
-            )
-          }, {
+          { children }, {
             className: classes.addressCell,
             children: (
               <Typography noWrap>
@@ -360,10 +354,18 @@ function TransactionHistory ({ ledger, type, address }) {
     { variant: 'head', className: classes.xsDownHide },
     { variant: 'head', children: 'Amount', align: 'right' }
   ];
-  const loadingCells = {
-    align: 'center', colSpan: 6, children: (<CircularProgress size='4rem' />)
-  };
 
+  if (history.isFetching) return (<CircularProgress size='4rem' />);
+  if (history.isError) {
+    return (
+      <>
+        <Typography variant='h6'>Cannot Display Transaction History</Typography>
+        <Typography variant='caption'>
+          Reason: {history.error?.data?.error}
+        </Typography>
+      </>
+    );
+  }
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
       <Table size='small' className={classes.table} aria-label={_label}>
@@ -371,14 +373,12 @@ function TransactionHistory ({ ledger, type, address }) {
           <TableRowCells key={sidHead} id={sidHead} cells={tableHeadCells} />
         </TableHead>
         <TableBody>
-          {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
-            history.data.results?.map((tx, ii) => {
-              const sid = `${_cid}-${ii}`;
-              return (
-                <TransactionRow key={sid} id={sid} address={address} tx={tx} />
-              );
-            })
-          )}
+          {history.data?.results.map((tx, ii) => {
+            const sid = `${_cid}-${ii}`;
+            return (
+              <TransactionRow key={sid} id={sid} address={address} tx={tx} />
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
@@ -402,10 +402,18 @@ function NeogenesisHistory ({ ledger, type, address }) {
     { variant: 'head', className: classes.xsDownHide, children: 'Aeon' },
     { variant: 'head', children: 'NG-Delta', align: 'right' }
   ];
-  const loadingCells = {
-    align: 'center', colSpan: 5, children: (<CircularProgress size='4rem' />)
-  };
 
+  if (history.isFetching) return (<CircularProgress size='4rem' />);
+  if (history.isError) {
+    return (
+      <>
+        <Typography variant='h6'>Cannot Display Transaction History</Typography>
+        <Typography variant='caption'>
+          Reason: {history.error?.data?.error}
+        </Typography>
+      </>
+    );
+  }
   return (
     <TableContainer component={Container} className={classes.innerSpacing}>
       <Table size='small' className={classes.table} aria-label={_label}>
@@ -413,37 +421,16 @@ function NeogenesisHistory ({ ledger, type, address }) {
           <TableRowCells key={sidHead} id={sidHead} cells={tableHeadCells} />
         </TableHead>
         <TableBody>
-          {history.isLoading ? (<TableRowCells cells={loadingCells} />) : (
-            history.data.results?.map((data, ii) => {
-              const sid = `${_cid}-${ii}`;
-              return (
-                <NeogenesisRow key={sid} id={sid} data={data} />
-              );
-            })
-          )}
+          {history.data.results?.map((data, ii) => {
+            const sid = `${_cid}-${ii}`;
+            return (
+              <NeogenesisRow key={sid} id={sid} data={data} />
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>
   );
-}
-
-function TabPanel (props) {
-  const { name, active, ledger, showError, check, reason, children } = props;
-
-  return active ? (
-    <>
-      {check || ledger.isFetching || (showError && ledger.isError) ? (
-        <>
-          <Typography variant='h6'>Cannot Display {name}</Typography>
-          <Typography variant='caption'>
-            Reason: {check ? reason : ledger.isFetching ? (
-              'waiting for validated ledger data...'
-            ) : 'an error occurred (╥﹏╥)'}
-          </Typography>
-        </>
-      ) : children}
-    </>
-  ) : null;
 }
 
 export default function ExplorerLedgerTypeAddress () {
@@ -464,6 +451,16 @@ export default function ExplorerLedgerTypeAddress () {
     }
   }, [type, address, ledger.data]);
 
+  let qrTabError = null;
+  let txTabError = null;
+  if (ledger.isFetching) {
+    qrTabError = txTabError = 'waiting for validated ledger data...';
+  } else if (ledger.isError) {
+    qrTabError = txTabError = 'an error occurred (╥﹏╥)';
+  } else if (ledger.data?.tag === DEFAULT_TAG) {
+    qrTabError = 'MochiMap only supports a QR code for tagged addresses...';
+  }
+
   return (
     <Container className={clsx(columnFlex, innerSpacing)}>
       <Typography noWrap className={clsx(tagwots, outerSpacing)}>
@@ -483,15 +480,15 @@ export default function ExplorerLedgerTypeAddress () {
       </Typography>
       <Card className={clsx(columnFlex, innerSpacing, outerSpacing)}>
         <Typography variant='h6'>Balance</Typography>
-        {ledger.isFetching ? (
-          <CircularProgress size='6rem' color='secondary' />
-        ) : (
-          <Typography variant='h1'>
-            {ledger.isError ? <ErrorIcon /> : (
-              <MCMSuffix value={ledger.data.balance} disableUnits />
+        {ledger.isFetching
+          ? (<CircularProgress size='6rem' color='secondary' />)
+          : (
+            <Typography variant='h1'>
+              {ledger.isError
+                ? (<ErrorIcon />)
+                : (<MCMSuffix value={ledger.data.balance} disableUnits />)}
+            </Typography>
             )}
-          </Typography>
-        )}
         <Divider />
         <Typography>
           <Typography
@@ -500,18 +497,20 @@ export default function ExplorerLedgerTypeAddress () {
           >
             Available:&nbsp;
           </Typography>
-          {ledger.isFetching || ledger.isError ? Blank : (
-            <Typography
-              component='span' variant='subtitle1' display='inline'
-              color='textPrimary'
-            >
-              <MCMSuffix
-                decimals={9}
-                disableSuffix
-                value={ledger.data.balance}
-              />
-            </Typography>
-          )}
+          {ledger.isFetching || ledger.isError
+            ? (Blank)
+            : (
+              <Typography
+                component='span' variant='subtitle1' display='inline'
+                color='textPrimary'
+              >
+                <MCMSuffix
+                  decimals={9}
+                  disableSuffix
+                  value={ledger.data.balance}
+                />
+              </Typography>
+              )}
         </Typography>
       </Card>
       <Paper className={clsx(classes.columnFlex, classes.outerSpacing)}>
@@ -523,25 +522,16 @@ export default function ExplorerLedgerTypeAddress () {
           aria-label='ledger details tabs'
         >
           <Tab label='QR Code' />
-          <Tab label='History' />
-          <Tab label='Neogenesis History' />
+          <Tab label='Transactions' />
+          <Tab label='Neogenesis' />
         </Tabs>
-        <TabPanel
-          showError
-          active={tab === 0}
-          name='QR Code'
-          ledger={ledger}
-          check={ledger.data?.tag === DEFAULT_TAG}
-          reason={(
-            <span>MochiMap only supports a QR code for tagged addresses</span>
-          )}
-        >
+        <TabPanel active={tab === 0} error={qrTabError} name='QR Code'>
           <QRCode includeMargin value={ledger.data?.tag || ''} />
         </TabPanel>
-        <TabPanel name='History' active={tab === 1} ledger={ledger}>
-          <TransactionHistory ledger={ledger} type={type} address={address} />
+        <TabPanel active={tab === 1} error={txTabError} name='Transactions'>
+          <MochimoTransactions addr={ledger.data?.[type]} addrType={type} />
         </TabPanel>
-        <TabPanel name='Balance History' active={tab === 2} ledger={ledger}>
+        <TabPanel active={tab === 2} error={txTabError} name='Neogenesis'>
           <NeogenesisHistory ledger={ledger} type={type} address={address} />
         </TabPanel>
       </Paper>

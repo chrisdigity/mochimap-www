@@ -1,11 +1,110 @@
 
-import { useMochimapApi } from 'MochiMapHooks';
-import { capitalize, isDefaultTag, mcm, preBytes } from 'MochiMapUtils';
+import {
+  useGetBlockByNumberQuery,
+  useGetTransactionsBySearchQuery
+} from './service/mochimap-api';
+import {
+  Card,
+  CircularProgress,
+  Collapse,
+  Container,
+  Divider,
+  IconButton,
+  Paper,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import Pagination from '../Pagination';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import MochimoBlockId from './component/MochimoBlockId';
+import MochimoTransactions from './component/MochimoTransactions';
+import TabPanel from './component/TabPanel';
+import LabelValue from './component/LabelValue';
+import QRCode from 'qrcode.react';
+import clsx from 'clsx';
+
+const useStyles = makeStyles((theme) => ({
+  columnFlex: {
+    display: 'flex',
+    'flex-direction': 'column',
+    position: 'relative',
+    alignItems: 'center'
+  },
+  outerSpacing: {
+    margin: theme.spacing(1)
+  },
+  innerSpacing: {
+    padding: theme.spacing(2)
+  },
+  maxWidth: {
+    'max-width': '90vw'
+  },
+  table: {
+    display: 'block',
+    margin: '0 auto',
+    background: theme.palette.action.hover,
+    'max-width': '95vw',
+    '& td, & th': {
+      'padding-top': theme.spacing(0.25),
+      'padding-bottom': theme.spacing(0.25),
+      'padding-left': theme.spacing(1),
+      'padding-right': theme.spacing(1)
+    }
+  },
+  tagwots: {
+    'max-width': '80vw'
+  },
+  detailsTable: {
+    margin: '0 auto',
+    background: theme.palette.action.hover
+  },
+  txidCell: {
+    'max-width': '80vw'
+  },
+  addressCell: {
+    [theme.breakpoints.down('lg')]: {
+      'max-width': '55vw'
+    },
+    [theme.breakpoints.down('md')]: {
+      'max-width': '45vw'
+    },
+    [theme.breakpoints.down('sm')]: {
+      'max-width': '20vw'
+    },
+    [theme.breakpoints.down('xs')]: {
+      'max-width': '22vw'
+    }
+  },
+  detailsAddressCell: {
+    [theme.breakpoints.down('md')]: {
+      'max-width': '70vw'
+    },
+    [theme.breakpoints.down('sm')]: {
+      'max-width': '55vw'
+    },
+    [theme.breakpoints.down('xs')]: {
+      'max-width': '40vw'
+    }
+  },
+  xsDownHide: {
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    }
+  },
+  smOnlyHide: {
+    [theme.breakpoints.only('sm')]: {
+      display: 'none'
+    }
+  }
+}));
 
 const DateOptions = {
   weekday: 'long',
@@ -14,104 +113,69 @@ const DateOptions = {
   day: 'numeric'
 };
 
-function Transactions ({ src, srcType }) {
-  const [init, setInit] = useState(true);
-  const [txs, requestTxs] = useMochimapApi('/transaction/search');
-  let lastDateString;
-
-  useEffect(() => {
-    if (init) {
-      requestTxs(1, `${srcType}:begins=${src}`);
-      setInit(false);
-    }
-  }, [src, srcType, requestTxs]);
-
-  return (
-    <div className='bdet_trans'>
-      <div className='bdet_list_items'>
-        {srcType === '_id' && <p>Block Transactions</p>}
-        {(txs.loading && (
-          <div>
-            <FontAwesomeIcon icon={faSpinner} pulse />
-            <span> Loading transactions...</span>
-          </div>
-        )) || (!txs.data?.results?.length && (
-          <div>ϟ No transactions...</div>
-        ))}
-        {txs.data?.results?.map((item, index) => {
-          const date = item.timestamp ? new Date(item.timestamp * 1000) : null;
-          const dateString = date?.toLocaleDateString(undefined, DateOptions) ||
-            'Unknown Date';
-          const showDate = Boolean(dateString !== lastDateString);
-          if (showDate) lastDateString = dateString;
-          if (srcType === '_id') {
-            if (!isDefaultTag(item.srctag)) item.srcaddr = item.srctag;
-            if (!isDefaultTag(item.dsttag)) item.dstaddr = item.dsttag;
-            if (!isDefaultTag(item.chgtag)) item.chgaddr = item.chgtag;
-            return (
-              <Link to={'/explorer/transaction/' + item.txid} key={index}>
-                <ul className='bdet_list_txe'>
-                  <li className='txid'>ϟ {item.txid}</li>
-                  <li className='src'>
-                    {item.srcaddr === item.srctag ? 'τ-' : 'ω+'}{item.srcaddr}
-                  </li>
-                  <li className='arrow'>➟</li>
-                  <li className='chg'>
-                    {item.chgaddr === item.chgtag ? 'τ-' : 'ω+'}{item.chgaddr}
-                  </li>
-                  <li className='amount'>{mcm(item.changetotal)}</li>
-                  <li className='dst'>&nbsp;⤷&nbsp;
-                    {item.dstaddr === item.dsttag ? 'τ-' : 'ω+'}{item.dstaddr}
-                  </li>
-                  <li className='amount'>{mcm(item.sendtotal)}</li>
-                </ul>
-              </Link>
-            );
-          }
-        })}
-      </div>
-      <Pagination
-        page={txs.page || 1}
-        pages={txs.data.pages || 1}
-        paginate={requestTxs}
-        range={2}
-      />
-    </div>
-  );
-}
-
 export default function Block () {
-  const { bnum } = useParams();
-  const [init, setInit] = useState(true);
-  const [block, requestBlock] = useMochimapApi('/block/' + bnum);
+  const { bnum, bhash } = useParams();
+  const [tab, setTab] = useState(1);
+  const block = useGetBlockByNumberQuery({ number: bnum });
+  const classes = useStyles();
+  const { columnFlex, innerSpacing, outerSpacing, maxWidth, tagwots } = classes;
 
-  useEffect(() => {
-    if (init) {
-      requestBlock();
-      setInit(false);
-    }
-  }, [init, setInit]);
+  const handleTab = (e, selectedTab) => setTab(selectedTab);
+
+  let qrTabError = null;
+  let txTabError = null;
+  if (block.isFetching) {
+    qrTabError = txTabError = 'waiting for validated block data...';
+  } else if (block.isError) {
+    qrTabError = txTabError = 'an error occurred (╥﹏╥)';
+  }
+
   return (
-    <div className='b_det'>
-      <div className='b_det_inn'>
-        <div className='bdet_head'>
-          {block.error && (
-            <p>{block.data?.error || 'Error loading block ' + bnum}</p>
-          )}
-          {block.loading && (
-            <p>
-              <FontAwesomeIcon icon={faSpinner} pulse /> Loading Block Details
-            </p>
-          )}
-          {block.data?.type && (
-            <p>
-              {capitalize(block.data.type)}
-              {block.data.type === 'pseudo' ? 'block' : ' Block'} #
-              {block.data.bnum}&nbsp;
-              <sup>(0x{block.data.bnum.toString(16)})</sup>
-            </p>
-          )}
-        </div>
+    <Container className={clsx(columnFlex, innerSpacing)}>
+      <Typography noWrap className={clsx(tagwots, outerSpacing)}>
+        <MochimoBlockId number={bnum} hash={bhash} disableLinks />
+      </Typography>
+      <Card className={clsx(innerSpacing, outerSpacing, maxWidth)}>
+        <Typography variant='h6' align='center'>
+          Block Statistics<br /> switch to tabbed data?
+        </Typography>
+        {block.isFetching
+          ? <CircularProgress size='4rem' />
+          : (
+            <>
+              <LabelValue label='Block Type:' value={block.data?.type} />
+              <LabelValue label='Block Number:' value={block.data?.bnum} />
+              <LabelValue label='Block Hash:' value={block.data?.bhash} />
+              <LabelValue label='Prev. Hash:' value={block.data?.phash} />
+              <LabelValue label='Merkle Root:' value={block.data?.mroot} />
+              <LabelValue label='Nonce:' value={block.data?.nonce} />
+            </>
+            )}
+      </Card>
+      <Paper className={clsx(classes.columnFlex, classes.outerSpacing)}>
+        <Tabs
+          value={tab}
+          onChange={handleTab}
+          textColor='primary'
+          indicatorColor='secondary'
+          aria-label='ledger details tabs'
+        >
+          <Tab label='QR Code' />
+          <Tab label='Transactions' />
+          <Tab label='Neogenesis' />
+        </Tabs>
+        <TabPanel active={tab === 0} error={qrTabError} name='QR Code'>
+          <QRCode includeMargin value={block.data?.bhash || ''} />
+        </TabPanel>
+        <TabPanel active={tab === 1} error={txTabError} name='Transactions'>
+          <MochimoTransactions bnum={bnum} bhash={bhash} />
+        </TabPanel>
+        <TabPanel active={tab === 2} error={txTabError} name='Haiku'>
+          acb
+        </TabPanel>
+      </Paper>
+    </Container>
+  ); /*
         <div className='bdet_main'>
           <ul className='bdet'>
             <li>
@@ -200,5 +264,5 @@ export default function Block () {
         </div>
       </div>
     </div>
-  );
+  ); */
 }

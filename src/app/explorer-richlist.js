@@ -6,7 +6,6 @@ import {
   useGetChainByLatestQuery
 } from './service/mochimap-api';
 import {
-  Button,
   CircularProgress,
   Container,
   Paper,
@@ -19,8 +18,9 @@ import {
   Typography
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import LoadMoreButton from './component/LoadMoreButton';
 import MochimoAddress from './component/MochimoAddress';
-import MCMSuffix from './component/MCMSuffix';
+import MochimoBalance from './component/MochimoBalance';
 import TimePrep from './component/TimePrep';
 
 const useStyles = makeStyles((theme) => ({
@@ -61,32 +61,21 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down('xs')]: {
       'max-width': '25vw'
     }
-  },
-  buttonWrapper: {
-    margin: theme.spacing(1),
-    position: 'relative'
-  },
-  buttonProgress: {
-    color: theme.palette.secondary.main,
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12
   }
 }));
 
 export default function ExplorerLedgerRichlist () {
-  const initialSearch = useLocation().search;
-  const [search, setSearch] = useState(new URLSearchParams(initialSearch));
-  const richlist = useGetRichlistBySearchQuery({ search: search.toString() });
+  const initialParams = new URLSearchParams(useLocation().search);
+  if (!initialParams.has('perpage')) initialParams.set('perpage', '100');
+  const [search, setSearch] = useState(initialParams);
+  const request = useGetRichlistBySearchQuery({ search: search.toString() });
   const chain = useGetChainByLatestQuery();
   const classes = useStyles();
 
   const loadMore = () => {
     setSearch((state) => {
       const params = new URLSearchParams(state);
-      params.set('perpage', Number(params.get('perpage') || 0) + 32);
+      params.set('perpage', Number(params.get('perpage') || 0) + 100);
       return params.toString();
     });
   };
@@ -99,17 +88,16 @@ export default function ExplorerLedgerRichlist () {
       <TableContainer component={Paper} className={classes.root}>
         <Typography align='center'>
           The Mochimo Richlist is generated once per Aeon.<br />
-          <i>
-            {chain.isFetching ? (
-              <CircularProgress size='1em' />
-            ) : (256 - (chain.data?.bnum % 256))} Blocks until next update
-            (est. {chain.isFetching ? (<CircularProgress size='1em' />) : (
-              <TimePrep
-                epoch={(chain.data.stime +
-                  ((256 - (chain.data?.bnum % 256)) * chain.data.blocktime_avg)
-                )}
-              />
-            )})
+          <i>{chain.isFetching
+            ? <CircularProgress size='1em' />
+            : (256 - (chain.data?.bnum % 256))} Blocks until next update
+            (est. {chain.isFetching
+              ? <CircularProgress size='1em' />
+              : <TimePrep
+                  epoch={(chain.data.stime +
+                    ((256 - (chain.data.bnum % 256)) * chain.data.blocktime_avg)
+                  )}
+                />})
           </i>
         </Typography>
         <Table className={classes.table}>
@@ -122,7 +110,7 @@ export default function ExplorerLedgerRichlist () {
             </TableRow>
           </TableHead>
           <TableBody>
-            {richlist.data?.results?.map((item, ii) => (
+            {request.data?.results?.map((item, ii) => (
               <TableRow key={`richlist-rank-${item.rank}`}>
                 <TableCell align='center'>{item.rank}</TableCell>
                 <TableCell className={classes.addressCell}>
@@ -131,31 +119,22 @@ export default function ExplorerLedgerRichlist () {
                   </Typography>
                 </TableCell>
                 <TableCell align='right'>
-                  <MCMSuffix value={item.balance} />
+                  <MochimoBalance value={item.balance} />
                 </TableCell>
                 <TableCell align='right'>
-                  {chain.isLoading ? (
-                    <CircularProgress size='1rem' />
-                  ) : !chain.data?.supply ? '??%' : (
-                    `${(item.balance / chain.data.supply * 100).toFixed(2)}%`
-                  )}
+                  {chain.isLoading
+                    ? <CircularProgress size='1rem' />
+                    : chain.data?.totalsupply
+                      ? (`${(
+                        100 * item.balance / (chain.data.totalsupply * 1e+9)
+                        ).toFixed(2)}`)
+                      : '??'}%
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        <div className={classes.buttonWrapper}>
-          <Button
-            variant='contained'
-            color='secondary'
-            disabled={richlist.isFetching}
-            onClick={loadMore}
-          >
-            {richlist.isFetching ? 'Loading...' : 'Load More'}
-          </Button>
-          {richlist.isFetching &&
-            <CircularProgress size={24} className={classes.buttonProgress} />}
-        </div>
+        <LoadMoreButton isLoading={request.isFetching} handleClick={loadMore} />
       </TableContainer>
     </Container>
   );
