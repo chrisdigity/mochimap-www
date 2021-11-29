@@ -1,6 +1,6 @@
 
-export default function MochimoBalance (props) {
-  const { decimals, noLocale, noSuffix, noUnits, value } = props;
+export default function MochimoBalance
+({ decimals, noLocale, noSuffix, noUnits, value }) {
   // const nMCMBalance = value?.toLocaleString();
   const MCMBalance = value &&
     (value / Math.pow(10, 9)).toLocaleString(undefined, {

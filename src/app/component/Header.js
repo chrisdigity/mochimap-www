@@ -87,9 +87,6 @@ const useStyles = makeStyles((theme) => ({
     'font-weight': 'bold',
     'font-family': 'Roboto Mono',
     'text-transform': 'uppercase',
-    'box-shadow': props => props.dense
-      ? `1px 2px 3px ${theme.palette.text.disabled}`
-      : `1px 3px 5px ${theme.palette.text.disabled}`,
     'font-size': props => props.dense ? '0.75rem' : '1rem',
     'min-width': props => props.dense ? '18px' : '24px',
     height: props => props.dense ? '18px' : '24px',

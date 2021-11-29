@@ -53,7 +53,8 @@ export function mcm (bignum, locale = true, suffixType, unitType) {
 
 export function preBytes (bytes, forceindex, nolocale) {
   const units = ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi']; // binary
-  const uIndex = Math.min(forceindex || parseInt(Math.log2(bytes) / 10), 8);
+  const uIndex = Math.min(
+    isNaN(forceindex) ? parseInt(Math.log2(bytes) / 10) : forceindex, 8);
   bytes >>>= (uIndex * 10);
   return `${nolocale ? bytes : bytes.toLocaleString()} ${units[uIndex]}B`;
 }

@@ -139,7 +139,7 @@ const splitTransaction = (tx, address) => {
   if ((dsttag + dstaddr).includes(address)) address = 'dst';
   if ((chgtag + chgaddr).includes(address)) address = 'chg';
   // build simple transactions' base object
-  const add = { _id: tx._id, time: tx.stime, block: tx.bnum };
+  const add = { _id: tx._id, time: tx.stime || tx.time0, block: tx.bnum };
   // determine simple transactions by conditional transaction element comparison
   if ((address === 'src' && src === chg)) {
     // 1 of 2 simple transactions take place
@@ -148,12 +148,12 @@ const splitTransaction = (tx, address) => {
     } else stxs.push({ ...add, tag: chgtag, address: chgaddr, amount: -(cT) });
   } else { // 1 OR 2 simple transactions take place
     if ((sT && address !== 'chg') || address === 'dst') {
-      if (address === src) { // dst @ -(sT), else src @ sT
+      if (address === 'src') { // dst @ -(sT), else src @ sT
         stxs.push({ ...add, tag: dsttag, address: dstaddr, amount: -(sT) });
       } else stxs.push({ ...add, tag: srctag, address: srcaddr, amount: sT });
     } // and/or
     if (address && ((cT && address !== 'dst') || address === 'chg')) {
-      if (address === src) { // chg @ -(cT), else src @ cT
+      if (address === 'src') { // chg @ -(cT), else src @ cT
         stxs.push({ ...add, tag: chgtag, address: chgaddr, amount: -(cT) });
       } else stxs.push({ ...add, tag: srctag, address: srcaddr, amount: cT });
     }
@@ -162,9 +162,9 @@ const splitTransaction = (tx, address) => {
   return stxs;
 };
 
-function TransactionRow ({ id, tx, address }) {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(!open);
+function TransactionRow ({ id, tx, address, open }) {
+  const [active, setActive] = useState(open);
+  const handleActive = () => setActive(!active);
   const classes = useStyles();
 
   const _cid = `${id}-details`;
@@ -177,8 +177,9 @@ function TransactionRow ({ id, tx, address }) {
     className: classes.preHeadCell,
     children: (
       <Typography align='left' variant='body2' noWrap>
-        TxID: <Link to={`/explorer/transaction/${tx.txid}`}>{tx.txid}</Link>
-        <br />
+        TxID:&nbsp;
+        <Link to={`/explorer/transaction/${tx.txid}`}>{tx.txid}</Link>
+        <br />Signature: {tx.txsig}<br />
         <MochimoAddress pre='Source: ' tag={tx.srctag} addr={tx.srcaddr} />
       </Typography>
     )
@@ -241,14 +242,14 @@ function TransactionRow ({ id, tx, address }) {
         let children = null;
         if (index === stxs.length - 1) { // not last
           children = (
-            <IconButton size='small' onClick={handleOpen}>
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            <IconButton size='small' onClick={handleActive}>
+              {active ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
           );
         }
         const stxCells = [
           { children }, {
-            className: address ? classes.addressCell : classes.txidCell,
+            className: classes.addressCell,
             children: (
               <Typography noWrap>
                 {!address
@@ -257,21 +258,23 @@ function TransactionRow ({ id, tx, address }) {
               </Typography>
             )
           }, {
-            className: !address && classes.xsUpHide,
+            className: classes.xsDownHide,
             children: (
               <Typography noWrap>
                 <TimePrep epoch={stx.time} />
               </Typography>
             )
           }, {
-            className: address ? classes.xsDownHide : classes.xsUpHide,
+            className: classes.xsDownHide,
             children: (
               <Typography noWrap>
-                {stx.block}
+                {stx.block || (
+                  <span title='UNCONFIRMED'>🔴</span>
+                )}
               </Typography>
             )
           }, {
-            className: address ? classes.xsDownHide : classes.xsUpHide,
+            className: classes.xsDownHide,
             children: (
               <Typography noWrap>
                 {stx.amount < 0 ? 'OUT' : 'IN'}
@@ -291,7 +294,7 @@ function TransactionRow ({ id, tx, address }) {
       })}
       <TableRow>
         <TableCell style={{ padding: 0 }} colSpan={6}>
-          <Collapse in={open} timeout='auto' unmountOnExit>
+          <Collapse in={active} timeout='auto' unmountOnExit>
             <Table
               size='small'
               className={classes.detailsTable}
@@ -315,7 +318,57 @@ function TransactionRow ({ id, tx, address }) {
   );
 }
 
-export default function MochimoTransactions ({ addr, addrType, bnum, bhash }) {
+export function MochimoTransaction ({ tx }) {
+  const classes = useStyles();
+
+  const _cid = 'transation-list-table';
+  const _label = _cid.replace('-', ' ');
+  const sidHead = `${_cid}-head`;
+  const tableHeadCells = [
+    { variant: 'head' },
+    { variant: 'head', children: 'Reference' },
+    {
+      variant: 'head', className: classes.xsDownHide, children: 'Time'
+    }, {
+      variant: 'head', className: classes.xsDownHide, children: 'Block'
+    },
+    { variant: 'head', className: classes.xsDownHide },
+    { variant: 'head', children: 'Amount', align: 'right' }
+  ];
+
+  return (
+    <TableContainer component={Container} className={classes.innerSpacing}>
+      <Table padding='none' size='small' className={classes.table} aria-label={_label}>
+        <TableHead>
+          <TableRowCells key={sidHead} id={sidHead} cells={tableHeadCells} />
+        </TableHead>
+        <TableBody>
+          {(tx.isFetching && (
+            <TableRow>
+              <TableCell colSpan={6} align='center'>
+                <CircularProgress color='secondary' />
+              </TableCell>
+            </TableRow>
+          )) || (tx.isError && (
+            <>
+              <Typography variant='h6'>
+                Cannot Display Transaction History
+              </Typography>
+              <Typography variant='caption'>
+                Reason: {tx.error?.data?.error}
+              </Typography>
+            </>
+          )) || (
+            <TransactionRow id={`${_cid}-${0}`} tx={tx.data} open />
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+export default function MochimoTransactions
+({ addr, addrType, bnum, bhash, tx }) {
   const [page, setPage] = useState(1);
   const [perpage, setPerpage] = useState(25);
   // build default search parameters

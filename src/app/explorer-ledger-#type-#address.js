@@ -528,10 +528,10 @@ export default function ExplorerLedgerTypeAddress () {
         <TabPanel active={tab === 0} error={qrTabError} name='QR Code'>
           <QRCode includeMargin value={ledger.data?.tag || ''} />
         </TabPanel>
-        <TabPanel active={tab === 1} error={txTabError} name='Transactions'>
-          <MochimoTransactions addr={ledger.data?.[type]} addrType={type} />
+        <TabPanel active={tab === 1} name='Transactions'>
+          <MochimoTransactions addr={ledger.data?.[type] || address} addrType={type} />
         </TabPanel>
-        <TabPanel active={tab === 2} error={txTabError} name='Neogenesis'>
+        <TabPanel active={tab === 2} name='Neogenesis'>
           <NeogenesisHistory ledger={ledger} type={type} address={address} />
         </TabPanel>
       </Paper>

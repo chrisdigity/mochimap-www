@@ -9,7 +9,7 @@ import ExplorerBlock from './app/explorer-block-#bnum-#bhash';
 import ExplorerRichlist from './app/explorer-richlist';
 import ExplorerLedgerTypeAddress from './app/explorer-ledger-#type-#address';
 // import TransactionMempool from './app/transaction-mempool';
-// import TransactionTXID from './app/transaction-#txid';
+import ExplorerTransaction from './app/explorer-transaction-#txid';
 
 // describe app-routes-nav-subnav
 export default [
@@ -57,7 +57,9 @@ export default [
   }, { // route only
     route: ExplorerRichlist,
     path: '/explorer/richlist'
+  }, { // route only
+    route: ExplorerTransaction,
+    path: '/explorer/transaction/:txid'
   } //,
-  // { path: '/transaction/mempool', route: TransactionMempool, text: 'Mempool' },
-  // { path: '/transaction/:txid', route: TransactionTXID }
+  // { path: '/transaction/mempool', route: TransactionMempool, text: 'Mempool' }
 ];

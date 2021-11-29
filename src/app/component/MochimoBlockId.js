@@ -1,7 +1,6 @@
 
 import { Typography } from '@material-ui/core';
 import { Link } from 'react-router-dom';
-import { isUntagged } from 'utils';
 
 const preNumber = (
   <Typography component='span' display='inline' color='textSecondary'>
@@ -14,17 +13,31 @@ const preHash = (
   </Typography>
 );
 
-export default function MochimoBlockId (props) {
-  const { pre, number, hash, disableLinks } = props;
+export default function MochimoBlockI
+({ pre, number, hash, disableHex, disableLinks }) {
   let displayNumber = number;
   let displayHash = hash;
 
   if (!disableLinks) {
     displayNumber = (
-      <Link to={`/explorer/block/${number}`}>{displayNumber}</Link>
+      <Link to={`/explorer/block/${number}`}>
+        {number}&nbsp;
+        <Typography variant='caption'>
+          (0x{Number(number).toString(16)})
+        </Typography>
+      </Link>
     );
     displayHash = (
       <Link to={`/explorer/block/${number}/${hash}`}>{hash}</Link>
+    );
+  } else {
+    displayNumber = (
+      <>
+        {number}&nbsp;
+        <Typography component='span' variant='caption'>
+          (0x{Number(number).toString(16)})
+        </Typography>
+      </>
     );
   }
 
