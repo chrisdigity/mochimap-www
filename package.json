@@ -8,7 +8,6 @@
     "@material-ui/styles": "^4.11.4",
     "@react-three/drei": "^7.22.9",
     "@react-three/fiber": "^7.0.21",
-    "@react-three/postprocessing": "^2.0.5",
     "@reduxjs/toolkit": "^1.6.0",
     "moment": "^2.29.1",
     "qrcode.react": "^1.0.1",

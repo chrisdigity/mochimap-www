@@ -143,6 +143,7 @@ export default function Header ({ routelist, switchTheme }) {
   });
   const classes = useStyles({ dense: trigger });
   const toolbarVariant = trigger ? 'dense' : 'regular';
+  const datemonth = new Date().getMonth();
   const moreItems = [
     {
       text: 'Switch Theme',
@@ -202,8 +203,9 @@ export default function Header ({ routelist, switchTheme }) {
           <Link to='/'>
             <Avatar
               alt='MochiMap Logo'
-              src='/img/logo-kanji-brushed.png'
               className={classes.logo}
+              src={(datemonth === 11 && '/img/logo-christmas.png'
+              ) || '/img/logo-kanji-brushed.png'}
             />
           </Link>
         </Badge>
