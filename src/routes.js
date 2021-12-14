@@ -2,11 +2,13 @@
 import ExploreIcon from '@material-ui/icons/Explore';
 import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
 import ViewListIcon from '@material-ui/icons/ViewList';
+import WalletIcon from '@material-ui/icons/AccountBalanceWallet';
 // import app-pages
 import Homepage from './app/homepage';
 import Explorer from './app/explorer';
 import ExplorerBlock from './app/explorer-block-#bnum-#bhash';
 import ExplorerRichlist from './app/explorer-richlist';
+import ExplorerLedger from './app/explorer-ledger';
 import ExplorerLedgerTypeAddress from './app/explorer-ledger-#type-#address';
 // import TransactionMempool from './app/transaction-mempool';
 import ExplorerTransaction from './app/explorer-transaction-#txid';
@@ -54,6 +56,20 @@ export default [
   }, { // route only
     route: ExplorerLedgerTypeAddress,
     path: '/explorer/ledger/:type/:address'
+  },
+  { // route path, nav item, subnav items
+    route: ExplorerLedger,
+    path: '/explorer/ledger',
+    Icon: WalletIcon,
+    nav: 'Find My Balance',
+    subnav: [
+      {
+        path: '/explorer/ledger',
+        Icon: WalletIcon,
+        primary: 'Mochimo Balance Search',
+        secondary: 'Search WOTS+ or Tag Balance'
+      }
+    ]
   }, { // route only
     route: ExplorerRichlist,
     path: '/explorer/richlist'

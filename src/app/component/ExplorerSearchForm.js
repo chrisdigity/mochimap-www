@@ -33,10 +33,11 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function ExplorerSearchForm () {
+export default function ExplorerSearchForm ({ ledgerOnly }) {
+  const defaultHint = (ledgerOnly ? 'Type Address' : 'Type Search') + ' Query';
   const [searchText, setSearchText] = useState();
   const [searchType, setSearchType] = useState();
-  const [searchHint, setSearchHint] = useState('Type Search Query');
+  const [searchHint, setSearchHint] = useState(defaultHint);
   const handleSearchText = (event) => setSearchText(event.target.value);
   const handleSearchType = (event) => {
     const { value } = event.target;
@@ -46,7 +47,7 @@ export default function ExplorerSearchForm () {
       case 'transaction': setSearchHint('Type Transaction ID'); break;
       case 'address': setSearchHint('Type WOTS+ Address'); break;
       case 'tag': setSearchHint('Type Tagged Address'); break;
-      default: setSearchHint('Type Search Query');
+      default: setSearchHint(defaultHint);
     }
     setSearchType(value);
   };
@@ -67,12 +68,22 @@ export default function ExplorerSearchForm () {
             labelId='search-native-label'
             inputProps={{ name: searchType && 'search' }}
           >
-            <option aria-label='all' />
-            <option value='node'>Node</option>
-            <option value='blockchain'>Blockchain</option>
-            <option value='transaction'>Transaction</option>
-            <option value='address'>Address</option>
-            <option value='tag'>Tag</option>
+            {(ledgerOnly && (
+              <>
+                <option aria-label='all' />
+                <option value='address'>Address</option>
+                <option value='tag'>Tag</option>
+              </>
+            )) || (
+              <>
+                <option aria-label='all' />
+                <option value='node'>Node</option>
+                <option value='blockchain'>Blockchain</option>
+                <option value='transaction'>Transaction</option>
+                <option value='address'>Address</option>
+                <option value='tag'>Tag</option>
+              </>
+            )}
           </Select>
         </FormControl>
         <TextField
