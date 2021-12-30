@@ -16,16 +16,17 @@ const preAddress = (
 
 export default function MochimoAddress (props) {
   const { pre, tag, addr, short, disableLinks } = props;
-  let displayAddress = `${addr}`;
+  let displayAddress = null;
   let displayTag = null;
 
   if (tag && !isUntagged(tag)) {
     if (short) displayAddress = null;
     if (disableLinks) displayTag = tag;
     else displayTag = (<Link to={`/explorer/ledger/tag/${tag}`}>{tag}</Link>);
-  } else {
-    if (short) displayAddress = `${addr.slice(0, 24)}...`;
-    if (!disableLinks) {
+  } else if (addr) {
+    displayAddress = `${addr}`;
+    if (short) displayAddress = `${displayAddress.slice(0, 24)}...`;
+    if (addr && !disableLinks) {
       displayAddress = (
         <Link to={`/explorer/ledger/address/${addr}`}>{displayAddress}</Link>
       );
