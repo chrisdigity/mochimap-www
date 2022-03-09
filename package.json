@@ -24,6 +24,9 @@
   "devDependencies": {
     "react-scripts": "5.0.0"
   },
+  "engines": {
+    "npm": "~8.5.1"
+  },
   "scripts": {
     "audit": "npm audit --production",
     "start": "react-scripts start"
