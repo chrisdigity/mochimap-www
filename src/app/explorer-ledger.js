@@ -1,109 +1,92 @@
 
+import QRCode from 'qrcode.react';
 import { useState } from 'react';
-import { Link, Redirect, useLocation } from 'react-router-dom';
-import {
-  useGetBlocksBySearchQuery,
-  useGetLedgerBalancesBySearchQuery,
-  useGetNodeBySearchQuery,
-  useGetTransactionsBySearchQuery
-} from './service/mochimap-api';
-import {
-  Avatar,
-  CircularProgress,
-  Container,
-  Divider,
-  Grid,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Paper,
-  Typography
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import WidgetsIcon from '@material-ui/icons/Widgets';
-import ReceiptIcon from '@material-ui/icons/Receipt';
-import GavelIcon from '@material-ui/icons/Gavel';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import ExplorerSearchForm from './component/ExplorerSearchForm';
-import MochimoActivityFeed from './component/MochimoActivityFeed';
-import MochimoAddress from './component/MochimoAddress';
-import TimePrep from './component/TimePrep';
-import MCMSuffix from './component/MCMSuffix';
-import ByteSuffix from './component/ByteSuffix';
+import { useParams } from 'react-router-dom';
+import { Card, CircularProgress, Container, Divider, Grid, Tab, Tabs, Typography } from '@mui/material';
+import ErrorIcon from '@mui/icons-material/Error';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    position: 'relative'
-  },
-  explorerTitle: {
-    'margin-top': '25vh',
-    'font-family': 'Nanum Brush Script',
-    'font-weight': 'bold',
-    'white-space': 'nowrap',
-    'text-align': 'center'
-  },
-  searchTitle: {
-    'margin-top': '1rem',
-    'font-family': 'Nanum Brush Script',
-    'font-weight': 'bold',
-    'white-space': 'nowrap',
-    '& > i': {
-      'font-family': 'Roboto',
-      'font-size': '0.375em'
-    }
-  }
-}));
-const useSubStyles = makeStyles((theme) => ({
-  root: {
-    'white-space': 'nowrap',
-    top: '3rem'
-  },
-  itemIcon: {
-    'justify-content': 'center'
-  },
-  itemText: {
-    overflow: 'hidden',
-    'text-overflow': 'ellipsis',
-    'white-space': 'nowrap'
-  },
-  listSection: {
-    margin: theme.spacing(1),
-    background: theme.palette.background.default
-  }
-}));
+import { useGetLedgerEntryQuery, useGetPriceQuery } from 'api';
+import { Amount, Properties } from 'app/component/Types';
+import { BlockHistory, LedgerHistory, TransactionHistory } from 'app/component/Results';
+import { capitalize, isTagged } from 'util';
 
-export default function Explorer () {
-  const classes = useStyles();
-  const { search } = useLocation();
-  const searchParams = search && new URLSearchParams(search);
-  const searchType = search && searchParams.get('search');
-  const searchQuery = search && searchParams.get('for');
+const Blank = '---';
 
-  if (search) {
-    if (!searchType && typeof searchQuery === 'string') {
-      if (searchQuery.length > 24) {
-        return (
-          <Redirect to={`/explorer/ledger/address/${searchQuery}`} />
-        );
-      }
-      return (
-        <Redirect to={`/explorer/ledger/tag/${searchQuery}`} />
-      );
-    }
-    return (
-      <Redirect to={`/explorer/ledger/${searchType}/${searchQuery}`} />
-    );
-  }
+export default function ExplorerLedger ({ type }) {
+  const { value } = useParams();
+  const [tab, setTab] = useState('txs');
+  const ledger = useGetLedgerEntryQuery({ type, value });
+  const price = useGetPriceQuery();
+  const handleTab = (e, selectedTab) => { setTab(selectedTab); };
+
+  const { balance } = ledger.data || {};
+  const usdprice = (price.data?.mochimo.usd || 0).toLocaleString();
+  const usdbalance = ((price.data?.mochimo.usd || 0) * (balance / 1e+9)).toLocaleString();
+  const tagged = isTagged(ledger.data?.tag);
 
   return (
-    <Container className={classes.root}>
-      <Typography className={classes.explorerTitle} variant='h1'>
-        Find My Balance
-      </Typography>
-      <ExplorerSearchForm ledgerOnly />
+    <Container sx={{ position: 'relative', padding: ({ spacing }) => spacing(2) }}>
+      <Grid container spacing={2}>
+        <Grid item sm={3} display={{ xs: 'none', sm: tagged ? 'none' : 'block' }} />
+        {(tagged && (
+          <Grid item xs={12} sm={6} align='center'>
+            {(ledger.data?.tag && (
+              <>
+                <QRCode size={240} includeMargin value={ledger.data.tag} />
+              </>
+            )) || (
+              <Typography align='center'>
+                Waiting for Tag data
+              </Typography>
+            )}
+          </Grid>
+        ))}
+        <Grid item xs={12} sm={6} align='center'>
+          <Card sx={{ padding: ({ spacing }) => spacing(2) }}>
+            {ledger.isFetching
+              ? (<CircularProgress size='6rem' color='secondary' />)
+              : (
+                <Typography variant='h1' fontFamily='Roboto Mono'>
+                  {ledger.isError
+                    ? (<ErrorIcon />)
+                    : (<Amount value={ledger.data.balance} noUnits />)}
+                </Typography>
+                )}
+            <Divider style={{ width: '100%' }}>Ledger Details</Divider>
+            <Properties copy short wots={ledger.data?.address} />
+            <Properties copy tag={ledger.data?.tag} />
+            <Properties
+              balance={(ledger.data?.balance && (
+                <Amount noSuffix decimals={9} value={ledger.data?.balance} />
+              )) || Blank}
+            />
+            <Properties value={`$${usdbalance}`} price={`$${usdprice}/MCM`} />
+          </Card>
+        </Grid>
+        <Grid item sm={3} display={{ xs: 'none', sm: tagged ? 'none' : 'block' }} />
+        <Grid item xs={12}>
+          <Divider>{capitalize(type)} History by</Divider>
+        </Grid>
+        <Grid item xs={12}>
+          <Card>
+            <Tabs
+              centered
+              value={tab}
+              onChange={handleTab}
+              textColor='primary'
+              indicatorColor='secondary'
+              aria-label='ledger details tabs'
+            >
+              <Tab label='Solves' value='solves' />
+              <Tab label='Transactions' value='txs' />
+              <Tab label='Ledger' value='ledger' />
+            </Tabs>
+            {tab === 'solves' && (<BlockHistory maddr={value} />)}
+            {tab === 'txs' && (<TransactionHistory {...{ type, value }} />)}
+            {tab === 'ledger' && (<LedgerHistory {...{ type, value }} />)}
+          </Card>
+        </Grid>
+      </Grid>
     </Container>
   );
 }

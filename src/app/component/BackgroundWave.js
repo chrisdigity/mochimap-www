@@ -1,22 +1,8 @@
 
 import * as THREE from 'three';
-
 import { useEffect, useRef, useState } from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    position: 'fixed',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    '& > canvas': {
-      'z-index': -1,
-      position: 'relative'
-    }
-  }
-}));
+import { useTheme } from '@mui/styles';
+import { Box } from '@mui/material';
 
 // initialize wave effect variables
 const NEAR = 1;
@@ -31,7 +17,6 @@ const CAMERA = new THREE.PerspectiveCamera(
 const RENDERER = new THREE.WebGLRenderer({ antialias: true });
 
 export default function BackgroundWave () {
-  const classes = useStyles();
   const theme = useTheme();
   const mount = useRef();
 
@@ -75,8 +60,8 @@ export default function BackgroundWave () {
         CAMERA.lookAt(SCENE.position);
         CAMERA.position.y += 600;
         // adjust positions and scales of particles per trig
-        for (var ix = 0, i = 0; ix < AMOUNTX; ix++) {
-          for (var iz = 0; iz < AMOUNTZ; iz++, i++) {
+        for (let ix = 0, i = 0; ix < AMOUNTX; ix++) {
+          for (let iz = 0; iz < AMOUNTZ; iz++, i++) {
             POINTS[i].position.y =
               (Math.sin(0.5 * (ix + count)) +
                Math.sin(0.5 * (iz + count))) * 50;
@@ -102,8 +87,8 @@ export default function BackgroundWave () {
       SCENE.add(ambientLight);
       SCENE.add(pointLight);
       // add and distribute points across the x-z plane, as spheres
-      var cx = (AMOUNTX * SEPARATION) / 2;
-      var cz = (AMOUNTZ * SEPARATION) / 2;
+      const cx = (AMOUNTX * SEPARATION) / 2;
+      const cz = (AMOUNTZ * SEPARATION) / 2;
       for (let ix = 0, i = 0; ix < AMOUNTX; ix++) {
         for (let iz = 0; iz < AMOUNTZ; iz++, i++) {
           POINTS[i] = new THREE.Mesh(POINTGEOMETRY, POINTMATERIAL);
@@ -131,5 +116,20 @@ export default function BackgroundWave () {
     }
   }, [init, setInit, theme]);
 
-  return <div className={classes.root} ref={mount} />;
+  return (
+    <Box
+      ref={mount}
+      sx={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+        '& > canvas': {
+          'z-index': -1,
+          position: 'relative'
+        }
+      }}
+    />
+  );
 }

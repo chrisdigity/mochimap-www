@@ -1,110 +1,61 @@
 
 import { useState } from 'react';
-import {
-  FormControl,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  Paper,
-  Select,
-  TextField
-} from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
-import { makeStyles } from '@material-ui/core/styles';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    position: 'relative',
-    'flex-direction': 'column',
-    'justify-content': 'end',
-    'align-items': 'center'
-  },
-  form: {
-    'min-width': '400px',
-    'padding-top': theme.spacing(1),
-    padding: theme.spacing(4),
-    width: '60vw',
-    display: 'flex',
-    background: theme.palette.divider
-  },
-  grow: {
-    'flex-grow': 1
-  }
-}));
+import { useLocation, useNavigate } from 'react-router-dom';
+import { IconButton, InputAdornment, Paper, TextField } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
 export default function ExplorerSearchForm ({ ledgerOnly }) {
-  const defaultHint = (ledgerOnly ? 'Type Address' : 'Type Search') + ' Query';
-  const [searchText, setSearchText] = useState();
-  const [searchType, setSearchType] = useState();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const defaultHint = 'Type Search';
   const [searchHint, setSearchHint] = useState(defaultHint);
-  const handleSearchText = (event) => setSearchText(event.target.value);
-  const handleSearchType = (event) => {
+  const [searchHintError, setSearchHintError] = useState();
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const { value } = event.target?.search || {};
+    navigate(location.pathname + '?search=' + value);
+    return false;
+  };
+  const handleSearchText = (event) => {
     const { value } = event.target;
-    switch (value) {
-      case 'node': setSearchHint('Type IPv4 Address'); break;
-      case 'blockchain': setSearchHint('Type Block Number/Hash'); break;
-      case 'transaction': setSearchHint('Type Transaction ID'); break;
-      case 'address': setSearchHint('Type WOTS+ Address'); break;
-      case 'tag': setSearchHint('Type Tagged Address'); break;
-      default: setSearchHint(defaultHint);
-    }
-    setSearchType(value);
+    const types = [];
+    let error = false;
+    if (value) {
+      if ((/^(?:0x[0-9a-f]*|[0-9a-f*]+)$/i).test(value)) types.push('blocks');
+      if ((/^[0-9a-f*]+$/i).test(value)) types.push('transactions');
+      if ((/^[0-9a-f*]+$/i).test(value)) types.push('balances');
+      if (types.length) setSearchHint(`Search ${types.join(' & ')} for...`);
+      else {
+        setSearchHint('Invalid Search Query...');
+        error = true;
+      }
+    } else setSearchHint(defaultHint);
+    setSearchHintError(error);
   };
 
-  const classes = useStyles();
-
   return (
-    <form className={classes.root}>
-      <Paper className={classes.form}>
-        <FormControl>
-          <InputLabel id='search-native-label'>Search for</InputLabel>
-          <Select
-            native
-            dir='rtl'
-            color='secondary'
-            value={searchType}
-            onChange={handleSearchType}
-            labelId='search-native-label'
-            inputProps={{ name: searchType && 'search' }}
-          >
-            {(ledgerOnly && (
-              <>
-                <option aria-label='all' />
-                <option value='address'>Address</option>
-                <option value='tag'>Tag</option>
-              </>
-            )) || (
-              <>
-                <option aria-label='all' />
-                <option value='node'>Node</option>
-                <option value='blockchain'>Blockchain</option>
-                <option value='transaction'>Transaction</option>
-                <option value='address'>Address</option>
-                <option value='tag'>Tag</option>
-              </>
-            )}
-          </Select>
-        </FormControl>
-        <TextField
-          autoFocus
-          className={classes.grow}
-          color='secondary'
-          onChange={handleSearchText}
-          label={`${searchHint}...`}
-          InputProps={{
-            required: true,
-            name: searchText && 'for',
-            endAdornment: (
-              <InputAdornment position='end'>
-                <IconButton type='submit' aria-label='search'>
-                  <SearchIcon />
-                </IconButton>
-              </InputAdornment>
-            )
-          }}
-        />
-      </Paper>
-    </form>
+    <Paper
+      component='form' onSubmit={handleSubmit} sx={{
+        padding: ({ spacing }) => spacing(1),
+        width: { xs: '100%', sm: '80%' },
+        background: ({ palette }) => palette.divider
+      }}
+    >
+      <TextField
+        autoFocus fullWidth size='small'
+        label={searchHint} error={searchHintError}
+        onChange={handleSearchText} InputProps={{
+          required: true,
+          name: 'search',
+          endAdornment: (
+            <InputAdornment position='end'>
+              <IconButton type='submit' aria-label='search'>
+                <SearchIcon />
+              </IconButton>
+            </InputAdornment>
+          )
+        }}
+      />
+    </Paper>
   );
 }

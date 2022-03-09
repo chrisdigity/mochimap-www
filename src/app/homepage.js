@@ -1,8 +1,8 @@
 
-import * as THREE from 'three';
-import { useEffect, useRef, useState } from 'react';
+import { Spherical, Vector3 } from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
+import { useEffect, useRef, useState } from 'react';
 
 function Orb (props) {
   // This reference will give us direct access to the mesh
@@ -10,7 +10,7 @@ function Orb (props) {
   // Set up state for the hovered and active state
   const [hovered, setHover] = useState(false);
   const [active, setActive] = useState(false);
-  const target = props.target || new THREE.Vector3();
+  const target = props.target || new Vector3();
 
   // Rotate mesh every frame, this is outside of React without overhead
   useFrame(() => (mesh.current.position.lerp(target, 0.01)));
@@ -42,7 +42,7 @@ export default function Homepage () {
   useEffect(() => {
     // expose EventSource API and create new stream
     const { EventSource } = window;
-    const source = new EventSource('https://sg.mochimap.com/stream?network');
+    const source = new EventSource('https://new-api.mochimap.com/stream?network');
     // set stream event handlers
     source.onopen = () => console.log('MochiMap network stream opened...');
     source.onerror = (error) => console.error(error);
@@ -50,11 +50,11 @@ export default function Homepage () {
       if (typeof message !== 'object' || !message.data) return;
 
       const update = JSON.parse(message.data);
-      if (!update || !update._id) return;
+      if (!update || !update.ip) return;
 
       setNodes((prev) => {
         let ping, baud, count;
-        const old = prev.get(update._id) || {};
+        const old = prev.get(update.ip) || {};
         const tmp = Object.assign({}, old);
         const node = Object.assign(update, tmp);
         console.log(node);
@@ -65,29 +65,27 @@ export default function Homepage () {
             const nodeChains = new Map(oldChains);
             const oldChain = nodeChains.get(old.weight);
             const nodeChain = nodeChains.get(node.weight) || new Set();
-            if (oldChain) oldChain.delete(node._id);
-            nodeChain.add(node._id);
+            if (oldChain) oldChain.delete(node.ip);
+            nodeChain.add(node.ip);
             return nodeChains.set(node.weight, nodeChain);
           });
         } */
         // resume or create target position
         if (!node?.s || !node?.v) {
-          node.s = new THREE.Spherical();
-          node.v = new THREE.Vector3();
+          node.s = new Spherical();
+          node.v = new Vector3();
         }
-        if (!node?.lat && !node?.lng && node?.host?.loc) {
-          const [lat, lng] = node.host.loc.split(',');
+        if (!node?.lat && !node?.lng && node?.loc) {
+          const [lat, lng] = node.loc.split(',');
           Object.assign(node, { lat, lng });
         }
         // calculate spherical target coords
         ping = baud = count = 0;
-        for (const [prop, value] of Object.entries(node)) {
-          if (String(prop).includes('connection')) {
-            ping += value.ping;
-            baud += value.baud;
-            count++;
-          }
-        } // average stats across regions
+        if (node.ping && node.baud) {
+          ping += node.ping;
+          baud += node.baud;
+          count++;
+        }// average stats across regions
         ping /= count || 1;
         baud /= count || 1;
         ping = ping || 9999; // worst possible latency
@@ -99,7 +97,7 @@ export default function Homepage () {
         // set vector target coords from spherical
         node.v.setFromSpherical(node.s.makeSafe());
         // set new node data
-        return new Map(prev).set(node._id, node);
+        return new Map(prev).set(node.ip, node);
       });
     };
     // update stream state with source

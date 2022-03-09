@@ -1,49 +1,44 @@
+import { styled, TablePagination } from '@mui/material';
 
-import { useWindowSize } from 'MochiMapHooks';
-import { integerRange } from 'MochiMapUtils';
+const SlimPagination = styled(TablePagination)({
+  '.MuiTablePagination-toolbar': {
+    minHeight: 0
+  },
+  '.MuiTablePagination-selectLabel': {
+    marginTop: 0, marginBottom: 0
+  },
+  '.MuiTablePagination-select': {
+    paddingTop: 0, paddingBottom: 0
+  },
+  '.MuiTablePagination-displayedRows': {
+    marginTop: 0, marginBottom: 0
+  },
+  '.MuiTablePagination-actions': {
+    '.MuiIconButton-root': {
+      paddingTop: 0, paddingBottom: 0
+    }
+  }
+});
+
+const DEFAULTS = {
+  rowsPerPageOptions: [5, 20, 50],
+  labelRowsPerPage: 'Limit',
+  component: 'div'
+};
 
 export default function Pagination
-({ title, page, pages, paginate, range = 4 }) {
-  const { width } = useWindowSize();
-  // interpret page variables as numbers and caculate page start/end
-  const [currentPage, lastPage, firstPage] = [Number(page), Number(pages), 1];
-  const pageStart = Math.max(currentPage - range, firstPage);
-  const pageEnd = Math.min(pageStart + (range * 2), lastPage);
-
-  return pages <= 1 ? null : (
-    <div className='pagination'>
-      <div className='dull'>{title}</div>
-      <ul>
-        {currentPage <= firstPage ? (<li className='not_active'>|⇠</li>) : (
-          <li onClick={() => paginate(firstPage)}>|⇠</li>
-        )}
-        {lastPage > 100 && currentPage >= firstPage + 100 && width > 500 && (
-          <li onClick={() => paginate(currentPage - 100)}>-100</li>
-        )}
-        {lastPage > 10 && currentPage >= firstPage + 10 && (
-          <li onClick={() => paginate(currentPage - 10)}>-10</li>
-        )}
-        {integerRange(pageStart, pageEnd).map((page, i, array) =>
-          currentPage === page ? (
-            <li className='pres_pg' key={page}>{page}</li>
-          ) : (
-            <li key={page} onClick={() => paginate(page)}>
-              {i === 0 && page > firstPage && '...'}
-              {page}
-              {i === array.length - 1 && page < lastPage && '...'}
-            </li>
-          )
-        )}
-        {lastPage > 10 && currentPage <= lastPage - 10 && (
-          <li onClick={() => paginate(currentPage + 10)}>+10</li>
-        )}
-        {lastPage > 100 && currentPage <= lastPage - 100 && width > 500 && (
-          <li onClick={() => paginate(currentPage + 100)}>+100</li>
-        )}
-        {currentPage >= lastPage ? (<li className='not_active'>⇢|</li>) : (
-          <li onClick={() => paginate(lastPage)}>⇢|</li>
-        )}
-      </ul>
-    </div>
+({ length = 0, limit = 5, offset = 0, ...props }) {
+  // assign defaults and props to options
+  const opts = Object.assign(Object.assign({}, DEFAULTS), props);
+  // calculate extended options where necessary
+  if (!('rowsPerPage' in opts)) opts.rowsPerPage = limit;
+  if (!('page' in opts)) opts.page = offset / limit;
+  if (!('count' in opts)) {
+    opts.count = length && length % limit
+      ? ((opts.page) * limit) + length
+      : -1;
+  }
+  return (
+    <SlimPagination {...opts} sx={{ overflowX: 'hidden' }} />
   );
 }

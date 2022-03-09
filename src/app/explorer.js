@@ -1,344 +1,177 @@
 
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import SearchIcon from '@mui/icons-material/Search';
 import {
-  useGetBlocksBySearchQuery,
-  useGetLedgerBalancesBySearchQuery,
-  useGetNodeBySearchQuery,
-  useGetTransactionsBySearchQuery
-} from './service/mochimap-api';
-import {
-  Avatar,
-  CircularProgress,
+  Box,
   Container,
   Divider,
-  Grid,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
+  IconButton,
+  InputAdornment,
   Paper,
+  TextField,
+  Tooltip,
   Typography
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import WidgetsIcon from '@material-ui/icons/Widgets';
-import ReceiptIcon from '@material-ui/icons/Receipt';
-import GavelIcon from '@material-ui/icons/Gavel';
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import ExplorerSearchForm from './component/ExplorerSearchForm';
-import MochimoActivityFeed from './component/MochimoActivityFeed';
-import MochimoAddress from './component/MochimoAddress';
-import TimePrep from './component/TimePrep';
-import MCMSuffix from './component/MCMSuffix';
-import ByteSuffix from './component/ByteSuffix';
+} from '@mui/material';
+import {
+  BlockHistory,
+  LedgerEntries,
+  LedgerHistory,
+  RichlistEntries,
+  TransactionHistory
+} from 'app/component/Results';
+import { capitalize } from 'util';
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    position: 'relative'
-  },
-  explorerTitle: {
-    'margin-top': '25vh',
-    'font-family': 'Nanum Brush Script',
-    'font-weight': 'bold',
-    'white-space': 'nowrap',
-    'text-align': 'center'
-  },
-  searchTitle: {
-    'margin-top': '1rem',
-    'font-family': 'Nanum Brush Script',
-    'font-weight': 'bold',
-    'white-space': 'nowrap',
-    '& > i': {
-      'font-family': 'Roboto',
-      'font-size': '0.375em'
+function ResultsLabel (props) {
+  return (<Divider sx={{ margin: '1em 0 0.5em 0' }} {...props} />);
+}
+
+export default function Explorer ({ type }) {
+  let { pathname, search } = useLocation();
+  const navigate = useNavigate();
+  const hexRegex = /^[0-9a-f]+$/i;
+
+  // determine search query
+  search = new URLSearchParams(search);
+  search = search.get('search');
+
+  // determine default hint
+  let defaultHint;
+  switch (type) {
+    case 'address':
+      defaultHint = 'Type Tag or WOTS+ Address';
+      break;
+    case 'block':
+      defaultHint = 'Type Block Number, Hash or Miner Address';
+      break;
+    case 'transaction':
+      defaultHint = 'Type Transaction ID, Tag or WOTS+ Address';
+      break;
+    case 'richlist':
+      defaultHint = 'Type Rank, Tag or WOTS+ Address';
+      break;
+    case 'haiku':
+      defaultHint = 'Type Block Number, Hash or Haiku';
+      break;
+    default:
+      defaultHint = 'Type Search Query';
+  }
+
+  // state and handlers
+  const [invalidQuery, setInvalidQuery] = useState(false);
+  const [searchHint, setSearchHint] = useState(defaultHint);
+  const handleSearchText = (event) => {
+    const { value } = event.target;
+    // accept any hexadecimal or blank value
+    if (/^[0-9a-f]*$/i.test(value)) {
+      setSearchHint(defaultHint);
+      setInvalidQuery(false);
+    } else {
+      setSearchHint('Invalid Characters Detected');
+      setInvalidQuery(true);
     }
-  }
-}));
-const useSubStyles = makeStyles((theme) => ({
-  root: {
-    'white-space': 'nowrap',
-    top: '3rem'
-  },
-  itemIcon: {
-    'justify-content': 'center'
-  },
-  itemText: {
-    overflow: 'hidden',
-    'text-overflow': 'ellipsis',
-    'white-space': 'nowrap'
-  },
-  listSection: {
-    margin: theme.spacing(1),
-    background: theme.palette.background.default
-  }
-}));
-
-function SubList ({ type, query, req, children }) {
-  // generic ListSubheader for code reduction
-  const classes = useSubStyles();
-  return (
-    <Paper elevation={3} className={classes.listSection}>
-      <ListSubheader className={classes.root}>
-        Searching <u><strong>{type}</strong></u>&nbsp;
-        for <u><strong>{query}</strong></u> - {
-          req.error?.data.error || (req.isLoading
-            ? <CircularProgress size='1em' />
-            : `${req.data.found} results`)
-        }
-        <Divider />
-      </ListSubheader>
-      {children}
-    </Paper>
-  );
-}
-
-function SubListItem ({ children, to }) {
-  // generic ListItem for code reduction
-  return (
-    <ListItem
-      button
-      divider
-      disableGutters
-      alignItems='center'
-      component={Link}
-      to={to}
-    >
-      {children}
-    </ListItem>
-  );
-}
-
-function NodeSearch ({ query }) {
-  const search = `host.ip:contains=${query}`;
-  const request = useGetNodeBySearchQuery({ search });
-  const classes = useSubStyles();
-
-  return (
-    <SubList type='Nodes' query={query} req={request}>
-      {request.data && request.data.results.map((item, index) => (
-        <SubListItem key={index} to={`/explorer/network/${item.host.ip}`}>
-          <ListItemIcon className={classes.itemIcon}>
-            <AccountTreeIcon />
-          </ListItemIcon>
-          <ListItemText
-            className={classes.itemText}
-            primary={(
-              <Grid container wrap='nowrap' spacing={2}>
-                <Grid item>{item.host.ip}</Grid>
-                <Grid item>
-                  Last updated&nbsp;
-                  <TimePrep
-                    epoch={(
-                      item.connection.de.timestamp +
-                      item.connection.sg.timestamp +
-                      item.connection.us.timestamp
-                    ) / 3000}
-                  />
-                </Grid>
-              </Grid>
-            )}
-            secondary={(<span>{item.peers?.length || 0} recent peers</span>)}
-          />
-        </SubListItem>
-      ))}
-    </SubList>
-  );
-}
-
-function BlockchainSearch ({ query }) {
-  const searchType = isNaN(query) ? 'bhash:contains' : 'bnum';
-  const initialSearch = `${searchType}=${query}`;
-  const [search, setSearch] = useState(new URLSearchParams(initialSearch));
-  const request =
-    useGetBlocksBySearchQuery(query ? { search: search.toString() } : {});
-  const classes = useSubStyles();
-
-  const loadMore = () => {
-    setSearch((state) => {
-      const params = new URLSearchParams(state);
-      params.set('perpage', Number(params.get('perpage') || 0) + 32);
-      return params.toString();
-    });
+    /*
+    const types = [];
+    switch (target) {
+      default: setSearchHint(defaultHint);
+    }
+    */
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // ====================
+    const { value } = event.target?.search || {};
+    navigate(pathname + '?search=' + value);
+    return false;
   };
 
   return (
-    <SubList type='Blockchain' query={query || 'All'} req={request}>
-      {request.data && request.data.results.map((item, index) => (
-        <SubListItem
-          key={index} to={`/explorer/block/${item.bnum}/${item.bhash}`}
+    <Container sx={{ position: 'relative' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'end',
+          height: search ? 'auto' : '40vh',
+          minHeight: { xs: '10em', sm: '12em', md: '14em' }
+        }}
+      >
+        <Typography variant='h1'>
+          {type ? capitalize(type) : 'Mochimo'} Explorer
+        </Typography>
+        <Typography variant='caption' color='textSecondary'>
+          {(type === 'address' && 'Find a Mochimo Tag or Address!') ||
+          (type === 'block' && 'Find a Mochimo Block!') ||
+          (type === 'transaction' && 'Find a Mochimo Transaction!') ||
+          (type === 'richlist' && 'Find a Mochimo Rank!') ||
+          (type === 'haiku' && 'Find a Mochimo Haiku!') ||
+          'Find all the things!'}
+        </Typography>
+        <Paper
+          component='form' onSubmit={handleSubmit} sx={{
+            padding: ({ spacing }) => spacing(1),
+            width: { xs: '100%', sm: '80%' },
+            background: ({ palette }) => palette.divider
+          }}
         >
-          <ListItemIcon className={classes.itemIcon}>
-            {item.img
-              ? <Avatar alt={item.img.desc} src={item.img.thumb} />
-              : <WidgetsIcon />}
-          </ListItemIcon>
-          <ListItemText
-            className={classes.itemText}
-            primary={(
-              <Grid container wrap='nowrap' spacing={2}>
-                <Grid item>
-                  {item.type.charAt(0).toUpperCase() + item.type.slice(1)}
-                </Grid>
-                <Grid item>#{item.bnum}</Grid>
-                <Grid item>Diff. {item.difficulty}</Grid>
-                <Grid item>
-                  <TimePrep epoch={item.stime} />
-                </Grid>
-                {item.type === 'normal'
-                  ? (
-                    <>
-                      <Grid item>
-                        {item.tcount?.toLocaleString()} transactions
-                      </Grid>
-                      <Grid item><MCMSuffix value={item.amount} /></Grid>
-                    </>)
-                  : item.type === 'Neogenesis' && (
-                    <Grid item>{item.lcount?.toLocaleString()} Address</Grid>
-                  )}
-                <Grid item><ByteSuffix bytes={item.size} /></Grid>
-              </Grid>
-            )}
-            secondary={(
-              <span>
-                Hash: {item.bhash}<br />
-                {item.img && item.img.haiku.replace(/[ ]\n/g, ' | ')}
-              </span>
-            )}
+          <TextField
+            autoFocus fullWidth size='small'
+            label={searchHint} error={invalidQuery}
+            onChange={handleSearchText} InputProps={{
+              required: true,
+              name: 'search',
+              endAdornment: (
+                <InputAdornment position='end'>
+                  <Tooltip title='Search' placement='left' arrow>
+                    <IconButton type='submit' aria-label='search'>
+                      <SearchIcon />
+                    </IconButton>
+                  </Tooltip>
+                </InputAdornment>
+              )
+            }}
           />
-        </SubListItem>
-      ))}
-    </SubList>
-  );
-}
-
-function TransactionSearch ({ query }) {
-  const search = `txid:contains=${query}`;
-  const request = useGetTransactionsBySearchQuery(query ? { search } : {});
-  const classes = useSubStyles();
-
-  return (
-    <SubList type='Transaction' query={query || 'All'} req={request}>
-      {request.data && request.data.results.map((item, index) => (
-        <SubListItem
-          key={index} to={`/explorer/transaction/${item.txid}/${item.bnum}`}
-        >
-          <ListItemIcon className={classes.itemIcon}>
-            {item.txid ? <ReceiptIcon /> : <GavelIcon />}
-          </ListItemIcon>
-          <ListItemText
-            className={classes.itemText}
-            primary={(
-              <Grid container spacing={2}>
-                <Grid item xs={5} sm={7} md={6} className={classes.itemText}>
-                  {item._id.includes('-mreward')
-                    ? 'Reward: ' +
-                      item._id.replace(/^0{2,15}/, '0x').replace(/-/, '#')
-                    : `TxID: ${item.txid}`}
-                </Grid>
-                <Grid item xs={3} sm={2} md={1}>#{item.bnum}</Grid>
-                <Grid item xs={4} sm={3}>
-                  <TimePrep epoch={item.stime} />
-                </Grid>
-              </Grid>
-            )}
-            secondary={(
-              <span>
-                <MCMSuffix value={item.mreward || item.sendtotal} />
-                {item.txid && (
-                  <MochimoAddress
-                    disableLinks short pre=' from '
-                    tag={item.srctag} addr={item.srcaddr}
-                  />
-                )}
-                <MochimoAddress
-                  disableLinks short pre=' to '
-                  tag={item.dsttag} addr={item.maddr || item.dstaddr}
-                />
-              </span>
-            )}
-          />
-        </SubListItem>
-      ))}
-    </SubList>
-  );
-}
-
-function LedgerBalanceSearch ({ type, query }) {
-  const search = `${type}:contains=${query}`;
-  const request = useGetLedgerBalancesBySearchQuery({ search });
-  const classes = useSubStyles();
-  const subheadingType =
-    `Ledger Balance ${type === 'address' ? 'Addresses' : 'Tags'}`;
-
-  return (
-    <SubList type={subheadingType} query={query} req={request}>
-      {request.data && request.data.results.map((item, index) => (
-        <SubListItem
-          key={index} to={`/explorer/ledger/${type}/${item[type]}`}
-        >
-          <ListItemIcon className={classes.itemIcon}>
-            <AccountBalanceIcon />
-          </ListItemIcon>
-          <ListItemText
-            className={classes.itemText}
-            primary={(
-              <span>
-                {item.tag !== '420000000e00000001000000' && (
-                  <span>τ-{item.tag}&emsp;</span>
-                )}{`ω+${item.address}`}
-              </span>
-            )}
-            secondary={(
-              <span>
-                <MCMSuffix value={item.balance} /> on Aeon {item.bnum >> 8}
-              </span>
-            )}
-          />
-        </SubListItem>
-      ))}
-    </SubList>
-  );
-}
-
-export default function Explorer () {
-  const classes = useStyles();
-  const { search } = useLocation();
-  const searchParams = search && new URLSearchParams(search);
-  const searchType = search && searchParams.get('search');
-  const searchQuery = search && searchParams.get('for');
-
-  return (
-    <Container className={classes.root}>
-      {search
-        ? (
-          <>
-            <Typography className={classes.searchTitle} variant='h2'>
-              Search Results
-            </Typography>
-            <List dense>
-              {(!searchType || searchType === 'node') && (
-                <NodeSearch query={searchQuery} />
-              )}{(!searchType || searchType === 'blockchain') && (
-                <BlockchainSearch query={searchQuery} />
-              )}{(!searchType || searchType === 'transaction') && (
-                <TransactionSearch query={searchQuery} />
-              )}{(!searchType || searchType === 'address') && (
-                <LedgerBalanceSearch type='address' query={searchQuery} />
-              )}{(!searchType || searchType === 'tag') && (
-                <LedgerBalanceSearch type='tag' query={searchQuery} />
-              )}
-            </List>
-          </>)
-        : (
-          <>
-            <Typography className={classes.explorerTitle} variant='h1'>
-              Mochimo Explorer
-            </Typography>
-            <ExplorerSearchForm />
-            <MochimoActivityFeed />
-          </>)}
+        </Paper>
+      </Box>
+      {hexRegex.test(search) && (!type || type === 'address') && (
+        <>
+          <ResultsLabel>Ledger Entries</ResultsLabel>
+          <LedgerEntries query={search} />
+        </>
+      )}
+      {((hexRegex.test(search) && !type) || type === 'address') && (
+        <>
+          <ResultsLabel>
+            {search ? 'Ledger History by' : 'Latest Ledger'}
+          </ResultsLabel>
+          <LedgerHistory query={search} />
+        </>
+      )}
+      {((hexRegex.test(search) && !type) || type === 'block') && (
+        <>
+          <ResultsLabel>
+            {search ? 'Block History by' : 'Latest Blocks'}
+          </ResultsLabel>
+          <BlockHistory query={search} />
+        </>
+      )}
+      {((hexRegex.test(search) && !type) || type === 'richlist') && (
+        <>
+          <ResultsLabel>
+            {search ? 'Richlist by' : 'Latest Richlist'}
+          </ResultsLabel>
+          <RichlistEntries query={search} />
+        </>
+      )}
+      {((hexRegex.test(search) && !type) || type === 'transaction') && (
+        <>
+          <ResultsLabel>
+            {search ? 'Transaction History by' : 'Latest Transactions'}
+          </ResultsLabel>
+          <TransactionHistory query={search} />
+        </>
+      )}
     </Container>
   );
 }
