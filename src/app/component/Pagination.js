@@ -34,7 +34,7 @@ export default function Pagination
   if (!('rowsPerPage' in opts)) opts.rowsPerPage = limit;
   if (!('page' in opts)) opts.page = offset / limit;
   if (!('count' in opts)) {
-    opts.count = length && length % limit
+    opts.count = typeof length === 'number' && (length === 0 || length % limit)
       ? ((opts.page) * limit) + length
       : -1;
   }

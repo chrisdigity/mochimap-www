@@ -86,7 +86,9 @@ export default function Explorer ({ type }) {
   };
 
   return (
-    <Container sx={{ position: 'relative' }}>
+    <Container
+      sx={{ position: 'relative', padding: ({ spacing }) => spacing(3) }}
+    >
       <Box
         sx={{
           display: 'flex',

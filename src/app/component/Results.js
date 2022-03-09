@@ -9,6 +9,7 @@ import {
   useGetTransactionsQuery
 } from 'api';
 import {
+  Box,
   CircularProgress,
   Collapse,
   Divider,
@@ -27,6 +28,26 @@ import Pagination from 'app/component/Pagination';
 import { Address, Amount, Properties } from 'app/component/Types';
 import { capitalize } from 'util';
 
+export function LoadingScreen (props) {
+  return (
+    <Box
+      textAlign='center'
+      sx={{ position: 'absolute', width: '100%', height: '100%' }}
+    >
+      <Box
+        sx={{
+          backgroundColor: ({ palette }) => palette.background.default,
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          opacity: '70%'
+        }}
+      />
+      <CircularProgress />
+    </Box>
+  );
+}
+
 export function BlockHistory ({ bnum, bhash, maddr, query }) {
   // set default state and handlers
   const [queryType, setQueryType] = useState('bnum');
@@ -34,8 +55,15 @@ export function BlockHistory ({ bnum, bhash, maddr, query }) {
   const [page, setPage] = useState(0);
   const offset = page * limit;
   const handlePageChange = (_event, newpage) => setPage(newpage);
-  const handleLimitChange = (event) => setLimit(Number(event.target?.value));
-  const handleTypeChange = (_event, newType) => setQueryType(newType);
+  const handleLimitChange = (event) => {
+    const newlimit = Number(event.target?.value);
+    setPage(Math.floor(page * limit / newlimit));
+    setLimit(newlimit);
+  };
+  const handleTypeChange = (_event, newType) => {
+    setQueryType(newType);
+    setPage(0);
+  };
 
   // obtain search address
   let search = new URLSearchParams();
@@ -55,87 +83,71 @@ export function BlockHistory ({ bnum, bhash, maddr, query }) {
   const request = useGetBlocksQuery({ bnum, bhash, search });
   const length = request.data?.length;
   const itemProps = [
-    { xs: 6.75, sm: 4 },
-    { sm: 4, display: { xs: 'none', sm: 'block' } },
-    { xs: 2, sm: 1.75 },
-    { xs: 3.25, sm: 2.25, align: 'right' }
+    { xs: 2, sm: 1.75, md: 1.25 },
+    { xs: 6.75, sm: 4, md: 4.5 },
+    { sm: 4, md: 4.5, display: { xs: 'none', sm: 'block' } },
+    { xs: 3.25, sm: 2.25, md: 1.75, align: 'right' }
   ];
 
   return (
     <Grid container component={Paper} spacing={0.5} sx={{ padding: '0.5em' }}>
       {query && (
-        <Grid container item>
-          <Grid item xs align='center'>
-            <Tabs
-              value={queryType} onChange={handleTypeChange}
-              centered aria-label='block history search type'
-            >
-              <Tab label='Block Number' value='bnum' />
-              <Tab label='Block Hash' value='bhash' />
-              <Tab label='Miner' value='maddr' />
-            </Tabs>
-          </Grid>
+        <Grid item xs={12}>
+          <Tabs
+            value={queryType} onChange={handleTypeChange}
+            centered aria-label='block history search type'
+          >
+            <Tab label='Block Number' value='bnum' />
+            <Tab label='Block Hash' value='bhash' />
+            <Tab label='Miner' value='maddr' />
+          </Tabs>
         </Grid>
       )}
-      {(request.isError && (
-        <Grid container item>
+      <Grid item fontWeight='bold' {...itemProps[0]}>Number</Grid>
+      <Grid item fontWeight='bold' {...itemProps[1]}>Block Hash</Grid>
+      <Grid item fontWeight='bold' {...itemProps[2]}>Miner</Grid>
+      <Grid item fontWeight='bold' {...itemProps[3]}>Time</Grid>
+      <Grid item xs={12}><Divider /></Grid>
+      <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
+        {(request.isError && (
           <Grid item xs={12} align='center'>
             {request.error.data?.error || 'Unknown Error'}...
             &nbsp;{request.error.data?.message || 'No information'}
           </Grid>
-        </Grid>
-      )) || (!request.isFetching && !request.data?.length && (
-        <Grid container item>
+        )) || (request.isLoading && (
+          <Grid item xs={12} align='center'>Loading...</Grid>
+        )) || (!request.data?.length && (
           <Grid item xs={12} align='center'>No Results...</Grid>
+        )) || (request.data?.map((row, i) => (
+          <React.Fragment key={`block-row-${i}`}>
+            <Grid item {...itemProps[0]}>{row.bnum}</Grid>
+            <Grid item {...itemProps[1]}>
+              <Link href={`/explorer/block/${row.bnum}/${row.bhash}`}>
+                <Typography noWrap>{row.bhash}</Typography>
+              </Link>
+            </Grid>
+            <Grid item {...itemProps[2]}>
+              {(row.maddr && (<Properties href wots={row.maddr} />)) || (
+                <Typography noWrap>
+                  {`> [ ${capitalize(row.type)} Block ]`}
+                </Typography>
+              )}
+            </Grid>
+            <Grid item {...itemProps[3]}>
+              <TimePrep epoch={Date.parse(row.created)} />
+            </Grid>
+            <Grid item xs={12}><Divider /></Grid>
+          </React.Fragment>
+        )))}
+        {request.isFetching && (<LoadingScreen />)}
+        <Grid item xs={12}>
+          <Pagination
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleLimitChange}
+            {...{ length, limit, offset }}
+          />
         </Grid>
-      )) || (
-        <>
-          <Grid item xs>
-            <Pagination
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleLimitChange}
-              {...{ length, limit, offset }}
-            />
-          </Grid>
-          <Grid container item>
-            <Grid item {...itemProps[2]}>Number</Grid>
-            <Grid item {...itemProps[0]}>Block Hash</Grid>
-            <Grid item {...itemProps[1]}>Miner</Grid>
-            <Grid item {...itemProps[3]}>Time</Grid>
-          </Grid>
-          {(request.isFetching && (
-            <>
-              <Grid item xs={12}><Divider /></Grid>
-              <Grid item xs={12} align='center'><CircularProgress /></Grid>
-            </>
-          )) || (
-            request.data?.map((row, i) => (
-              <React.Fragment key={`balances-row-${i}`}>
-                <Grid item xs><Divider /></Grid>
-                <Grid container item spacing={1}>
-                  <Grid item {...itemProps[2]}>{row.bnum}</Grid>
-                  <Grid item {...itemProps[0]}>
-                    <Link href={`/explorer/block/${row.bnum}/${row.bhash}`}>
-                      <Typography noWrap>{row.bhash}</Typography>
-                    </Link>
-                  </Grid>
-                  <Grid item {...itemProps[1]}>
-                    {(row.maddr && (
-                      <Properties href wots={row.maddr} />
-                    )) || (
-                      <Typography noWrap>
-                        {`> [ ${capitalize(row.type)} Block ]`}
-                      </Typography>
-                    )}
-                  </Grid>
-                  <Grid item {...itemProps[3]}>
-                    <TimePrep epoch={Date.parse(row.created)} />
-                  </Grid>
-                </Grid>
-              </React.Fragment>))
-          )}
-        </>
-      )}
+      </Grid>
     </Grid>
   );
 }
@@ -150,14 +162,10 @@ export function LedgerEntries ({ query }) {
   return (
     <>
       <Grid container component={Paper} spacing={0.5} sx={{ padding: '0.5em' }}>
-        <Grid container item>
-          <Grid item xs={6} align='center'>Tag</Grid>
-          <Grid item xs={6} align='center'>WOTS+</Grid>
-        </Grid>
-        <Grid container item>
-          <Grid item xs><Divider /></Grid>
-        </Grid>
-        <Grid container item spacing={1}>
+        <Grid item xs={6} align='center' fontWeight='bold'>Tag</Grid>
+        <Grid item xs={6} align='center' fontWeight='bold'>WOTS+</Grid>
+        <Grid item xs={12}><Divider /></Grid>
+        <Grid container item spacing={0.5}>
           {requests.map((request, i, { length }) => (
             <React.Fragment key={`ledger-entry-${i}`}>
               <Grid item xs={5.8}>
@@ -205,8 +213,15 @@ export function LedgerHistory ({ type, value, query }) {
   const [page, setPage] = useState(0);
   const offset = page * limit;
   const handlePageChange = (_event, newpage) => setPage(newpage);
-  const handleLimitChange = (event) => setLimit(Number(event.target?.value));
-  const handleTypeChange = (_event, newType) => setQueryType(newType);
+  const handleLimitChange = (event) => {
+    const newlimit = Number(event.target?.value);
+    setPage(Math.floor(page * limit / newlimit));
+    setLimit(newlimit);
+  };
+  const handleTypeChange = (_event, newType) => {
+    setQueryType(newType);
+    setPage(0);
+  };
 
   // obtain search address
   let search = new URLSearchParams();
@@ -221,92 +236,69 @@ export function LedgerHistory ({ type, value, query }) {
   // perform request and extract length
   const request = useGetLedgerHistoryQuery({ type, value, search });
   const length = request.data?.length;
+  const itemProps = [
+    { xs: 5, sm: 3.5, md: 5 },
+    { md: 1.25, align: 'right', display: { xs: 'none', sm: 'none', md: 'block' } },
+    { xs: 3.5, sm: 2.5, md: 1.75, align: 'right' },
+    { sm: 3, md: 2, align: 'right', display: { xs: 'none', sm: 'block' } },
+    { xs: 3.5, sm: 3, md: 2, align: 'right' }
+  ];
 
   return (
     <Grid container component={Paper} spacing={0.5} sx={{ padding: '0.5em' }}>
       {query && (
-        <Grid container item>
-          <Grid item xs align='center'>
-            <Tabs
-              value={queryType} onChange={handleTypeChange}
-              centered aria-label='ledger history search type'
-            >
-              <Tab label='Tag' value='tag' />
-              <Tab label='Address' value='address' />
-            </Tabs>
-          </Grid>
+        <Grid item xs={12}>
+          <Tabs
+            value={queryType} onChange={handleTypeChange}
+            centered aria-label='ledger history search type'
+          >
+            <Tab label='Tag' value='tag' />
+            <Tab label='Address' value='address' />
+          </Tabs>
         </Grid>
       )}
-      {(request.isError && (
-        <Grid container item>
+      <Grid item fontWeight='bold' {...itemProps[0]}>Address</Grid>
+      <Grid item fontWeight='bold' {...itemProps[1]}>Block</Grid>
+      <Grid item fontWeight='bold' {...itemProps[2]}>Time</Grid>
+      <Grid item fontWeight='bold' {...itemProps[3]}>Delta</Grid>
+      <Grid item fontWeight='bold' {...itemProps[4]}>Balance</Grid>
+      <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
+        {(request.isError && (
           <Grid item xs={12} align='center'>
             {request.error.data?.error || 'Unknown Error'}...
             &nbsp;{request.error.data?.message || 'No information'}
           </Grid>
-        </Grid>
-      )) || (!request.isFetching && !request.data?.length && (
-        <Grid container item>
+        )) || (request.isLoading && (
+          <Grid item xs={12} align='center'>Loading...</Grid>
+        )) || (!request.data?.length && (
           <Grid item xs={12} align='center'>No Results...</Grid>
+        )) || (request.data?.map((row, i) => (
+          <React.Fragment key={`ledger-row-${i}`}>
+            <Grid item {...itemProps[0]}>
+              <Address href wots={row.address} tag={row.tag} />
+            </Grid>
+            <Grid item {...itemProps[1]}>{row.bnum}</Grid>
+            <Grid item {...itemProps[2]}>
+              <TimePrep epoch={Date.parse(row.created)} />
+            </Grid>
+            <Grid item {...itemProps[3]}>
+              <Amount forceSign value={row.delta} />
+            </Grid>
+            <Grid item {...itemProps[4]}>
+              <Amount value={row.balance} />
+            </Grid>
+            <Grid item xs={12}><Divider /></Grid>
+          </React.Fragment>
+        )))}
+        {request.isFetching && (<LoadingScreen />)}
+        <Grid item xs={12}>
+          <Pagination
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleLimitChange}
+            {...{ length, limit, offset }}
+          />
         </Grid>
-      )) || (
-        <>
-          <Grid item xs>
-            <Pagination
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleLimitChange}
-              {...{ length, limit, offset }}
-            />
-          </Grid>
-          <Grid container item>
-            <Grid item xs={5} sm={3.5} md={5}>Address</Grid>
-            <Grid
-              item md={1.25} align='right'
-              display={{ xs: 'none', sm: 'none', md: 'block' }}
-            >Block
-            </Grid>
-            <Grid item xs={3.5} sm={2.5} md={1.75} align='right'>Time</Grid>
-            <Grid
-              item sm={3} md={2} align='right'
-              display={{ xs: 'none', sm: 'block' }}
-            >Delta
-            </Grid>
-            <Grid item xs={3.5} sm={3} md={2} align='right'>Balance</Grid>
-          </Grid>
-          {(request.isFetching && (
-            <>
-              <Grid item xs={12}><Divider /></Grid>
-              <Grid item xs={12} align='center'><CircularProgress /></Grid>
-            </>
-          )) || (
-            request.data?.map((row, i) => (
-              <React.Fragment key={`balances-row-${i}`}>
-                <Grid item xs><Divider /></Grid>
-                <Grid container item spacing={0}>
-                  <Grid item xs={5} sm={3.5} md={5}>
-                    <Address href wots={row.address} tag={row.tag} />
-                  </Grid>
-                  <Grid
-                    item md={1.25} align='right'
-                    display={{ xs: 'none', sm: 'none', md: 'block' }}
-                  >{row.bnum}
-                  </Grid>
-                  <Grid item xs={3.5} sm={2.5} md={1.75} align='right'>
-                    <TimePrep epoch={Date.parse(row.created)} />
-                  </Grid>
-                  <Grid
-                    item sm={3} md={2} align='right' display={{
-                      xs: 'none', sm: 'block'
-                    }}
-                  ><Amount forceSign value={row.delta} />
-                  </Grid>
-                  <Grid item xs={3.5} sm={3} md={2} align='right'>
-                    <Amount value={row.balance} />
-                  </Grid>
-                </Grid>
-              </React.Fragment>))
-          )}
-        </>
-      )}
+      </Grid>
     </Grid>
   );
 }
@@ -318,8 +310,15 @@ export function RichlistEntries ({ query }) {
   const [page, setPage] = useState(0);
   const offset = page * limit;
   const handlePageChange = (_event, newpage) => setPage(newpage);
-  const handleLimitChange = (event) => setLimit(Number(event.target?.value));
-  const handleTypeChange = (_event, newType) => setQueryType(newType);
+  const handleLimitChange = (event) => {
+    const newlimit = Number(event.target?.value);
+    setPage(Math.floor(page * limit / newlimit));
+    setLimit(newlimit);
+  };
+  const handleTypeChange = (_event, newType) => {
+    setQueryType(newType);
+    setPage(0);
+  };
 
   // obtain search address
   let search = new URLSearchParams();
@@ -350,77 +349,62 @@ export function RichlistEntries ({ query }) {
   return (
     <Grid container component={Paper} spacing={0.5} sx={{ padding: '0.5em' }}>
       {query && (
-        <Grid container item>
-          <Grid item xs align='center'>
-            <Tabs
-              value={queryType} onChange={handleTypeChange}
-              centered aria-label='richlist search type'
-            >
-              <Tab label='Rank' value='rank' />
-              <Tab label='Tag' value='tag' />
-              <Tab label='Address' value='address' />
-            </Tabs>
-          </Grid>
+        <Grid item xs align='center'>
+          <Tabs
+            value={queryType} onChange={handleTypeChange}
+            centered aria-label='richlist search type'
+          >
+            <Tab label='Rank' value='rank' />
+            <Tab label='Tag' value='tag' />
+            <Tab label='Address' value='address' />
+          </Tabs>
         </Grid>
       )}
-      {(request.isError && (
-        <Grid container item>
+      <Grid item fontWeight='bold' {...itemProps[0]}>Rank</Grid>
+      <Grid item fontWeight='bold' {...itemProps[1]}>Address</Grid>
+      <Grid item fontWeight='bold' {...itemProps[2]}>Balance</Grid>
+      <Grid item fontWeight='bold' {...itemProps[3]}>Stake</Grid>
+      <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
+        {(request.isError && (
           <Grid item xs={12} align='center'>
             {request.error.data?.error || 'Unknown Error'}...
             &nbsp;{request.error.data?.message || 'No information'}
           </Grid>
-        </Grid>
-      )) || (!request.isFetching && !request.data?.length && (
-        <Grid container item>
+        )) || (request.isLoading && (
+          <Grid item xs={12} align='center'>Loading...</Grid>
+        )) || (!request.data?.length && (
           <Grid item xs={12} align='center'>No Results...</Grid>
+        )) || (request.data?.map((row, i) => (
+          <React.Fragment key={`richlist-row-${i}`}>
+            <Grid item {...itemProps[0]}>{row.rank}</Grid>
+            <Grid item {...itemProps[1]}>
+              <Address href tag={row.tag} wots={row.address} />
+            </Grid>
+            <Grid item {...itemProps[2]}>
+              <Amount value={row.balance} />
+            </Grid>
+            <Grid item {...itemProps[3]}>
+              {(chainRequest.isLoading && (
+                <CircularProgress size='1em' />
+              )) || (
+                `${(100 * row.balance / (
+                  chainRequest.data?.totalsupply * 1e+9
+                )).toLocaleString(undefined, localeOptions)}%`
+              )}
+            </Grid>
+            <Grid item xs={12}><Divider /></Grid>
+          </React.Fragment>
+        )))}
+        {request.isFetching && (<LoadingScreen />)}
+        <Grid item xs={12}>
+          <Pagination
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleLimitChange}
+            rowsPerPageOptions={[20, 50, 100]}
+            {...{ length, limit, offset }}
+          />
         </Grid>
-      )) || (
-        <>
-          <Grid item xs>
-            <Pagination
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleLimitChange}
-              rowsPerPageOptions={[20, 50, 100]}
-              {...{ length, limit, offset }}
-            />
-          </Grid>
-          <Grid container item>
-            <Grid item {...itemProps[0]}>Rank</Grid>
-            <Grid item {...itemProps[1]}>Address</Grid>
-            <Grid item {...itemProps[2]}>Balance</Grid>
-            <Grid item {...itemProps[3]}>Stake</Grid>
-          </Grid>
-          {(request.isFetching && (
-            <>
-              <Grid item xs={12}><Divider /></Grid>
-              <Grid item xs={12} align='center'><CircularProgress /></Grid>
-            </>
-          )) || (
-            request.data?.map((row, i) => (
-              <React.Fragment key={`balances-row-${i}`}>
-                <Grid item xs><Divider /></Grid>
-                <Grid container item spacing={1}>
-                  <Grid item {...itemProps[0]}>{row.rank}</Grid>
-                  <Grid item {...itemProps[1]}>
-                    <Address href tag={row.tag} wots={row.address} />
-                  </Grid>
-                  <Grid item {...itemProps[2]}>
-                    <Amount value={row.balance} />
-                  </Grid>
-                  <Grid item {...itemProps[3]}>
-                    {(chainRequest.isLoading && (
-                      <CircularProgress size='1em' />
-                    )) || (
-                      `${(100 * row.balance / (
-                        chainRequest.data?.totalsupply * 1e+9
-                      )).toLocaleString(undefined, localeOptions)}%`
-                    )}
-                  </Grid>
-                </Grid>
-              </React.Fragment>))
-          )}
-        </>
-      )}
+      </Grid>
     </Grid>
   );
 }
@@ -499,18 +483,18 @@ function TransactionRow ({ header, open, reference, tx }) {
   ];
 
   return (header && (
-    <Grid container item>
-      <Grid item {...itemProps.shift()} />
-      <Grid item {...itemProps.shift()}>Reference</Grid>
-      <Grid item {...itemProps.shift()}>Block</Grid>
-      <Grid item {...itemProps.shift()}>Time</Grid>
-      <Grid item {...itemProps.shift()}>Amount</Grid>
-    </Grid>
+    <>
+      <Grid item fontWeight='bold' {...itemProps.shift()} />
+      <Grid item fontWeight='bold' {...itemProps.shift()}>Reference</Grid>
+      <Grid item fontWeight='bold' {...itemProps.shift()}>Block</Grid>
+      <Grid item fontWeight='bold' {...itemProps.shift()}>Time</Grid>
+      <Grid item fontWeight='bold' {...itemProps.shift()}>Amount</Grid>
+      <Grid item xs={12}><Divider /></Grid>
+    </>
   )) || (
     <>
-      <Grid item xs><Divider /></Grid>
       {splitTransaction(tx, reference).map((stx, i, { length }) => (
-        <Grid container item spacing={0} key={`${stx.txid}-stx-${i}`}>
+        <React.Fragment key={`${stx.txid}-stx-${i}`}>
           <Grid item {...itemProps.shift()}>
             {(++i === length && (
               <IconButton size='small' onClick={handleActive}>
@@ -536,7 +520,7 @@ function TransactionRow ({ header, open, reference, tx }) {
           <Grid item {...itemProps.shift()}>
             <Amount value={stx.amount} />
           </Grid>
-        </Grid>
+        </React.Fragment>
       ))}
       <Collapse in={active} timeout='auto' unmountOnExit sx={{ width: '100%' }}>
         <Grid container item spacing={0}>
@@ -575,6 +559,7 @@ function TransactionRow ({ header, open, reference, tx }) {
           change tag={tx.chgtag} wots={tx.chgaddr}
         />
       </Collapse>
+      <Grid item xs={12}><Divider /></Grid>
     </>
   );
 }
@@ -586,8 +571,15 @@ export function TransactionHistory ({ bnum, bhash, query, type, value }) {
   const [page, setPage] = useState(0);
   const offset = page * limit;
   const handlePageChange = (_event, newpage) => setPage(newpage);
-  const handleLimitChange = (event) => setLimit(Number(event.target.value));
-  const handleTypeChange = (_event, newType) => setQueryType(newType);
+  const handleLimitChange = (event) => {
+    const newlimit = Number(event.target?.value);
+    setPage(Math.floor(page * limit / newlimit));
+    setLimit(newlimit);
+  };
+  const handleTypeChange = (_event, newType) => {
+    setQueryType(newType);
+    setPage(0);
+  };
 
   // obtain search address
   let search = new URLSearchParams();
@@ -608,51 +600,40 @@ export function TransactionHistory ({ bnum, bhash, query, type, value }) {
   return (
     <Grid container component={Paper} spacing={0.5} sx={{ padding: '0.5em' }}>
       {query && (
-        <Grid container item>
-          <Grid item xs align='center'>
-            <Tabs
-              value={queryType} onChange={handleTypeChange}
-              centered aria-label='transaction history search type'
-            >
-              <Tab label='TXID' value='txid' />
-              <Tab label='Tag' value='tag' />
-              <Tab label='Address' value='address' />
-            </Tabs>
-          </Grid>
+        <Grid item xs={12} align='center'>
+          <Tabs
+            value={queryType} onChange={handleTypeChange}
+            centered aria-label='transaction history search type'
+          >
+            <Tab label='TXID' value='txid' />
+            <Tab label='Tag' value='tag' />
+            <Tab label='Address' value='address' />
+          </Tabs>
         </Grid>
       )}
-      {(request.isError && (
-        <Grid container item>
+      <TransactionRow header />
+      <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
+        {(request.isError && (
           <Grid item xs={12} align='center'>
             {request.error.data?.error || 'Unknown Error'}...
             &nbsp;{request.error.data?.message || 'No information'}
           </Grid>
-        </Grid>
-      )) || (!request.isFetching && !request.data?.length && (
-        <Grid container item>
+        )) || (request.isLoading && (
+          <Grid item xs={12} align='center'>Loading...</Grid>
+        )) || (!request.data?.length && (
           <Grid item xs={12} align='center'>No Results...</Grid>
+        )) || (request.data?.map((row, i) => (
+            <TransactionRow key={`transaction-row${i}`} tx={row} />
+        )))}
+        {request.isFetching && (<LoadingScreen />)}
+        <Grid item xs={12}>
+          <Pagination
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleLimitChange}
+            {...{ length, limit, offset }}
+          />
         </Grid>
-      )) || (
-        <>
-          <Grid item xs>
-            <Pagination
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleLimitChange}
-              {...{ length, limit, offset }}
-            />
-          </Grid>
-          <TransactionRow header />
-          {(request.isFetching && (
-            <>
-              <Grid item xs={12}><Divider /></Grid>
-              <Grid item xs={12} align='center'><CircularProgress /></Grid>
-            </>
-          )) || (
-            request.data?.map((tx, i) => (
-              <TransactionRow key={`transaction-row${i}`} tx={tx} />))
-          )}
-        </>
-      )}
+      </Grid>
     </Grid>
   );
 }
