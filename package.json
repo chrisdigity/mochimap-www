@@ -26,6 +26,7 @@
   },
   "scripts": {
     "audit": "npm audit --production",
+    "build": "react-scripts build",
     "start": "react-scripts start"
   },
   "eslintConfig": {
