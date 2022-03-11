@@ -262,6 +262,7 @@ export function LedgerHistory ({ type, value, query }) {
       <Grid item fontWeight='bold' {...itemProps[2]}>Time</Grid>
       <Grid item fontWeight='bold' {...itemProps[3]}>Delta</Grid>
       <Grid item fontWeight='bold' {...itemProps[4]}>Balance</Grid>
+      <Grid item xs={12}><Divider /></Grid>
       <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
         {(request.isError && (
           <Grid item xs={12} align='center'>
@@ -489,7 +490,6 @@ function TransactionRow ({ header, open, reference, tx }) {
       <Grid item fontWeight='bold' {...itemProps.shift()}>Block</Grid>
       <Grid item fontWeight='bold' {...itemProps.shift()}>Time</Grid>
       <Grid item fontWeight='bold' {...itemProps.shift()}>Amount</Grid>
-      <Grid item xs={12}><Divider /></Grid>
     </>
   )) || (
     <>
@@ -559,7 +559,6 @@ function TransactionRow ({ header, open, reference, tx }) {
           change tag={tx.chgtag} wots={tx.chgaddr}
         />
       </Collapse>
-      <Grid item xs={12}><Divider /></Grid>
     </>
   );
 }
@@ -612,6 +611,7 @@ export function TransactionHistory ({ bnum, bhash, query, type, value }) {
         </Grid>
       )}
       <TransactionRow header />
+      <Grid item xs={12}><Divider /></Grid>
       <Grid container item spacing={0.5} sx={{ position: 'relative' }}>
         {(request.isError && (
           <Grid item xs={12} align='center'>
@@ -623,7 +623,10 @@ export function TransactionHistory ({ bnum, bhash, query, type, value }) {
         )) || (!request.data?.length && (
           <Grid item xs={12} align='center'>No Results...</Grid>
         )) || (request.data?.map((row, i) => (
-            <TransactionRow key={`transaction-row${i}`} tx={row} />
+          <React.Fragment key={`transaction-row${i}`}>
+            <TransactionRow tx={row} />
+            <Grid item xs={12}><Divider /></Grid>
+          </React.Fragment>
         )))}
         {request.isFetching && (<LoadingScreen />)}
         <Grid item xs={12}>

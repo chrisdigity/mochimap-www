@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -84,6 +84,10 @@ export default function Explorer ({ type }) {
     navigate(pathname + '?search=' + value);
     return false;
   };
+
+  useEffect(() => {
+    document.forms[0].search.value = '';
+  }, [pathname]);
 
   return (
     <Container
