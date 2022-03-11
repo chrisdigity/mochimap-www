@@ -16,15 +16,15 @@ const CAMERA = new THREE.PerspectiveCamera(
   75, window.innerWidth / window.innerHeight, NEAR, FAR);
 const RENDERER = new THREE.WebGLRenderer({ antialias: true });
 
+let init = false;
+
 export default function BackgroundWave () {
   const theme = useTheme();
   const mount = useRef();
 
-  const [init, setInit] = useState(false);
-
   useEffect(() => {
     if (!init) {
-      setInit(true);
+      init = true;
       // initialize wave effect variables
       let count = 0;
       let windowHalfX, windowHalfY, windowAspect, mouseX, mouseY;
@@ -113,8 +113,9 @@ export default function BackgroundWave () {
       const bgColor = theme?.palette?.background?.default || '#303030';
       SCENE.background = new THREE.Color(bgColor);
       SCENE.fog = new THREE.Fog(SCENE.background.getHex(), NEAR, FAR);
+      mount.current.appendChild(RENDERER.domElement);
     }
-  }, [init, setInit, theme]);
+  }, [init, theme]);
 
   return (
     <Box

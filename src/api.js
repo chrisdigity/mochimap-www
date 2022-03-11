@@ -36,8 +36,8 @@ export const MochimapApi = createApi({
         ? `/${params.type}${params?.value ? `/${params.value}` : ''}`
         : ''}${params?.search ? `?${params.search}` : ''}`
     }),
-    getNodeBySearch: builder.query({
-      query: (params) => `network?${params?.search}`
+    getNetwork: builder.query({
+      query: () => 'network/active'
     }),
     getRichlist: builder.query({
       query: (params) => `richlist?${params?.search}`
@@ -59,7 +59,7 @@ export const {
   useGetChainQuery,
   useGetLedgerEntryQuery,
   useGetLedgerHistoryQuery,
-  useGetNodeBySearchQuery,
+  useGetNetworkQuery,
   useGetRichlistQuery,
   useGetTransactionsQuery
 } = MochimapApi;

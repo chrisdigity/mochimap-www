@@ -13,6 +13,7 @@ import BackgroundWave from 'app/component/BackgroundWave';
 import Header from './app/component/Header';
 
 import Homepage from 'app/homepage';
+import Network from 'app/network';
 import Explorer from 'app/explorer';
 import ExplorerBlock from 'app/explorer-block';
 import ExplorerLedger from 'app/explorer-ledger';
@@ -96,12 +97,19 @@ function App () {
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <BrowserRouter>
-        <BackgroundWave />
+        <Routes>
+          <Route path='network'>
+            <Route index element={<Network />} />
+          </Route>
+          <Route path='*' element={<BackgroundWave />} />
+        </Routes>
         <ThemeProvider theme={alwaysDarkTheme}>
           <Header actualTheme={mode} switchTheme={switchTheme} />
         </ThemeProvider>
         <Routes>
           <Route index element={<Homepage />} />
+          <Route path='network' />
+          <Route path='map' />
           <Route path='explorer'>
             <Route index element={<Explorer />} />
             <Route path='address'>
