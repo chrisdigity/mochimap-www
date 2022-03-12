@@ -98,6 +98,7 @@ function App () {
       <CssBaseline />
       <BrowserRouter>
         <Routes>
+          <Route index />
           <Route path='network'>
             <Route index element={<Network />} />
           </Route>
