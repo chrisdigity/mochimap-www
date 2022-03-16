@@ -15,6 +15,7 @@ export const MochimapApi = createApi({
   reducerPath: 'MochimapApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://new-api.mochimap.com' }),
   endpoints: (builder) => ({
+    getBase: builder.query({ query: (params) => '' }),
     getBlocks: builder.query({
       query: (params) =>
         `block${params?.bnum
@@ -55,6 +56,7 @@ export const {
   useGetPriceQuery
 } = CoingeckoApi;
 export const {
+  useGetBaseQuery,
   useGetBlocksQuery,
   useGetChainQuery,
   useGetLedgerEntryQuery,

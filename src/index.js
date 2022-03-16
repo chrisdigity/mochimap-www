@@ -44,11 +44,16 @@ function App () {
       (!selected && prefersDark) || selected === 'dark' ? 'light' : 'dark'
     );
   };
-  const mode = selected || (prefersDark ? 'dark' : 'light');
+  const mode = 'dark'; // selected || (prefersDark ? 'dark' : 'light');
   const customTheme = useMemo(() => {
     return responsiveFontSizes(
       createTheme({
         components: {
+          MuiButton: {
+            defaultProps: {
+              color: 'primary'
+            }
+          },
           MuiLink: {
             defaultProps: {
               component: LinkForwarder,
@@ -59,25 +64,23 @@ function App () {
         palette: {
           mode,
           primary: { main: mode === 'dark' ? '#00d9ff' : '#0059ff' },
-          secondary: { main: '#ffa600' }
+          secondary: { main: '#0059ff' /* '#ffa600' */ },
+          textPrimary: { main: 'white' }
         },
         typography: {
           h1: {
             fontFamily: 'Nanum Brush Script',
             fontWeight: 'bold',
             textAlign: 'center',
-            transition: 'font-size 250ms ease',
-            whiteSpace: 'nowrap'
+            transition: 'font-size 250ms ease'
           },
           h2: {
             fontFamily: 'Nanum Brush Script',
-            fontWeight: 'bold',
-            whiteSpace: 'nowrap'
+            fontWeight: 'bold'
           },
           h3: {
             fontFamily: 'Nanum Brush Script',
-            fontWeight: 'bold',
-            whiteSpace: 'nowrap'
+            fontWeight: 'bold'
           },
           h6: {
             fontFamily: 'Roboto Mono'
@@ -99,14 +102,12 @@ function App () {
       <BrowserRouter>
         <Routes>
           <Route index />
-          <Route path='network'>
+          <Route path='map'>
             <Route index element={<Network />} />
           </Route>
           <Route path='*' element={<BackgroundWave />} />
         </Routes>
-        <ThemeProvider theme={alwaysDarkTheme}>
-          <Header actualTheme={mode} switchTheme={switchTheme} />
-        </ThemeProvider>
+        <Header actualTheme={mode} switchTheme={switchTheme} />
         <Routes>
           <Route index element={<Homepage />} />
           <Route path='network' />

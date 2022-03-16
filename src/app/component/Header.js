@@ -5,6 +5,7 @@ import {
   AppBar,
   Avatar,
   Box,
+  Container,
   Divider,
   Drawer,
   IconButton,
@@ -116,22 +117,26 @@ function Headersubtitle ({ dense }) {
 }
 
 function Headernav (props) {
+  const dense = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 10
+  });
+
   return (
     <Link
-      underline='hover' {...props}
+      component={props.href ? 'a' : Link}
+      underline='none' {...props}
       sx={{
         color: 'white',
         marginLeft: ({ spacing }) => spacing(1),
         marginRight: ({ spacing }) => spacing(2),
         display: { xs: 'none', sm: 'none', md: 'inline' },
-        fontFamily: 'Nanum Gothic',
+        fontFamily: 'Roboto',
+        fontSize: dense ? '1em' : '1.25em',
         fontWeight: 'bold',
-        '& > svg': {
-          marginRight: ({ spacing }) => spacing(0.5)
-        },
-        '& > *': {
-          verticalAlign: 'middle'
-        }
+        '&:hover': { textShadow: '0 0 0.5em white', cursor: 'pointer' },
+        '& > svg': { marginRight: ({ spacing }) => spacing(0.5) },
+        '& > *': { verticalAlign: 'middle' }
       }}
     />
   );
@@ -153,151 +158,153 @@ export default function Header ({ actualTheme, switchTheme }) {
   const toggle = (e) => setMenuAnchor(menuAnchor ? '' : 'left');
   const dense = useScrollTrigger({
     disableHysteresis: true,
-    threshold: 100
+    threshold: 10
   });
 
   return (
-    <AppBar position='sticky'>
-      <Toolbar
-        variant={dense ? 'dense' : 'regular'}
-        sx={{ transition: 'min-height 250ms' }}
-      >
-        <Headerlogo dense={dense} />
-        <Headertitle dense={dense} />
-        <Headersubtitle dense={dense} />
-        <Box sx={{ flexGrow: '1' }}>
-          <Headernav to='/explorer'><SearchIcon />Explorer</Headernav>
-          <Headernav to='/network'><LanguageIcon />Network</Headernav>
-        </Box>
-        <Box>
-          <Headerbutton title='Switch Theme' onClick={switchTheme}>
-            {actualTheme === 'dark'
-              ? <BrightnessHighIcon />
-              : <NightsStayIcon />}
-          </Headerbutton>
-          <Headerbutton
-            title='Mochimo Merchandise'
-            href='https://merch.mochimap.com'
-          >
-            <StorefrontIcon />
-          </Headerbutton>
-          <Headerbutton
-            title='What is Mochimo?'
-            href='https://mochimo.org'
-          >
-            <MochimoIcon />
-          </Headerbutton>
-          <Headerbutton
-            title='Contribute to MochiMap'
-            href='https://github.com/chrisdigity/mochimap-www'
-          >
-            <GitHubIcon />
-          </Headerbutton>
-          <Headerbutton
-            title='Come Chat on Discord'
-            href='https://discord.mochimap.com'
-          >
-            <DiscordIcon />
-          </Headerbutton>
-        </Box>
-        <IconButton edge='end' onClick={toggle}>
-          <MenuIcon />
-        </IconButton>
-        <Drawer anchor='right' open={Boolean(menuAnchor)} onClose={toggle}>
-          <Box sx={{ width: 225, 'overflow-x': 'hidden' }}>
-            <List dense>
-              <ListItem button onClick={toggle}>
-                <ListItemIcon><ChevronRightIcon /></ListItemIcon>
-                <ListItemText primary='Close Menu' />
-              </ListItem>
-              <Divider />
-              <ListSubheader>Explore Mochimo</ListSubheader>
-              <Divider />
-              <ListItem to='/explorer/address' button component={Link} onClick={toggle}>
-                <ListItemIcon><WalletIcon fontSize='large' /></ListItemIcon>
-                <ListItemText
-                  primary='Address/Tag'
-                  secondary='~ and Balance'
-                />
-              </ListItem>
-              <ListItem to='/explorer/block' button component={Link} onClick={toggle}>
-                <ListItemIcon><GridViewIcon fontSize='large' /></ListItemIcon>
-                <ListItemText
-                  primary='Blocks'
-                  secondary='~ and Miners'
-                />
-              </ListItem>
-              <ListItem to='/explorer/transaction' button component={Link} onClick={toggle}>
-                <ListItemIcon><ReceiptIcon fontSize='large' /></ListItemIcon>
-                <ListItemText
-                  primary='Transactions'
-                  secondary='~ and Receipts'
-                />
-              </ListItem>
-              <ListItem to='/explorer/richlist' button component={Link} onClick={toggle}>
-                <ListItemIcon><LeaderboardIcon fontSize='large' /></ListItemIcon>
-                <ListItemText
-                  primary='Richlist'
-                  secondary='~ and Ranks'
-                />
-              </ListItem>
-              <Tooltip title='Coming Soon!' placement='left' arrow>
-                <ListItem button>
-                  <ListItemIcon><ViewCarouselIcon fontSize='large' /></ListItemIcon>
+    <AppBar
+      position='sticky'
+      color={dense ? 'primary' : 'transparent'}
+      sx={{ boxShadow: dense ? 'default' : 'none' }}
+    >
+      <Container disableGutters>
+        <Toolbar
+          variant={dense ? 'dense' : 'regular'}
+          sx={{ transition: 'min-height 250ms' }}
+        >
+          <Headerlogo dense={dense} />
+          <Headertitle dense={dense} />
+          <Headersubtitle dense={dense} />
+          <Box sx={{ flexGrow: '1', marginLeft: ({ spacing }) => spacing(2) }}>
+            <Headernav to='/explorer'>Explorer</Headernav>
+            <Headernav to='/map'>Map</Headernav>
+            <Headernav href='https://status.mochimap.com'>Status</Headernav>
+          </Box>
+          <Box>
+            <Headerbutton
+              title='Mochimo Merchandise'
+              href='https://merch.mochimap.com'
+            >
+              <StorefrontIcon />
+            </Headerbutton>
+            <Headerbutton
+              title='What is Mochimo?'
+              href='https://mochimo.org'
+            >
+              <MochimoIcon />
+            </Headerbutton>
+            <Headerbutton
+              title='Contribute to MochiMap'
+              href='https://github.com/chrisdigity/mochimap-www'
+            >
+              <GitHubIcon />
+            </Headerbutton>
+            <Headerbutton
+              title='Come Chat on Discord'
+              href='https://discord.mochimap.com'
+            >
+              <DiscordIcon />
+            </Headerbutton>
+          </Box>
+          <IconButton edge='end' onClick={toggle}>
+            <MenuIcon />
+          </IconButton>
+          <Drawer anchor='right' open={Boolean(menuAnchor)} onClose={toggle}>
+            <Box sx={{ width: 225, 'overflow-x': 'hidden' }}>
+              <List dense>
+                <ListItem button onClick={toggle}>
+                  <ListItemIcon><ChevronRightIcon /></ListItemIcon>
+                  <ListItemText primary='Close Menu' />
+                </ListItem>
+                <Divider />
+                <ListSubheader>Explore Mochimo</ListSubheader>
+                <Divider />
+                <ListItem to='/explorer/address' button component={Link} onClick={toggle}>
+                  <ListItemIcon><WalletIcon fontSize='large' /></ListItemIcon>
                   <ListItemText
-                    primary='Haiku Poems'
-                    secondary='~ and AI Art'
+                    primary='Address/Tag'
+                    secondary='~ and Balance'
                   />
                 </ListItem>
-              </Tooltip>
-              <Divider />
-              <ListSubheader>Discover Mochimo</ListSubheader>
-              <Divider />
-              <ListItem to='/explorer' button component={Link} onClick={toggle}>
-                <ListItemIcon><SearchIcon fontSize='large' /></ListItemIcon>
-                <ListItemText primary='The Explorer' secondary='Search Mochimo' />
-              </ListItem>
-              <Tooltip title='Coming Soon!' placement='left' arrow>
-                <ListItem to='/network' button component={Link} onClick={toggle}>
-                  <ListItemIcon><LanguageIcon fontSize='large' /></ListItemIcon>
-                  <ListItemText primary='The Network' secondary='Visualization' />
+                <ListItem to='/explorer/block' button component={Link} onClick={toggle}>
+                  <ListItemIcon><GridViewIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText
+                    primary='Blocks'
+                    secondary='~ and Miners'
+                  />
                 </ListItem>
-              </Tooltip>
-              <Divider />
-              <ListSubheader>More Mochimo</ListSubheader>
-              <Divider />
-              <ListItem
-                button onClick={toggle}
-                component='a' href='https://merch.mochimap.com'
-              >
-                <ListItemIcon><StorefrontIcon fontSize='large' /></ListItemIcon>
-                <ListItemText primary='Merchandise' secondary='Mochimo Store' />
-              </ListItem>
-              <ListItem
-                button onClick={toggle}
-                component='a' href='https://mochimo.org'
-              >
-                <ListItemIcon><MochimoIcon fontSize='large' /></ListItemIcon>
-                <ListItemText primary='What is Mochimo?' secondary='Official website' />
-              </ListItem>
-              <ListItem
-                button onClick={toggle}
-                component='a' href='https://github.com/chrisdigity/mochimap-www'
-              >
-                <ListItemIcon><GitHubIcon fontSize='large' /></ListItemIcon>
-                <ListItemText primary='Contribute' secondary='on Github' />
-              </ListItem>
-              <ListItem
-                button onClick={toggle}
-                component='a' href='https://discord.mochimap.com'
-              >
-                <ListItemIcon><DiscordIcon fontSize='large' /></ListItemIcon>
-                <ListItemText primary='Discord' secondary='Come say Hi' />
-              </ListItem>
-            </List>
-          </Box>
-        </Drawer>
-      </Toolbar>
+                <ListItem to='/explorer/transaction' button component={Link} onClick={toggle}>
+                  <ListItemIcon><ReceiptIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText
+                    primary='Transactions'
+                    secondary='~ and Receipts'
+                  />
+                </ListItem>
+                <ListItem to='/explorer/richlist' button component={Link} onClick={toggle}>
+                  <ListItemIcon><LeaderboardIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText
+                    primary='Richlist'
+                    secondary='~ and Ranks'
+                  />
+                </ListItem>
+                <Tooltip title='Coming Soon!' placement='left' arrow>
+                  <ListItem button>
+                    <ListItemIcon><ViewCarouselIcon fontSize='large' /></ListItemIcon>
+                    <ListItemText
+                      primary='Haiku Poems'
+                      secondary='~ and AI Art'
+                    />
+                  </ListItem>
+                </Tooltip>
+                <Divider />
+                <ListSubheader>Discover Mochimo</ListSubheader>
+                <Divider />
+                <ListItem to='/explorer' button component={Link} onClick={toggle}>
+                  <ListItemIcon><SearchIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='The Explorer' secondary='Search Mochimo' />
+                </ListItem>
+                <Tooltip title='Coming Soon!' placement='left' arrow>
+                  <ListItem to='/network' button component={Link} onClick={toggle}>
+                    <ListItemIcon><LanguageIcon fontSize='large' /></ListItemIcon>
+                    <ListItemText primary='The Network' secondary='Visualization' />
+                  </ListItem>
+                </Tooltip>
+                <Divider />
+                <ListSubheader>More Mochimo</ListSubheader>
+                <Divider />
+                <ListItem
+                  button onClick={toggle}
+                  component='a' href='https://merch.mochimap.com'
+                >
+                  <ListItemIcon><StorefrontIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Merchandise' secondary='Mochimo Store' />
+                </ListItem>
+                <ListItem
+                  button onClick={toggle}
+                  component='a' href='https://mochimo.org'
+                >
+                  <ListItemIcon><MochimoIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='What is Mochimo?' secondary='Official website' />
+                </ListItem>
+                <ListItem
+                  button onClick={toggle}
+                  component='a' href='https://github.com/chrisdigity/mochimap-www'
+                >
+                  <ListItemIcon><GitHubIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Contribute' secondary='on Github' />
+                </ListItem>
+                <ListItem
+                  button onClick={toggle}
+                  component='a' href='https://discord.mochimap.com'
+                >
+                  <ListItemIcon><DiscordIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Discord' secondary='Come say Hi' />
+                </ListItem>
+              </List>
+            </Box>
+          </Drawer>
+        </Toolbar>
+      </Container>
     </AppBar>
   );
 }

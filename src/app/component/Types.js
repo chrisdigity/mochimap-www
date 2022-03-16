@@ -31,22 +31,25 @@ export function Address ({ short, tag, wots, ...props }) {
 }
 
 export function Amount
-({ decimals, forceSign, noLocale, noSuffix, noUnits, value }) {
-  // const nMCMBalance = value?.toLocaleString();
-  const MCMBalance = value &&
-    (value / Math.pow(10, 9)).toLocaleString(undefined, {
+({ decimals, forceSign, offset = 1e+9, noLocale, noSuffix, noUnits, value }) {
+  const valueStr = value &&
+    (value / offset).toLocaleString(undefined, {
       minimumFractionDigits: 9
     });
 
+  const MILLION_C = offset * 1e+6;
+  const THOUSAND_C = offset * 1e+3;
+  const MILLI_C = offset / 1e+3;
+  const NANO_C = offset / 1e+9;
   // determine sign and make value absolute
   const sign = Number(value) < 0 ? -1 : 1;
   let amount = Number(value) * sign;
   let options = {};
   // compare amount against predetermined breakpoints
-  if (amount > 1e+15) options = { reduce: 1e+15, dec: 1, suffix: '𝕄' };
-  else if (amount > 1e+12) options = { reduce: 1e+12, dec: 2, suffix: 'κ' };
-  else if (amount < 1e+6) options = { suffix: 'η' };
-  else options = { reduce: 1e+9 };
+  if (amount > MILLION_C) options = { reduce: MILLION_C, dec: 1, suffix: '𝕄' };
+  else if (amount > THOUSAND_C) options = { reduce: THOUSAND_C, dec: 2, suffix: 'κ' };
+  else if (amount < MILLI_C) options = { reduce: NANO_C, suffix: 'η' };
+  else options = { reduce: offset };
   // force specific options
   if (typeof decimals === 'number') options.dec = decimals;
   if (noSuffix) options.reduce = 1e+9;
@@ -64,7 +67,7 @@ export function Amount
   }
   // return MCMSuffix JSX in a span
   return (
-    <span title={`${MCMBalance} Mochimo`}>
+    <span title={valueStr + (noUnits ? '' : ' Mochimo')}>
       {forceSign && sign > 0 && '+'}
       {amount}
       {amount !== '0' && !noSuffix && value && (
