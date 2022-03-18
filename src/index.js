@@ -3,11 +3,11 @@ import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { forwardRef, StrictMode, useMemo, useState } from 'react';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import { CssBaseline, responsiveFontSizes, useMediaQuery } from '@mui/material';
+import { CssBaseline, Link as MuiLink, responsiveFontSizes, useMediaQuery } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import { CoingeckoApi, MochimapApi } from 'api';
+import { CoingeckoApi, GithubApi, MochimapApi } from 'api';
 
 import BackgroundWave from 'app/component/BackgroundWave';
 import Header from './app/component/Header';
@@ -20,20 +20,25 @@ import ExplorerLedger from 'app/explorer-ledger';
 
 export const Store = configureStore({
   reducer: combineReducers({
-    [MochimapApi.reducerPath]: MochimapApi.reducer,
-    [CoingeckoApi.reducerPath]: CoingeckoApi.reducer
+    [CoingeckoApi.reducerPath]: CoingeckoApi.reducer,
+    [GithubApi.reducerPath]: GithubApi.reducer,
+    [MochimapApi.reducerPath]: MochimapApi.reducer
   }),
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()
-    .concat(CoingeckoApi.middleware).concat(MochimapApi.middleware)
+    .concat(CoingeckoApi.middleware)
+    .concat(GithubApi.middleware)
+    .concat(MochimapApi.middleware)
 });
 
 setupListeners(Store.dispatch);
 
 // custom link handling (forward MUI links to react-router links)
 const LinkForwarder = forwardRef((props, ref) => {
-  const { href, ...other } = props;
-  // Map href (MUI) -> to (react-router)
-  return <Link ref={ref} to={href} {...other} />;
+  // Map 'href' to external link; (MUI) -> to (<a>)
+  // Map 'to' to internal link; (MUI) -> to (react-router)
+  return props.href
+    ? (<a ref={ref} {...props} />)
+    : (<Link ref={ref} {...props} />);
 });
 
 function App () {
@@ -75,11 +80,11 @@ function App () {
             transition: 'font-size 250ms ease'
           },
           h2: {
-            fontFamily: 'Nanum Brush Script',
+            fontFamily: 'Roboto',
             fontWeight: 'bold'
           },
           h3: {
-            fontFamily: 'Nanum Brush Script',
+            fontFamily: 'Nunito Sans',
             fontWeight: 'bold'
           },
           h6: {

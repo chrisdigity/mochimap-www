@@ -11,6 +11,16 @@ export const CoingeckoApi = createApi({
   })
 });
 
+export const GithubApi = createApi({
+  reducerPath: 'GithubApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://api.github.com/' }),
+  endpoints: (builder) => ({
+    getContributors: builder.query({
+      query: (params) => `repos/${params.owner}/${params.repo}/contributors`
+    })
+  })
+});
+
 export const MochimapApi = createApi({
   reducerPath: 'MochimapApi',
   baseQuery: fetchBaseQuery({ baseUrl: 'https://new-api.mochimap.com' }),
@@ -24,9 +34,8 @@ export const MochimapApi = createApi({
     }),
     getChain: builder.query({
       query: (params) =>
-        `chain${params?.bnum
-          ? `/${params.bnum}${params?.bhash && `/${params.bhash}`}`
-          : ''}`
+        `chain${params?.bnum ? `/${params.bnum}` : ''}` +
+        (params?.bparam ? `/${params?.bparam}` : '')
     }),
     getLedgerEntry: builder.query({
       query: (params) => `balance/${params.type}/${params.value}`
@@ -55,6 +64,9 @@ export const MochimapApi = createApi({
 export const {
   useGetPriceQuery
 } = CoingeckoApi;
+export const {
+  useGetContributorsQuery
+} = GithubApi;
 export const {
   useGetBaseQuery,
   useGetBlocksQuery,
