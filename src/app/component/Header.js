@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   AppBar,
-  Avatar,
   Box,
   Container,
   Divider,
@@ -24,8 +23,8 @@ import { styled } from '@mui/styles';
 
 import SearchIcon from '@mui/icons-material/Search';
 import LanguageIcon from '@mui/icons-material/Language';
-import NightsStayIcon from '@mui/icons-material/NightsStay';
-import BrightnessHighIcon from '@mui/icons-material/BrightnessHigh';
+// import NightsStayIcon from '@mui/icons-material/NightsStay';
+// import BrightnessHighIcon from '@mui/icons-material/BrightnessHigh';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import WalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -37,106 +36,71 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import MochimoIcon from 'app/icons/MochimoIcon';
 import DiscordIcon from 'app/icons/DiscordIcon';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import HardwareIcon from '@mui/icons-material/Hardware';
+import AppShortcutIcon from '@mui/icons-material/AppShortcut';
+import ApiIcon from '@mui/icons-material/Api';
 
-const UnselectableTypography = styled(Typography)(() => ({
+const Unselectable = styled(Typography)(() => ({
   '-webkit-user-select': 'none',
   '-moz-user-select': 'none',
   '-ms-user-select': 'none',
-  'user-select': 'none',
-  cursor: 'default'
+  'user-select': 'none'
 }));
 
-function Headerlogo ({ dense }) {
-  let autosrc;
+function Headerlogo ({ dense, ...props }) {
+  const hsx = { height: dense ? 48 : 64, transition: 'height 250ms ease' };
+  let tip, src;
   switch (new Date().getMonth()) {
-    case 11: autosrc = '/img/logo-christmas.png'; break;
-    default: autosrc = '/img/logo-kanji-brushed.png';
+    case 2:
+      src = '/assets/images/logo-kanji-brushed.png';
+      tip = 'Mochimo Brushed Kanji Logo by Chrisdigity';
+      break;
+    default:
+      src = '/assets/images/logo.png';
+      tip = '';
   }
+
   return (
-    <Link to='/'>
-      <Avatar
-        alt='Site Logo'
-        src={autosrc}
-        sx={{
-          width: ({ spacing }) => dense ? spacing(6) : spacing(8),
-          height: ({ spacing }) => dense ? spacing(6) : spacing(8),
-          transition: 'height 250ms ease, width 250ms ease'
-        }}
-      />
-    </Link>
+    <Tooltip title={tip} arrow>
+      <Link underline='none' to='/' sx={hsx}>
+        <img alt={tip} src={src} style={hsx} />
+      </Link>
+    </Tooltip>
   );
 }
 
 function Headertitle ({ dense }) {
-  const title = window.location.origin.match(/(\w+)\W\w+$/i)?.[1];
   return (
-    <UnselectableTypography
-      sx={{
-        position: 'relative',
-        top: ({ spacing }) => dense ? spacing(-0.5) : spacing(-0.5),
-        left: ({ spacing }) => dense ? spacing(-1.25) : spacing(-2),
-        transition: 'top 250ms ease, left 250ms ease, font-size 250ms ease',
-        color: 'white',
-        lineHeight: 0,
-        fontFamily: 'Nanum Brush Script',
-        fontSize: ({ spacing }) => dense ? '2.5rem' : '3.33rem',
-        fontWeight: 'bold',
-        textShadow: dense
-          ? '0 0 2px black, 0 0 2px black'
-          : '0 0 4px black, 0 0 4px black'
-      }}
-    >
-      {title.slice(1) || 'mochimap'}
-    </UnselectableTypography>
+    <Box sx={{ position: 'relative', height: dense ? 40 : 56 }}>
+      <Unselectable
+        fontFamily='Nunito Sans'
+        fontSize={dense ? '1.5em' : '2.25em'}
+      >MOCHIMO
+      </Unselectable>
+      <Unselectable
+        noWrap variant='caption' fontSize={dense ? '0.5em' : '0.75em'}
+        sx={{ position: 'absolute', right: '0.25em', bottom: 0 }}
+      >Post-Quantum Currency
+      </Unselectable>
+    </Box>
   );
 }
 
-function Headersubtitle ({ dense }) {
-  const subtitle = useLocation().pathname.match(/\w+/gi)?.[0];
-  if (!subtitle) return null;
+function Headernav ({ dense, ...props }) {
+  const bold = useLocation().pathname.includes(props.children.toLowerCase());
   return (
     <Link
-      href={`/${subtitle}`}
-      underline='hover'
-      sx={{
-        position: 'absolute',
-        bottom: 0,
-        left: ({ spacing }) => dense ? spacing(6.5) : spacing(8),
-        transition: 'left 250ms ease, font-size 250ms ease',
-        fontSize: ({ spacing }) => dense ? '0.90rem' : '1rem',
-        fontFamily: 'Roboto Mono',
-        color: 'white',
-        fontWeight: 'bold',
-        textShadow: dense
-          ? '0 0 2px black, 0 0 2px black'
-          : '0 0 4px black, 0 0 4px black'
-      }}
-    >../{subtitle}
-    </Link>
-  );
-}
-
-function Headernav (props) {
-  const dense = useScrollTrigger({
-    disableHysteresis: true,
-    threshold: 10
-  });
-
-  return (
-    <Link
-      component={props.href ? 'a' : Link}
       underline='none' {...props}
+      component={props.href ? 'a' : Link}
       sx={{
-        color: 'white',
-        marginLeft: ({ spacing }) => spacing(1),
-        marginRight: ({ spacing }) => spacing(2),
         display: { xs: 'none', sm: 'none', md: 'inline' },
-        fontFamily: 'Roboto',
-        fontSize: dense ? '1em' : '1.25em',
-        fontWeight: 'bold',
-        '&:hover': { textShadow: '0 0 0.5em white', cursor: 'pointer' },
-        '& > svg': { marginRight: ({ spacing }) => spacing(0.5) },
-        '& > *': { verticalAlign: 'middle' }
+        marginLeft: 2,
+        color: 'white',
+        fontFamily: 'Roboto Mono',
+        fontWeight: bold ? 'bold' : '',
+        fontSize: dense ? '1em' : '1.125em',
+        '&:hover': { textShadow: '0 0 0.25em white', cursor: 'pointer' }
       }}
     />
   );
@@ -174,11 +138,12 @@ export default function Header ({ actualTheme, switchTheme }) {
         >
           <Headerlogo dense={dense} />
           <Headertitle dense={dense} />
-          <Headersubtitle dense={dense} />
-          <Box sx={{ flexGrow: '1', marginLeft: ({ spacing }) => spacing(2) }}>
-            <Headernav to='/explorer'>Explorer</Headernav>
-            <Headernav to='/map'>Map</Headernav>
-            <Headernav href='https://status.mochimap.com'>Status</Headernav>
+          <Box flexGrow={1}>
+            <Headernav dense={dense} to='/explorer'>Explorer</Headernav>
+            <Headernav dense={dense} to='/network'>Network</Headernav>
+            <Headernav dense={dense} href='https://status.mochimap.com'>
+              Status
+            </Headernav>
           </Box>
           <Box>
             <Headerbutton
@@ -210,7 +175,7 @@ export default function Header ({ actualTheme, switchTheme }) {
             <MenuIcon />
           </IconButton>
           <Drawer anchor='right' open={Boolean(menuAnchor)} onClose={toggle}>
-            <Box sx={{ width: 225, 'overflow-x': 'hidden' }}>
+            <Box sx={{ width: 250, 'overflow-x': 'hidden' }}>
               <List dense>
                 <ListItem button onClick={toggle}>
                   <ListItemIcon><ChevronRightIcon /></ListItemIcon>
@@ -261,14 +226,30 @@ export default function Header ({ actualTheme, switchTheme }) {
                 <Divider />
                 <ListItem to='/explorer' button component={Link} onClick={toggle}>
                   <ListItemIcon><SearchIcon fontSize='large' /></ListItemIcon>
-                  <ListItemText primary='The Explorer' secondary='Search Mochimo' />
+                  <ListItemText primary='Block Explorer' secondary='Search Mochimo' />
                 </ListItem>
                 <Tooltip title='Coming Soon!' placement='left' arrow>
                   <ListItem to='/network' button component={Link} onClick={toggle}>
                     <ListItemIcon><LanguageIcon fontSize='large' /></ListItemIcon>
-                    <ListItemText primary='The Network' secondary='Visualization' />
+                    <ListItemText primary='Network Visualization' secondary='Interactive Network' />
                   </ListItem>
                 </Tooltip>
+                <ListItem to='/exchanges' button component={Link} onClick={toggle}>
+                  <ListItemIcon><CurrencyExchangeIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Exchanges' secondary='Trade Mochimo' />
+                </ListItem>
+                <ListItem to='/mining' button component={Link} onClick={toggle}>
+                  <ListItemIcon><HardwareIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Mining & Pools' secondary='Solve Blocks' />
+                </ListItem>
+                <ListItem to='/wallets' button component={Link} onClick={toggle}>
+                  <ListItemIcon><AppShortcutIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Wallet Software' secondary='Java, iOS, Web' />
+                </ListItem>
+                <ListItem to='/api' button component={Link} onClick={toggle}>
+                  <ListItemIcon><ApiIcon fontSize='large' /></ListItemIcon>
+                  <ListItemText primary='Public API' secondary='' />
+                </ListItem>
                 <Divider />
                 <ListSubheader>More Mochimo</ListSubheader>
                 <Divider />

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -29,7 +29,8 @@ function ResultsLabel (props) {
 export default function Explorer ({ type }) {
   let { pathname, search } = useLocation();
   const navigate = useNavigate();
-  const hexRegex = /^[0-9a-f]+$/i;
+  const hexRegex = /^(?:0x)?[0-9a-f]+$/i;
+  const searchRegex = /^(?:0x)?[0-9a-f]*$/i;
 
   // determine search query
   search = new URLSearchParams(search);
@@ -63,7 +64,7 @@ export default function Explorer ({ type }) {
   const handleSearchText = (event) => {
     const { value } = event.target;
     // accept any hexadecimal or blank value
-    if (/^[0-9a-f]*$/i.test(value)) {
+    if (searchRegex.test(value)) {
       setSearchHint(defaultHint);
       setInvalidQuery(false);
     } else {
@@ -143,7 +144,7 @@ export default function Explorer ({ type }) {
       {hexRegex.test(search) && (!type || type === 'address') && (
         <>
           <ResultsLabel>Ledger Entries</ResultsLabel>
-          <LedgerEntries query={search} />
+          <LedgerEntries query={search.replace(/^0x/i, '')} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'address') && (
@@ -151,7 +152,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Ledger History by' : 'Latest Ledger'}
           </ResultsLabel>
-          <LedgerHistory query={search} />
+          <LedgerHistory query={search.replace(/^0x/i, '')} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'block') && (
@@ -167,7 +168,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Richlist by' : 'Latest Richlist'}
           </ResultsLabel>
-          <RichlistEntries query={search} />
+          <RichlistEntries query={search.replace(/^0x/i, '')} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'transaction') && (
@@ -175,7 +176,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Transaction History by' : 'Latest Transactions'}
           </ResultsLabel>
-          <TransactionHistory query={search} />
+          <TransactionHistory query={search.replace(/^0x/i, '')} />
         </>
       )}
     </Container>

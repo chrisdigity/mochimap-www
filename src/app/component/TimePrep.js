@@ -1,13 +1,13 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function TimePrep ({ epoch }) {
+  const timer = useRef();
   const [time, setTime] = useState({ prep: 'ago', frame: 'secs', amount: 0 });
   const updateTime = (update) => setTime((state) => ({ ...state, ...update }));
   const getEpochDelta = (to) => ((Date.now() - to) / 1000) | 0;
 
-  let timer;
-  const updateTimer = () => {
+  const updateTimer = useCallback(() => {
     // define initial amount as seconds, and derive/remove sign
     let amount = getEpochDelta(epoch);
     const sign = amount < 0 ? -1 : 1;
@@ -32,14 +32,14 @@ export default function TimePrep ({ epoch }) {
         }
       }
     }
-    timer = setTimeout(updateTimer, 1000);
-  };
+    timer.current = setTimeout(updateTimer, 1000);
+  }, [epoch]);
   useEffect(() => {
-    clearTimeout(timer);
+    clearTimeout(timer.current);
     updateTimer();
     // return function to clear interval timer on unmount
-    return () => clearTimeout(timer);
-  }, [epoch]);
+    return () => clearTimeout(timer.current);
+  }, [epoch, timer, updateTimer]);
   // return TimePrep JSX in a span
   return (
     <span title={new Date(epoch)}>

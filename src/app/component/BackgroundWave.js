@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/styles';
 import { Box } from '@mui/material';
 
@@ -115,7 +115,7 @@ export default function BackgroundWave () {
       SCENE.fog = new THREE.Fog(SCENE.background.getHex(), NEAR, FAR);
       mount.current.appendChild(RENDERER.domElement);
     }
-  }, [init, theme]);
+  }, [theme]);
 
   return (
     <Box

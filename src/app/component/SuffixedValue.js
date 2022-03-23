@@ -1,6 +1,6 @@
 
-export default function SuffixedValu
-({ bias = 1024, suffixNames, value, ...props }) {
+export default function SuffixedValue
+({ bias = 1000, exact, suffixNames, value, ...props }) {
   // declare metric suffix names
   const suffix = ['', 'Thousand', 'Million', 'Billion', 'Trillion'];
   Object.assign(suffix, suffixNames);
@@ -18,5 +18,5 @@ export default function SuffixedValu
   else if (value >= 10) value = (Math.floor(value * 10) | 0) / 10;
   else value = (Math.floor(value * 100) | 0) / 100;
 
-  return (value + (value < prev ? '+ ' : ' ') + suffix[m]);
+  return (value + (value < prev && !exact ? '+ ' : ' ') + suffix[m]);
 }

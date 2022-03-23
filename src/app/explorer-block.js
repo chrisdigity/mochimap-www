@@ -20,7 +20,7 @@ export default function ExplorerBlock ({ type }) {
   const [block] = blocks.data || [{}];
 
   if (bnum && !bhash) {
-    return (<Navigate to={`/explorer/block?search=${bnum}`} />);
+    return (<Navigate replace to={`/explorer/block?search=${bnum}`} />);
   }
 
   return (

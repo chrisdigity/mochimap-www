@@ -93,9 +93,9 @@ export function Bytes ({ bytes = 0, noPrefix, noLocale, ...props }) {
   );
 }
 
+let PUID = 0;
 export function Properties
 ({ children = [], copy, href, inline, short, ...data }) {
-  const d2a = [];
   let count = 0;
   for (const key in data) {
     let id = capitalize(key);
@@ -117,16 +117,15 @@ export function Properties
     for (const replace of swaplist) {
       id = id.replace(replace.id, replace.with);
     }
-    d2a.push({ id, key, value, shortened });
-    if (count++) children.push(<span> • </span>);
+    if (count++) children.push(<span key={`props-${PUID++}`}> • </span>);
     children.push(
-      <Inline color='textSecondary'>
+      <Inline key={`props-${PUID++}`} color='textSecondary'>
         {id}:&nbsp;
       </Inline>
     );
     if (copy) {
       children.push(
-        <Tooltip title='Copy to Clipboard' placement='right' arrow>
+        <Tooltip key={`props-${PUID++}`} title='Copy to Clipboard' placement='right' arrow>
           <Inline
             style={{ cursor: 'pointer' }}
             onClick={() => clipboardCopy(data[key])}
@@ -136,7 +135,7 @@ export function Properties
       );
     } else if (href) {
       children.push(
-        <Link to={to}>
+        <Link key={`props-${PUID++}`} to={to}>
           <Inline component='span'>
             {value || '---'}{(shortened ? '...' : '')}
           </Inline>
@@ -144,7 +143,7 @@ export function Properties
       );
     } else {
       children.push(
-        <Inline component='span'>
+        <Inline key={`props-${PUID++}`} component='span'>
           {value || '---'}{(shortened ? '...' : '')}
         </Inline>
       );

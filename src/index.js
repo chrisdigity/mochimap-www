@@ -3,7 +3,7 @@ import { render } from 'react-dom';
 import { Provider } from 'react-redux';
 import { forwardRef, StrictMode, useMemo, useState } from 'react';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import { CssBaseline, Link as MuiLink, responsiveFontSizes, useMediaQuery } from '@mui/material';
+import { CssBaseline, responsiveFontSizes, useMediaQuery } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
@@ -17,6 +17,7 @@ import Network from 'app/network';
 import Explorer from 'app/explorer';
 import ExplorerBlock from 'app/explorer-block';
 import ExplorerLedger from 'app/explorer-ledger';
+import ScrollToTop from 'app/component/ScrollToTop';
 
 export const Store = configureStore({
   reducer: combineReducers({
@@ -33,12 +34,12 @@ export const Store = configureStore({
 setupListeners(Store.dispatch);
 
 // custom link handling (forward MUI links to react-router links)
-const LinkForwarder = forwardRef((props, ref) => {
+const LinkForwarder = forwardRef(({ children, ...props }, ref) => {
   // Map 'href' to external link; (MUI) -> to (<a>)
   // Map 'to' to internal link; (MUI) -> to (react-router)
   return props.href
-    ? (<a ref={ref} {...props} />)
-    : (<Link ref={ref} {...props} />);
+    ? (<a ref={ref} {...props}>{children}</a>)
+    : (<Link ref={ref} {...props}>{children}</Link>);
 });
 
 function App () {
@@ -68,7 +69,7 @@ function App () {
         },
         palette: {
           mode,
-          primary: { main: mode === 'dark' ? '#00d9ff' : '#0059ff' },
+          primary: { main: /* mode === 'dark' ? '#00d9ff' : */ '#0059ff' },
           secondary: { main: '#0059ff' /* '#ffa600' */ },
           textPrimary: { main: 'white' }
         },
@@ -97,9 +98,10 @@ function App () {
       })
     );
   }, [mode]);
+  /*
   const alwaysDarkTheme = createTheme({
     ...customTheme, palette: { mode: 'dark' }
-  });
+  }); */
 
   return (
     <ThemeProvider theme={customTheme}>
@@ -107,7 +109,7 @@ function App () {
       <BrowserRouter>
         <Routes>
           <Route index />
-          <Route path='map'>
+          <Route path='network'>
             <Route index element={<Network />} />
           </Route>
           <Route path='*' element={<BackgroundWave />} />
@@ -116,7 +118,6 @@ function App () {
         <Routes>
           <Route index element={<Homepage />} />
           <Route path='network' />
-          <Route path='map' />
           <Route path='explorer'>
             <Route index element={<Explorer />} />
             <Route path='address'>
@@ -130,15 +131,15 @@ function App () {
             </Route>
             <Route path='richlist' element={<Explorer type='richlist' />} />
             <Route path='tag'>
-              <Route index element={<Navigate to='/explorer/address' />} />
+              <Route index element={<Navigate replace to='/explorer/address' />} />
               <Route path=':value' element={<ExplorerLedger type='tag' />} />
             </Route>
             <Route path='transaction' element={<Explorer type='transaction' />} />
-            <Route path='*' element={<Navigate to='/explorer' />} />
+            <Route path='*' element={<Navigate replace to='/explorer' />} />
           </Route>
-          <Route path='*' element={<Navigate to='/' />} />
         </Routes>
       </BrowserRouter>
+      <ScrollToTop />
     </ThemeProvider>
   );
 }
