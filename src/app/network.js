@@ -489,7 +489,7 @@ export default function Network ({ type }) {
   return (
     <Box
       ref={box} sx={{
-        position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh'
+        position: 'absolute', top: 0, left: 0, right: 0, height: '100vh'
       }}
     >
       {(display === 'flower' && (<NetworkFlower enable={!type} />)) ||
