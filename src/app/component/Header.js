@@ -52,7 +52,7 @@ function Headerlogo ({ dense, ...props }) {
   const hsx = { height: dense ? 48 : 64, transition: 'height 250ms ease' };
   let tip, src;
   switch (new Date().getMonth()) {
-    case 2:
+    case 1:
       src = '/assets/images/logo-kanji-brushed.png';
       tip = 'Mochimo Brushed Kanji Logo by Chrisdigity';
       break;
@@ -122,7 +122,7 @@ export default function Header ({ actualTheme, switchTheme }) {
   const toggle = (e) => setMenuAnchor(menuAnchor ? '' : 'left');
   const dense = useScrollTrigger({
     disableHysteresis: true,
-    threshold: 10
+    threshold: 25
   });
 
   return (
@@ -144,6 +144,7 @@ export default function Header ({ actualTheme, switchTheme }) {
             <Headernav dense={dense} href='https://status.mochimap.com'>
               Status
             </Headernav>
+            <Headernav dense={dense} to='/api'>API</Headernav>
           </Box>
           <Box>
             <Headerbutton

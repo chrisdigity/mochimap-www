@@ -144,7 +144,7 @@ export default function Explorer ({ type }) {
       {hexRegex.test(search) && (!type || type === 'address') && (
         <>
           <ResultsLabel>Ledger Entries</ResultsLabel>
-          <LedgerEntries query={search.replace(/^0x/i, '')} />
+          <LedgerEntries query={search} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'address') && (
@@ -152,7 +152,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Ledger History by' : 'Latest Ledger'}
           </ResultsLabel>
-          <LedgerHistory query={search.replace(/^0x/i, '')} />
+          <LedgerHistory query={search} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'block') && (
@@ -168,7 +168,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Richlist by' : 'Latest Richlist'}
           </ResultsLabel>
-          <RichlistEntries query={search.replace(/^0x/i, '')} />
+          <RichlistEntries query={search} />
         </>
       )}
       {((hexRegex.test(search) && !type) || type === 'transaction') && (
@@ -176,7 +176,7 @@ export default function Explorer ({ type }) {
           <ResultsLabel>
             {search ? 'Transaction History by' : 'Latest Transactions'}
           </ResultsLabel>
-          <TransactionHistory query={search.replace(/^0x/i, '')} />
+          <TransactionHistory query={search} />
         </>
       )}
     </Container>

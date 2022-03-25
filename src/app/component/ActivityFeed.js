@@ -142,7 +142,6 @@ export default function ActivityFeed ({ types }) {
       closeStream();
       // create new stream
       const uri = EventStreamURI + '?' + types.join('&');
-      console.log(uri);
       const source = new window.EventSource(uri);
       // set stream event handlers
       source.onopen = () => setStatus(`${types.join('/')} streams open`);

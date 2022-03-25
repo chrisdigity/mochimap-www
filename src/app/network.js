@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { applyObjDiff, dupObj } from 'util';
 import { useGetNetworkQuery } from 'api';
-import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Box, Typography } from '@mui/material';
 
 import * as THREE from 'three';
 import Globe from 'react-globe.gl';
@@ -12,6 +12,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import SpaIcon from '@mui/icons-material/Spa';
 import PublicIcon from '@mui/icons-material/Public';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 const CURVE_SEGMENTS = 200;
 const distS = new THREE.Spherical();
@@ -326,19 +327,16 @@ export function NetworkGlobe () {
   const [nodes] = useState(new Map());
   const { data } = useGetNetworkQuery();
 
-  const arcColor = useCallback(() => 'white', []);
   const ringColor = useCallback(() => (t) => `rgba(255,255,255,${1 - t})`, []);
   const hexPolyCountries = useMemo(() => countries.features, []);
   const hexPolyColor = useCallback(() => 'rgba(0,89,255,1)', []);
   const hexBinAltitude = useCallback((d) => d.sumWeight / points.length, [points]);
   const hexBinColor = useCallback(({ sumWeight }) => {
-    const heighWeight = points.reduce((weight, { pop }) => {
-      return pop > weight ? pop : weight;
-    }, 0);
-    const weight = (512 * (sumWeight / heighWeight)) | 0;
+    // location is considered "congested" when location weight reaches 15%
+    const congested = points.length * 0.2;
+    const weight = (512 * (sumWeight / congested)) | 0;
     const r = ('0' + Math.min(255, weight).toString(16)).slice(-2);
     const g = ('0' + Math.min(255, (512 - weight)).toString(16)).slice(-2);
-    console.log(r, g);
     return `#${r + g}00`;
   }, [points]);
 
@@ -394,10 +392,35 @@ export function NetworkGlobe () {
         // build communications data on available peer updates
         const fromloc = nodes.get(ip)?.loc;
         if (peers && fromloc) {
+          const now = Date.now();
+          const expires = now + (FLIGHT_TIME * 2);
           const [endLat, endLng] = fromloc.split(',').map((n) => +n);
-          peers.forEach((peer) => {
+          const arcs = peers.reduce((acc, peer) => {
+            if (peer && nodes.has(peer) && 'loc' in nodes.get(peer)) {
+              // determine start loc
+              const { loc } = nodes.get(peer);
+              const [startLat, startLng] = loc.split(',').map((n) => +n);
+              acc.push({ startLat, startLng, endLat, endLng, expires });
+            }
+            return acc;
+          }, []);
+          if (arcs.length) {
+            const srcRings = arcs.map((a) => ({
+              lat: a.startLat, lng: a.startLng, expires: now + FLIGHT_TIME
+            }));
+            const dstRings = arcs.map((a) => ({
+              lat: a.endLat, lng: a.endLng, expires
+            }));
+            // add and remove arc and start rings after 1 cycle
+            setArcsData(curArcsData => [...curArcsData, ...arcs]);
+            setRingsData(curRingsData => [...curRingsData, ...srcRings]);
+            setTimeout(() => {
+              setRingsData(curRingsData => [...curRingsData, ...dstRings]);
+            }, FLIGHT_TIME);
+          } /*
+          peers.forEach((peer, i) => {
             // check for peer record and location
-            if (nodes.has(peer) && 'loc' in nodes.get(peer)) {
+            if (peer && nodes.has(peer) && 'loc' in nodes.get(peer)) {
               // determine start loc
               const { loc } = nodes.get(peer);
               const [startLat, startLng] = loc.split(',').map((n) => +n);
@@ -405,27 +428,31 @@ export function NetworkGlobe () {
               let expires = Date.now() + (FLIGHT_TIME * 2);
               const arc = { startLat, startLng, endLat, endLng, expires };
               setArcsData(curArcsData => [...curArcsData, arc]);
-              setTimeout(() => setArcsData(curArcsData => curArcsData.filter(d => d.expires > Date.now())), FLIGHT_TIME * 2);
+              setTimeout(() => setArcsData(curArcsData => curArcsData.slice(1)), FLIGHT_TIME * 2);
               // add and remove start rings
               expires = Date.now() + (FLIGHT_TIME * ARC_REL_LEN);
               const srcRing = { lat: startLat, lng: startLng, expires };
               setRingsData(curRingsData => [...curRingsData, srcRing]);
-              setTimeout(() => setRingsData(curRingsData => curRingsData.filter(r => r.expires > Date.now())), FLIGHT_TIME * ARC_REL_LEN);
+              setTimeout(() => setRingsData(curRingsData => curRingsData.slice(1)), FLIGHT_TIME * ARC_REL_LEN);
               // add and remove target rings
               setTimeout(() => {
                 expires = Date.now() + (FLIGHT_TIME * ARC_REL_LEN);
                 const targetRing = { lat: endLat, lng: endLng, expires };
                 setRingsData(curRingsData => [...curRingsData, targetRing]);
-                setTimeout(() => setRingsData(curRingsData => curRingsData.filter(r => r.expires > Date.now())), FLIGHT_TIME * ARC_REL_LEN);
+                setTimeout(() => setRingsData(curRingsData => curRingsData.slice(1)), FLIGHT_TIME * ARC_REL_LEN);
               }, FLIGHT_TIME);
             }
-          });
+          }); */
         }
       } catch (error) {
         // catch process breaking error
         console.error(error);
       }
     };
+    const interval = setInterval(() => {
+      setArcsData((arcs) => arcs.filter((a) => a.expires > Date.now()));
+      setRingsData((rings) => rings.filter((r) => r.expires > Date.now()));
+    }, 100);
     // return unmount/cleanup function
     return () => source.close();
   }, [nodes, updatePoints]);
@@ -433,15 +460,25 @@ export function NetworkGlobe () {
   // resize listener
   useEffect(() => {
     function resizeGlobe () {
+      console.log(globe);
       setWidth(window.innerWidth);
       setHeight(window.innerHeight);
       globe.current.camera().aspect = window.innerWidth / window.innerHeight;
       globe.current.camera().updateProjectionMatrix();
       globe.current.renderer().setSize(window.innerWidth, window.innerHeight);
     }
+    resizeGlobe();
     window.addEventListener('resize', resizeGlobe);
     return () => window.removeEventListener('resize', resizeGlobe);
   }, []);
+
+  // autorotate
+  useEffect(() => {
+    if (globe.current) {
+      globe.current.controls().autoRotate = true;
+      globe.current.controls().autoRotateSpeed = 0.25;
+    }
+  }, [globe]);
 
   return (
     <Globe
@@ -458,12 +495,12 @@ export function NetworkGlobe () {
       hexPolygonsData={hexPolyCountries}
       hexPolygonColor={hexPolyColor}
       arcsData={arcsData}
-      arcColor={arcColor}
-      arcDashLength={ARC_REL_LEN}
-      arcDashGap={2}
-      arcDashInitialGap={1}
-      arcDashAnimateTime={FLIGHT_TIME}
-      arcsTransitionDuration={0}
+      arcColor={useCallback(() => 'white', [])}
+      arcDashLength={useCallback(() => ARC_REL_LEN, [])}
+      arcDashGap={useCallback(() => 2, [])}
+      arcDashInitialGap={useCallback(() => 1, [])}
+      arcDashAnimateTime={useCallback(() => FLIGHT_TIME, [])}
+      arcsTransitionDuration={useMemo(() => 0, [])}
       ringsData={ringsData}
       ringColor={ringColor}
       ringMaxRadius={RINGS_MAX_R}
@@ -474,7 +511,7 @@ export function NetworkGlobe () {
 }
 
 export default function Network ({ type }) {
-  const [display, setDisplay] = useState(type || 'flower');
+  const [display, setDisplay] = useState(type || 'globe');
   const box = useRef();
 
   // scroll listener (parallax, within page content) where within page content
@@ -489,20 +526,28 @@ export default function Network ({ type }) {
   return (
     <Box
       ref={box} sx={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '100vh'
+        position: 'absolute', top: 0, left: 0, right: 0, height: '100vh', overflow: 'hidden'
       }}
     >
       {(display === 'flower' && (<NetworkFlower enable={!type} />)) ||
       (display === 'globe' && (<NetworkGlobe />))}
       {!type && (
-        <BottomNavigation
-          showLabels value={display}
-          sx={{ position: 'fixed', bottom: 0, width: '100vw' }}
-          onChange={(_event, newDisplay) => setDisplay(newDisplay)}
-        >
-          <BottomNavigationAction label='Flower' value='flower' icon={<SpaIcon />} />
-          <BottomNavigationAction label='Globe' value='globe' icon={<PublicIcon />} />
-        </BottomNavigation>
+        <Box sx={{ position: 'fixed', bottom: 0, width: '100vw', textAlign: 'center' }}>
+          <Typography display='block' variant='caption' fontSize='1em'>
+            The Mochimo Cryptocurrency Network
+          </Typography>
+          <Typography display='block' variant='caption' fontSize='1.25em'>
+            <b>Realtime</b> global decentralization and communication visualization
+          </Typography>
+          <BottomNavigation
+            showLabels value={display} sx={{ background: 'transparent' }}
+            onChange={(_event, newDisplay) => setDisplay(newDisplay)}
+          >
+            <BottomNavigationAction label='Flower' value='flower' icon={<SpaIcon />} />
+            <BottomNavigationAction label='Change Visualization' icon={<SwapHorizIcon />} disabled />
+            <BottomNavigationAction label='Globe' value='globe' icon={<PublicIcon />} />
+          </BottomNavigation>
+        </Box>
       )}
     </Box>
   );

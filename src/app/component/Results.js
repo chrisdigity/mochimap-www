@@ -155,8 +155,8 @@ export function BlockHistory ({ bnum, bhash, maddr, query }) {
 export function LedgerEntries ({ query }) {
   // perform requests for both tags and WOTS+ addresses
   const requests = [
-    useGetLedgerEntryQuery({ type: 'tag', value: query }),
-    useGetLedgerEntryQuery({ type: 'address', value: query })
+    useGetLedgerEntryQuery({ type: 'tag', value: query.replace(/^0x/i, '') }),
+    useGetLedgerEntryQuery({ type: 'address', value: query.replace(/^0x/i, '') })
   ];
 
   return (
@@ -229,7 +229,7 @@ export function LedgerHistory ({ type, value, query }) {
   search.append('limit', limit);
   if (query) {
     type = type || queryType;
-    value = value || query;
+    value = value || query.replace(/^0x/i, '');
   }
   search = search.toString();
 
@@ -326,6 +326,7 @@ export function RichlistEntries ({ query }) {
   search.append('offset', offset);
   search.append('limit', limit);
   if (query) {
+    query = query.replace(/^0x/i, '');
     switch (queryType) {
       case 'rank': search.append('rank', query); break;
       case 'tag': search.append('tag', query + '*'); break;
@@ -451,7 +452,6 @@ const splitTransaction = (tx, reference) => {
     }
   }
   // return simple transactions
-  console.log(stxs);
   return stxs;
 };
 
@@ -607,7 +607,7 @@ export function TransactionHistory ({ bnum, bhash, query, type, value }) {
   if (bhash) search.append('bhash', bhash);
   if (query) {
     type = type || queryType;
-    value = value || query;
+    value = value || query.replace(/^0x/i, '');
   }
   search = search.toString();
 

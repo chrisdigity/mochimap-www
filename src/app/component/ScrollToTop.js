@@ -12,14 +12,14 @@ export default function ScrollToTop () {
     <Zoom in={trigger}>
       <Fab
         onClick={handleClick}
-        color='secondary' size='small' aria-label='scroll back to top' sx={{
+        color='secondary' size='medium' aria-label='scroll back to top' sx={{
           zIndex: 99,
           position: 'fixed',
           margin: 2,
           bottom: 0,
           right: 0
         }}
-      ><KeyboardArrowUpIcon />
+      ><KeyboardArrowUpIcon fontSize='medium' />
       </Fab>
     </Zoom>
   );

@@ -10,14 +10,19 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { CoingeckoApi, GithubApi, MochimapApi } from 'api';
 
 import BackgroundWave from 'app/component/BackgroundWave';
+import ScrollToTop from 'app/component/ScrollToTop';
 import Header from './app/component/Header';
 
-import Homepage from 'app/homepage';
+import { Downloads } from 'app/other';
+import Adq from 'app/adq';
+import Privacy from 'app/privacy';
 import Network from 'app/network';
+import Homepage from 'app/homepage';
+import Exchanges from 'app/exchanges';
 import Explorer from 'app/explorer';
 import ExplorerBlock from 'app/explorer-block';
 import ExplorerLedger from 'app/explorer-ledger';
-import ScrollToTop from 'app/component/ScrollToTop';
+import Footer from 'app/component/Footer';
 
 export const Store = configureStore({
   reducer: combineReducers({
@@ -107,17 +112,20 @@ function App () {
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
       <BrowserRouter>
-        <Routes>
-          <Route index />
-          <Route path='network'>
-            <Route index element={<Network />} />
+        <Routes>{/* Background effects Routes */}
+          <Route path='explorer' element={<BackgroundWave />}>
+            <Route path='*' element={<BackgroundWave />} />
           </Route>
-          <Route path='*' element={<BackgroundWave />} />
         </Routes>
+        {/* Header always shown */}
         <Header actualTheme={mode} switchTheme={switchTheme} />
-        <Routes>
+        <Routes>{/* Page content Routes */}
           <Route index element={<Homepage />} />
-          <Route path='network' />
+          <Route path='adq' element={<Adq />} />
+          <Route path='downloads' element={<Downloads />} />
+          <Route path='exchanges' element={<Exchanges />} />
+          <Route path='privacy' element={<Privacy />} />
+          <Route path='network' element={<Network />} />
           <Route path='explorer'>
             <Route index element={<Explorer />} />
             <Route path='address'>
@@ -137,6 +145,12 @@ function App () {
             <Route path='transaction' element={<Explorer type='transaction' />} />
             <Route path='*' element={<Navigate replace to='/explorer' />} />
           </Route>
+        </Routes>
+        <Routes>{/* Footer Routes */}
+          <Route index element={<Footer />} />
+          <Route path='adq' element={<Footer />} />
+          <Route path='exchanges' element={<Footer />} />
+          <Route path='privacy' element={<Footer />} />
         </Routes>
       </BrowserRouter>
       <ScrollToTop />
