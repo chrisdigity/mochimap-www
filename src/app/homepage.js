@@ -1,29 +1,21 @@
 
-import { forwardRef, useCallback, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useGetBaseQuery, useGetChainQuery, useGetContributorsQuery } from 'api';
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, AvatarGroup, Box, Button, Card, CardContent, CircularProgress, Container, Divider, Grid, Link, ListItem, ListItemIcon, ListItemText, Paper, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, AvatarGroup, Box, Button, CircularProgress, Container, Divider, Grid, Link, ListItem, ListItemIcon, ListItemText, Paper, Tooltip, Typography } from '@mui/material';
 import { Masonry } from '@mui/lab';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Address, Amount, Properties } from './component/Types';
+import { Address, Amount } from './component/Types';
 import SuffixedValue from './component/SuffixedValue';
+import RaisedCard from './component/RaisedCard';
 import DiscordIcon from './icons/DiscordIcon';
 
-import Network from 'app/network';
-import Footer from 'app/component/Footer';
+import Network from './network';
 
-const HomepageDivider = forwardRef(function HomepageDivider (props, ref) {
+function HomepageDivider ({ dense, ...props }) {
   return (
-    <Divider ref={ref} sx={{ padding: ({ spacing }) => spacing(4) }}>
+    <Divider sx={{ padding: dense ? 4 : 8 }}>
       <Typography fontSize='1.25em' variant='caption' {...props} />
     </Divider>
-  );
-});
-
-function RaisedCard ({ children, sx, ...props }) {
-  return (
-    <Card raised sx={{ background: 'rgba(46, 46, 46, 0.75)', ...sx }} {...props}>
-      <CardContent>{children}</CardContent>
-    </Card>
   );
 }
 
@@ -60,14 +52,6 @@ export default function Homepage () {
   const contributors = useGetContributorsQuery(
     { owner: 'mochimodev', repo: 'mochimo' });
 
-  const exchanges = useRef();
-  const mining = useRef();
-  const wallets = useRef();
-  const scrollToRef = (ref) => {
-    if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
   const [active, setActive] = useState(false);
   const handleChange = (panel) => (_event, isActive) => {
     setActive(isActive ? panel : false);
@@ -83,59 +67,59 @@ export default function Homepage () {
           flexDirection: 'column',
           alignItems: 'center',
           position: 'relative',
-          minHeight: { xs: '95vh', sm: '75vh' },
-          padding: '1em',
+          minHeight: { xs: '80vh', sm: '70vh' },
           textAlign: 'center',
           textShadow: '0 0 0.125em black, 0 0 0.25em black, 0 0 0.5em black'
         }}
       >
-        {((base.isFetching || chain.isFetching) && (
-          <Box align='center' sx={{ width: '100%' }}>
-            <Typography color='textSecondary'>
-              <CircularProgress size='1em' /> Loading Network Data...
-            </Typography>
-          </Box>
-        )) || (
-          <Grid container spacing={1}>
-            <Grid item xs={6} align='left'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue exact value={chain.data?.circsupply} /><br />
-                <Typography variant='caption'>Circulating Supply</Typography>
+        <Box sx={{ flexGrow: 1, opacity: { xs: 0, sm: 1 }, width: '100%' }}>
+          {((base.isFetching || chain.isFetching) && (
+            <Box align='center' sx={{ width: '100%' }}>
+              <Typography color='textSecondary'>
+                <CircularProgress size='1em' /> Loading Network Data...
               </Typography>
+            </Box>
+          )) || (
+            <Grid container spacing={1} opacity={0} marginTop={0.5}>
+              <Grid item xs={6} align='left'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue exact value={chain.data?.circsupply} /><br />
+                  <Typography variant='caption'>Circulating Supply</Typography>
+                </Typography>
+              </Grid>
+              <Grid item xs={6} align='right'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue exact value={chain.data?.hashrate_avg} /><br />
+                  <Typography variant='caption'>Haiku / second</Typography>
+                </Typography>
+              </Grid>
+              <Grid item xs={6} align='left'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue value={base.data?.stats?.addresses} /><br />
+                  <Typography variant='caption'>Active Addresses</Typography>
+                </Typography>
+              </Grid>
+              <Grid item xs={6} align='right'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue value={base.data?.stats?.deltas} /><br />
+                  <Typography variant='caption'>Balance Deltas</Typography>
+                </Typography>
+              </Grid>
+              <Grid item xs={6} align='left'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue value={base.data?.stats?.transactions} /><br />
+                  <Typography variant='caption'>Transactions</Typography>
+                </Typography>
+              </Grid>
+              <Grid item xs={6} align='right'>
+                <Typography fontWeight='bold' lineHeight={1}>
+                  <SuffixedValue value={base.data?.stats?.blocks} /><br />
+                  <Typography variant='caption'>Blocks</Typography>
+                </Typography>
+              </Grid>
             </Grid>
-            <Grid item xs={6} align='right'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue exact value={chain.data?.hashrate_avg} /><br />
-                <Typography variant='caption'>Haiku / second</Typography>
-              </Typography>
-            </Grid>
-            <Grid item xs={6} align='left'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue value={base.data?.stats?.addresses} /><br />
-                <Typography variant='caption'>Active Addresses</Typography>
-              </Typography>
-            </Grid>
-            <Grid item xs={6} align='right'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue value={base.data?.stats?.deltas} /><br />
-                <Typography variant='caption'>Balance Deltas</Typography>
-              </Typography>
-            </Grid>
-            <Grid item xs={6} align='left'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue value={base.data?.stats?.transactions} /><br />
-                <Typography variant='caption'>Transactions</Typography>
-              </Typography>
-            </Grid>
-            <Grid item xs={6} align='right'>
-              <Typography fontWeight='bold' lineHeight={1}>
-                <SuffixedValue value={base.data?.stats?.blocks} /><br />
-                <Typography variant='caption'>Blocks</Typography>
-              </Typography>
-            </Grid>
-          </Grid>
-        )}
-        <Box sx={{ flexGrow: 1 }} />
+          )}
+        </Box>
         <Typography lineHeight={1.5} variant='caption' fontSize='1em'>
           The
           <Typography variant='h4' fontFamily='Nunito Sans' fontWeight='bold'>
@@ -155,28 +139,22 @@ export default function Homepage () {
             gap: ({ spacing }) => spacing(1)
           }}
         >
-          <Tooltip title='Trade MCM!' placement='bottom' arrow>
-            <Button variant='contained' onClick={() => scrollToRef(exchanges)}>
-              Exchanges
-            </Button>
+          <Tooltip title='Trade MCM!' arrow>
+            <Link to='/exchanges'>
+              <Button variant='contained'>Exchanges</Button>
+            </Link>
           </Tooltip>
-          <Tooltip title='Mint thy Poetry!' placement='bottom' arrow>
-            <Button variant='contained' onClick={() => scrollToRef(mining)}>
-              Mining
-            </Button>
+          <Tooltip title='Get your Mojo on!' arrow>
+            <Link to='/resources'>
+              <Button variant='contained'>Miners / Wallets</Button>
+            </Link>
           </Tooltip>
-          <Tooltip title='Get your Mojo on!' placement='bottom' arrow>
-            <Button variant='contained' onClick={() => scrollToRef(wallets)}>
-              Wallets
-            </Button>
-          </Tooltip>
-          <Tooltip title='Much detail, many interesting!' placement='bottom' arrow>
-            <Link href='/file/mochimo_wp_EN.pdf'>
+          <Tooltip title='Much detail, many interesting!' arrow>
+            <Link href='/assets/files/mochimo_wp_EN.pdf'>
               <Button variant='contained'>Whitepaper</Button>
             </Link>
           </Tooltip>
         </Box>
-        <Divider sx={{ width: '75%' }}>Mochimo's Focus</Divider>
       </Container>
       <Container
         sx={{
@@ -190,13 +168,14 @@ export default function Homepage () {
             position: 'absolute',
             borderTopLeftRadius: '50%',
             borderTopRightRadius: '50%',
-            width: '300%',
+            width: '400%',
             height: '100%',
-            left: '-100%',
-            top: ({ spacing }) => spacing(8),
+            left: '-150%',
+            top: ({ spacing }) => spacing(16),
             boxShadow: ({ palette }) => '0 0 2em ' + palette.background.default
           }}
         />
+        <HomepageDivider dense>Mochimo's Focus</HomepageDivider>
         <Grid container spacing={2} justifyContent='center'>
           <Grid item xs={12} sm={6} md={4}>
             <RaisedCard sx={{ height: '100%' }}>
@@ -273,7 +252,7 @@ export default function Homepage () {
             </RaisedCard>
           </Grid>
         </Grid>
-        <HomepageDivider>Blockchain Innovations</HomepageDivider>
+        <HomepageDivider>Mochimo Innovations</HomepageDivider>
         <Grid
           container spacing={2} justifyContent='center' sx={{
             backgroundImage: 'url(/assets/backgrounds/john-adams-1xIN4FMR78A-unsplash.jpg)',
@@ -291,9 +270,8 @@ export default function Homepage () {
               boxShadow: '0 4em 2em 2em rgba(30, 30, 30, 0.75)'
             }}
           >
-            As Mochimo grows, so too does it's innovations.<br />While the
-            extensive history of updates and improvements to the Mochimo
-            Cryptocurrency Engine is always accesible from Mochimo's&nbsp;
+            While the extensive history of updates and improvements to the
+            Mochimo Cryptocurrency Engine is always accesible from Mochimo's&nbsp;
             <Tooltip title='Extensive History' placement='top' arrow>
               <Link href='https://github.com/mochimodev/mochimo'>
                 Github Repository
@@ -304,7 +282,8 @@ export default function Homepage () {
               <Link to='/milestones'>Check them out &#187;</Link>
             </Tooltip>
             <br /><br />
-            In addition, here's a few innovations that really stand out....
+            In addition, here are some of the novel innovations that set
+            Mochimo apart...
           </Grid>
           <Grid item xs={12} sm={10} md={8}>
             <HomepageAccordion {...{ active, handleChange, panel: '3way' }}>
@@ -429,11 +408,11 @@ export default function Homepage () {
             </HomepageAccordion>
           </Grid>
         </Grid>
-        <HomepageDivider ref={exchanges}>Exchanges</HomepageDivider>
+        <HomepageDivider>Exchanges</HomepageDivider>
         <Grid
-          container spacing={4} justifyContent='center' sx={{
+          container spacing={2} justifyContent='center' sx={{
             backgroundImage: 'url(/assets/backgrounds/nasa-Q1p7bh3SHj8-unsplash.jpg)',
-            backgroundPosition: 'center center',
+            backgroundPosition: 'center bottom',
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
             boxShadow: 'inset 0 0 4em 4em #1e1e1e'
@@ -460,113 +439,21 @@ export default function Homepage () {
                 <Grid item xs={12} sm={7} align='left'>
                   Mochimo can currently be bought or sold on a number of
                   notable exchanges. All exchanges that have listed Mochimo
-                  have done so on their own accord. Hit the jump to see the
-                  latest exchanges where MCM is located.
+                  have done so on their own accord. Hit the "TRADE MOCHIMO"
+                  button to see the latest exchanges where MCM is located.
+                  <br /><br />For a guide, see&nbsp;
+                  <Link href='https://medium.com/mochimo-official/how-to-buy-mochimo-mcm-in-minutes-88d5dab2d8e8'>
+                    How to buy MCM in minutes
+                  </Link>
                 </Grid>
               </Grid>
             </RaisedCard>
           </Grid>
         </Grid>
-        <HomepageDivider ref={mining}>Mining</HomepageDivider>
-        <Grid
-          container spacing={2} justifyContent='center' sx={{
-            backgroundImage: 'url(/assets/backgrounds/conny-schneider-xuTJZ7uD7PI-unsplash.jpg)',
-            backgroundPosition: 'center bottom',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            boxShadow: 'inset 0 0 4em 4em #1e1e1e'
-          }}
-        >
-          <Grid item xs={12} sm={6} md={4}>
-            <RaisedCard sx={{ height: '100%' }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} align='center'>
-                  <Avatar
-                    variant='square' src='/assets/icons/illamanudi.png'
-                    sx={{ justifyContent: 'center', width: 64, height: 64 }}
-                  />
-                  <Typography variant='h6'>Illamanudi Pool</Typography>
-                  <Typography variant='caption'>
-                    Mochimo Community Cultured
-                  </Typography>
-                  <Typography>
-                    Pooled mining with a convenient proxy client for increased
-                    efficiency for large farms.
-                  </Typography>
-                  <Box>
-                    <Properties OS='Windows/Linux' />
-                    <Properties GPU='NVIDIA Only' />
-                    <Properties MinPayout={<Amount value={100000000} />} />
-                    <Properties Fee='2%' />
-                    <Link href='https://www.illamanudi.com'>
-                      <Button variant='contained'>Visit</Button>
-                    </Link>
-                  </Box>
-                </Grid>
-              </Grid>
-            </RaisedCard>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <RaisedCard sx={{ height: '100%' }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} align='center'>
-                  <Avatar
-                    variant='square' src='/assets/icons/windows.png'
-                    sx={{ justifyContent: 'center', width: 64, height: 64 }}
-                  />
-                  <Typography variant='h6'>Headless Mining</Typography>
-                  <Typography variant='caption'>
-                    Windows Headless Miner
-                  </Typography>
-                  <Typography>
-                    All the convenience of mining, without the requirements
-                    of running a node.
-                  </Typography>
-                  <Box>
-                    <Properties OS='Windows Only' />
-                    <Properties GPU='NVIDIA/AMD' />
-                    <Link to='/downloads'>
-                      <Button variant='contained'>Downloads</Button>
-                    </Link>
-                  </Box>
-                </Grid>
-              </Grid>
-            </RaisedCard>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <RaisedCard sx={{ height: '100%' }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} align='center'>
-                  <Avatar
-                    variant='square' src='/assets/icons/linux.png'
-                    sx={{ justifyContent: 'center', width: 64, height: 64 }}
-                  />
-                  <Typography variant='h6'>Solo Mining</Typography>
-                  <Typography variant='caption'>
-                    Mochimo Full Node Software
-                  </Typography>
-                  <Typography>
-                    With the most direct access the the Network, mining
-                    effectiveness is unrivalled when you contribute to
-                    network decentralisation.
-                  </Typography>
-                  <Box>
-                    <Properties OS='Linux Only' />
-                    <Properties GPU='NVIDIA Only' />
-                    <Link to='/downloads'>
-                      <Button variant='contained'>Downloads</Button>
-                    </Link>
-                  </Box>
-                </Grid>
-              </Grid>
-            </RaisedCard>
-          </Grid>
-        </Grid>
-        <HomepageDivider ref={wallets}>Wallets</HomepageDivider>
         <HomepageDivider>The Team</HomepageDivider>
         <Grid
           container spacing={2} justifyContent='center' sx={{
-            backgroundImage: 'url(/assets/backgrounds/annie-spratt-QckxruozjRg-unsplash.jpg)',
+            backgroundImage: 'url(/assets/backgrounds/conny-schneider-xuTJZ7uD7PI-unsplash.jpg)',
             backgroundPosition: 'center bottom',
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
@@ -605,9 +492,9 @@ export default function Homepage () {
                 the fields of computer networking, artificial intelligence,
                 telecommunications, cryptography and software engineering.
                 Though the majority of it's members wish to remain anonymous,
-                you can see some of our key contributors.&emsp;
+                you can see some of the core contributors.&emsp;
                 <Tooltip title="They're friendly" placement='top' arrow>
-                  <Link to='/team'>Meet Them &#187;</Link>
+                  <Link to='/meet-the-team'>Meet The Team &#187;</Link>
                 </Tooltip>
               </Typography>
             </RaisedCard>
@@ -615,17 +502,20 @@ export default function Homepage () {
           <Grid item xs={12} sm={10} md={6} align='right'>
             <RaisedCard sx={{ height: '100%' }}>
               <Typography variant='h4' gutterBottom>
-                Are you an expert in your field?
+                Interested in Contributing?
               </Typography>
               <Typography>
-                Individuals with extensive prior experience with cryptocurrency
-                development will be considered for inclusion on the Dev Team,
-                please&nbsp;
+                Core Contributors are selected based on recommendation, or via
+                recognition of invaluable contributions to the project. If you
+                wish to contribute to Mochimo, Pull Requests are always open.
+                If you wish to discuss something specific, please reach out to
+                the active community on&nbsp;
+                <Link href='https://discord.mochimap.com/'>
+                  Discord
+                </Link>, or&nbsp;
                 <Link href='mailto:support@mochimo.org'>
                   contact support
                 </Link> with your inquiries.
-                <br /><br />
-                We are not otherwise hiring at this time.
               </Typography>
             </RaisedCard>
           </Grid>
@@ -801,8 +691,8 @@ export default function Homepage () {
           zIndex: 1,
           position: 'relative',
           padding: 8,
-          marginTop: 8,
-          marginBottom: 8,
+          marginTop: 12,
+          marginBottom: 4,
           borderRadius: 0,
           boxShadow: '0 0 1em 1em white'
         }}
@@ -813,17 +703,10 @@ export default function Homepage () {
         <Typography display='block' variant='caption' gutterBottom>
           Come join the community
         </Typography>
-        <Button variant='contained'>
+        <Button variant='contained' href='https://discord.mochimap.com/'>
           <DiscordIcon />&emsp;Mochimo Official Discord
         </Button>
       </Paper>
-      <Typography display='block' variant='caption' align='center'>
-        Icons by&nbsp;
-        <Link href='https://www.flaticon.com/authors/icongeek26'>icongeek26</Link>,&nbsp;
-        <Link href='https://www.flaticon.com/authors/phatplus'>phatplus</Link>,&nbsp;
-        <Link href='https://www.flaticon.com/authors/freepik'>Freepik</Link> -&nbsp;
-        <Link href='https://www.flaticon.com/'>Flaticon</Link>
-      </Typography>
     </Box>
   );
 }

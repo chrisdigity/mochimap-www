@@ -4,10 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
+  Button,
   Container,
   Divider,
   IconButton,
   InputAdornment,
+  Link,
   Paper,
   TextField,
   Tooltip,
@@ -21,6 +23,7 @@ import {
   TransactionHistory
 } from 'app/component/Results';
 import { capitalize } from 'util';
+import { scrollToTopNow } from './component/ScrollToTop';
 
 function ResultsLabel (props) {
   return (<Divider sx={{ margin: '1em 0 0.5em 0' }} {...props} />);
@@ -40,19 +43,19 @@ export default function Explorer ({ type }) {
   let defaultHint;
   switch (type) {
     case 'address':
-      defaultHint = 'Type Tag or WOTS+ Address';
+      defaultHint = 'Type Tag or WOTS+ Address - e.g. c0ffee... / 287a8f...';
       break;
     case 'block':
-      defaultHint = 'Type Block Number, Hash or Miner Address';
+      defaultHint = 'Type Block Number, Hash or Miner Address - e.g. 0x58a0a / 363018 / 287a8f...';
       break;
     case 'transaction':
-      defaultHint = 'Type Transaction ID, Tag or WOTS+ Address';
+      defaultHint = 'Type Transaction ID, Tag or WOTS+ Address - e.g. c0ffee... / 287a8f...';
       break;
     case 'richlist':
-      defaultHint = 'Type Rank, Tag or WOTS+ Address';
+      defaultHint = 'Type Rank, Tag or WOTS+ Address - e.g. 123 / c0ffee... / 287a8f...';
       break;
     case 'haiku':
-      defaultHint = 'Type Block Number, Hash or Haiku';
+      defaultHint = 'Type Block Number, Hash or Haiku - e.g. "lonely grasshopper"';
       break;
     default:
       defaultHint = 'Type Search Query';
@@ -87,26 +90,50 @@ export default function Explorer ({ type }) {
   };
 
   useEffect(() => {
+    scrollToTopNow();
     document.forms[0].search.value = '';
   }, [pathname]);
 
   return (
-    <Container
-      sx={{ position: 'relative', padding: ({ spacing }) => spacing(3) }}
-    >
+    <Container>
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'end',
-          height: search ? 'auto' : '40vh',
-          minHeight: { xs: '10em', sm: '12em', md: '14em' }
+          margin: 2
         }}
       >
         <Typography variant='h1'>
           {type ? capitalize(type) : 'Mochimo'} Explorer
         </Typography>
+        {(!type && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: ({ spacing }) => spacing(1),
+              paddingBottom: 2
+            }}
+          >
+            <Link to='/explorer/address'>
+              <Button variant='contained'>Address</Button>
+            </Link>
+            <Link to='/explorer/tag'>
+              <Button variant='contained'>Tag</Button>
+            </Link>
+            <Link to='/explorer/block'>
+              <Button variant='contained'>Block</Button>
+            </Link>
+            <Link to='/explorer/transaction'>
+              <Button variant='contained'>Transaction</Button>
+            </Link>
+            <Link to='/explorer/richlist'>
+              <Button variant='contained'>Richlist</Button>
+            </Link>
+          </Box>
+        ))}
         <Typography variant='caption' color='textSecondary'>
           {(type === 'address' && 'Find a Mochimo Tag or Address!') ||
           (type === 'block' && 'Find a Mochimo Block!') ||
@@ -118,8 +145,7 @@ export default function Explorer ({ type }) {
         <Paper
           component='form' onSubmit={handleSubmit} sx={{
             padding: ({ spacing }) => spacing(1),
-            width: { xs: '100%', sm: '80%' },
-            background: ({ palette }) => palette.divider
+            width: { xs: '100%', sm: '80%' }
           }}
         >
           <TextField
@@ -140,6 +166,7 @@ export default function Explorer ({ type }) {
             }}
           />
         </Paper>
+        
       </Box>
       {hexRegex.test(search) && (!type || type === 'address') && (
         <>

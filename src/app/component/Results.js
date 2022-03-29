@@ -418,9 +418,9 @@ const splitTransaction = (tx, reference) => {
   // reduce variables footprint
   const sT = tx.sendtotal;
   const cT = tx.changetotal;
-  const src = ['00', '42'].includes(srctag.slice(0, 2)) ? srctag : srcaddr;
+  const src = ['00', '42'].includes(srctag.slice(0, 2)) ? srcaddr : srctag;
   // const dst = ['00', '42'].includes(dsttag.slice(0, 2)) ? dsttag : dstaddr;
-  const chg = ['00', '42'].includes(chgtag.slice(0, 2)) ? chgtag : chgaddr;
+  const chg = ['00', '42'].includes(chgtag.slice(0, 2)) ? chgaddr : chgtag;
   // derive reference type
   if ((srctag + srcaddr).includes(reference)) reference = 'src';
   if ((dsttag + dstaddr).includes(reference)) reference = 'dst';
@@ -478,7 +478,7 @@ function DestinationRow ({ amount, change, fee, header, tag, wots }) {
     <Grid container item spacing={0}>
       <Grid item xs={7} sm={8.25} md={9.5}>
         {change
-          ? (<Address href change {...{ tag, wots }} />)
+          ? (<Address href pre='Change' {...{ tag, wots }} />)
           : (<Address href {...{ tag, wots }} />)}
       </Grid>
       <Grid item xs={1.5} sm={1.25} md={1} align='right'>
@@ -556,7 +556,7 @@ function TransactionRow ({ header, open, reference, tx }) {
         )}
         <Grid container item spacing={0}>
           <Grid item xs>
-            <Address href source tag={tx.srctag} wots={tx.srcaddr} />
+            <Address href pre='Source' tag={tx.srctag} wots={tx.srcaddr} />
           </Grid>
         </Grid>
         <DestinationRow header />

@@ -1,8 +1,11 @@
 import { Fab, Zoom, useScrollTrigger } from '@mui/material';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
+export function scrollToTopNow () {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 export default function ScrollToTop () {
-  const handleClick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
   const trigger = useScrollTrigger({
     disableHysteresis: true,
     threshold: 10
@@ -11,7 +14,7 @@ export default function ScrollToTop () {
   return (
     <Zoom in={trigger}>
       <Fab
-        onClick={handleClick}
+        onClick={scrollToTopNow}
         color='secondary' size='medium' aria-label='scroll back to top' sx={{
           zIndex: 99,
           position: 'fixed',

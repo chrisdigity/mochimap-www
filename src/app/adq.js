@@ -1,6 +1,5 @@
 
 import { Container, Grid, Link, Typography } from '@mui/material';
-import { useEffect } from 'react';
 
 function ADQTypography (props) {
   return (

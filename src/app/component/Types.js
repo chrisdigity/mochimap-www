@@ -95,7 +95,7 @@ export function Bytes ({ bytes = 0, noPrefix, noLocale, ...props }) {
 
 let PUID = 0;
 export function Properties
-({ children = [], copy, href, inline, short, ...data }) {
+({ children = [], copy, href, inline, pre, short, ...data }) {
   let count = 0;
   for (const key in data) {
     let id = capitalize(key);
@@ -154,7 +154,7 @@ export function Properties
 
   return (
     <Typography noWrap {...props}>
-      {children}
+      {pre}{pre && ' '}{children}
     </Typography>
   );
 }

@@ -82,7 +82,7 @@ export default function ExplorerBlock ({ type }) {
                 </>
                 )) || (tab === 'mining' && (
                   <>
-                    <Address href wots={block.maddr} />
+                    <Address href pre='Miner' wots={block.maddr} />
                     <Properties bhash={block.bhash} />
                     <Properties phash={block.phash} />
                     <Properties mroot={block.mroot} />
